@@ -39,7 +39,7 @@ struct TripConfigView: View {
                 .padding()
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle(localization.currentLanguage == .chinese ? "新建行程" : "New Trip")
+            .navigationTitle(localization.text(chinese: "新建行程", english: "New Trip"))
             .navigationBarTitleDisplayMode(.large)
             .navigationDestination(isPresented: $showingPackingList) {
                 if let trip = createdTrip {
@@ -53,18 +53,18 @@ struct TripConfigView: View {
     
     private var dateRangeSection: some View {
         SectionCard(
-            title: localization.currentLanguage == .chinese ? "出行时间" : "Trip Dates",
+            title: localization.text(chinese: "出行时间", english: "Trip Dates"),
             icon: "calendar"
         ) {
             VStack(spacing: Spacing.md) {
                 DatePicker(
-                    localization.currentLanguage == .chinese ? "出发日期" : "Start Date",
+                    localization.text(chinese: "出发日期", english: "Start Date"),
                     selection: $startDate,
                     displayedComponents: .date
                 )
                 
                 DatePicker(
-                    localization.currentLanguage == .chinese ? "返回日期" : "End Date",
+                    localization.text(chinese: "返回日期", english: "End Date"),
                     selection: $endDate,
                     in: startDate...,
                     displayedComponents: .date
@@ -72,7 +72,7 @@ struct TripConfigView: View {
                 
                 if endDate >= startDate {
                     let days = Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 0
-                    Text(localization.currentLanguage == .chinese ? "共 \(days + 1) 天" : "\(days + 1) days")
+                    Text(localization.text(chinese: "共 \(days + 1) 天", english: "\(days + 1) days"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -84,7 +84,7 @@ struct TripConfigView: View {
     
     private var sceneSection: some View {
         SectionCard(
-            title: localization.currentLanguage == .chinese ? "特定场合" : "Occasions",
+            title: localization.text(chinese: "特定场合", english: "Occasions"),
             icon: "building.2"
         ) {
             HStack(spacing: Spacing.sm) {
@@ -105,7 +105,7 @@ struct TripConfigView: View {
     
     private var sportsSection: some View {
         SectionCard(
-            title: localization.currentLanguage == .chinese ? "旅行活动" : "Travel Activities",
+            title: localization.text(chinese: "旅行活动", english: "Travel Activities"),
             icon: "figure.run"
         ) {
             HStack(spacing: Spacing.sm) {
@@ -128,7 +128,7 @@ struct TripConfigView: View {
         Button {
             createAndSaveTrip()
         } label: {
-            Text(localization.currentLanguage == .chinese ? "生成行程" : "Generate Trip")
+            Text(localization.text(chinese: "生成行程", english: "Generate Trip"))
                 .font(.headline)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
