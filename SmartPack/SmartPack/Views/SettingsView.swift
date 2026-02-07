@@ -1,0 +1,140 @@
+//
+//  SettingsView.swift
+//  SmartPack
+//
+//  设置页：性别设置、语言切换等
+//  PRD v1.2: 增加性别设置，可修改首次欢迎页的选择
+//
+
+import SwiftUI
+
+struct SettingsView: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var localization: LocalizationManager
+    
+    var body: some View {
+        List {
+            // 性别设置 (PRD v1.2: F-4.2)
+            Section {
+                genderRow
+            } header: {
+                Text(localization.currentLanguage == .chinese ? "性别" : "Gender")
+            } footer: {
+                Text(localization.currentLanguage == .chinese
+                     ? "修改后将影响后续新建清单的物品过滤"
+                     : "Changes will affect items in future lists")
+                    .font(.caption)
+            }
+            
+            // 语言设置
+            Section {
+                languageRow
+            } header: {
+                Text(localization.currentLanguage == .chinese ? "语言" : "Language")
+            }
+            
+            // 关于
+            Section {
+                aboutRow
+            } header: {
+                Text(localization.currentLanguage == .chinese ? "关于" : "About")
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle(localization.currentLanguage == .chinese ? "设置" : "Settings")
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    dismiss()
+                } label: {
+                    Text(localization.currentLanguage == .chinese ? "完成" : "Done")
+                        .fontWeight(.medium)
+                }
+            }
+        }
+    }
+    
+    // MARK: - 性别设置 (PRD v1.2)
+    
+    private var genderRow: some View {
+        HStack {
+            Image(systemName: "person.fill")
+                .foregroundColor(.blue)
+                .frame(width: 24)
+            
+            Text(localization.currentLanguage == .chinese ? "性别" : "Gender")
+            
+            Spacer()
+            
+            Picker("", selection: Binding(
+                get: { localization.userGender },
+                set: { localization.userGender = $0 }
+            )) {
+                ForEach(Gender.allCases) { gender in
+                    Text(gender.displayName(language: localization.currentLanguage)).tag(gender)
+                }
+            }
+            .pickerStyle(.menu)
+        }
+    }
+    
+    // MARK: - 语言切换
+    
+    private var languageRow: some View {
+        HStack {
+            Image(systemName: "globe")
+                .foregroundColor(.blue)
+                .frame(width: 24)
+            
+            Text(localization.currentLanguage == .chinese ? "语言" : "Language")
+            
+            Spacer()
+            
+            Picker("", selection: Binding(
+                get: { localization.currentLanguage },
+                set: { localization.currentLanguage = $0 }
+            )) {
+                ForEach(AppLanguage.allCases) { language in
+                    Text(language.displayName).tag(language)
+                }
+            }
+            .pickerStyle(.menu)
+        }
+    }
+    
+    // MARK: - 关于
+    
+    private var aboutRow: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "info.circle")
+                    .foregroundColor(.blue)
+                    .frame(width: 24)
+                
+                Text("SmartPack")
+                    .font(.headline)
+                
+                Spacer()
+                
+                Text("v1.3")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            Text(localization.currentLanguage == .chinese
+                 ? "基于场景的智能打包清单助手"
+                 : "Smart packing list assistant based on scenarios")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+#Preview {
+    NavigationStack {
+        SettingsView()
+            .environmentObject(LocalizationManager.shared)
+    }
+}
