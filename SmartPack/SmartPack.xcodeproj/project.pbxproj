@@ -76,18 +76,12 @@
 				Info.plist,
 				Models/Trip.swift,
 				Models/WeatherForecast.swift,
-				smartpack.swift,
 				SmartPackApp.swift,
-				smartpackControl.swift,
-				smartpackLiveActivity.swift,
-				Views/HomeView.swift,
 				Views/ItemManagementView.swift,
-				Views/MainTabView.swift,
 				Views/MyListsView.swift,
 				Views/PackingListView.swift,
 				Views/SettingsView.swift,
 				Views/TripConfigView.swift,
-				Views/WelcomeView.swift,
 			);
 			target = 7B3436B22F3639BD00D50327 /* smartpackExtension */;
 		};
@@ -98,9 +92,6 @@
 				"Info-Extension.plist",
 				Info.plist,
 				Models/Trip.swift,
-				smartpack.swift,
-				smartpackControl.swift,
-				smartpackLiveActivity.swift,
 				WidgetExtension/PackingActivityWidget.swift,
 				WidgetExtension/PackingActivityWidgetBundle.swift,
 			);

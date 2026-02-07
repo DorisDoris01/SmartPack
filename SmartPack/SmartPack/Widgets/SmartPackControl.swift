@@ -1,15 +1,15 @@
 //
-//  smartpackControl.swift
-//  smartpack
+//  SmartPackControl.swift
+//  SmartPack
 //
-//  Created by Cooper Xu on 6/2/26.
+//  Widget Extension - Control Widget
 //
 
 import AppIntents
 import SwiftUI
 import WidgetKit
 
-struct smartpackControl: ControlWidget {
+struct SmartPackControl: ControlWidget {
     static let kind: String = "com.smartpack.app.doris.smartpack"
 
     var body: some ControlWidgetConfiguration {
@@ -30,7 +30,7 @@ struct smartpackControl: ControlWidget {
     }
 }
 
-extension smartpackControl {
+extension SmartPackControl {
     struct Value {
         var isRunning: Bool
         var name: String
@@ -38,12 +38,12 @@ extension smartpackControl {
 
     struct Provider: AppIntentControlValueProvider {
         func previewValue(configuration: TimerConfiguration) -> Value {
-            smartpackControl.Value(isRunning: false, name: configuration.timerName)
+            SmartPackControl.Value(isRunning: false, name: configuration.timerName)
         }
 
         func currentValue(configuration: TimerConfiguration) async throws -> Value {
             let isRunning = true // Check if the timer is running
-            return smartpackControl.Value(isRunning: isRunning, name: configuration.timerName)
+            return SmartPackControl.Value(isRunning: isRunning, name: configuration.timerName)
         }
     }
 }

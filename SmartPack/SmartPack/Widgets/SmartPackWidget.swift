@@ -1,8 +1,8 @@
 //
-//  smartpack.swift
-//  smartpack
+//  SmartPackWidget.swift
+//  SmartPack
 //
-//  Created by Cooper Xu on 6/2/26.
+//  Widget Extension - Main Widget
 //
 
 import WidgetKit
@@ -16,7 +16,7 @@ struct Provider: AppIntentTimelineProvider {
     func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> SimpleEntry {
         SimpleEntry(date: Date(), configuration: configuration)
     }
-    
+
     func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
         var entries: [SimpleEntry] = []
 
@@ -41,7 +41,7 @@ struct SimpleEntry: TimelineEntry {
     let configuration: ConfigurationAppIntent
 }
 
-struct smartpackEntryView : View {
+struct SmartPackEntryView : View {
     var entry: Provider.Entry
 
     var body: some View {
@@ -55,12 +55,12 @@ struct smartpackEntryView : View {
     }
 }
 
-struct smartpack: Widget {
+struct SmartPackWidget: Widget {
     let kind: String = "smartpack"
 
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: kind, intent: ConfigurationAppIntent.self, provider: Provider()) { entry in
-            smartpackEntryView(entry: entry)
+            SmartPackEntryView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
         }
     }
@@ -72,7 +72,7 @@ extension ConfigurationAppIntent {
         intent.favoriteEmoji = "😀"
         return intent
     }
-    
+
     fileprivate static var starEyes: ConfigurationAppIntent {
         let intent = ConfigurationAppIntent()
         intent.favoriteEmoji = "🤩"
@@ -81,7 +81,7 @@ extension ConfigurationAppIntent {
 }
 
 #Preview(as: .systemSmall) {
-    smartpack()
+    SmartPackWidget()
 } timeline: {
     SimpleEntry(date: .now, configuration: .smiley)
     SimpleEntry(date: .now, configuration: .starEyes)
