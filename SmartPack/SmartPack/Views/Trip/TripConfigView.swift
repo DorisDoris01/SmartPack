@@ -23,16 +23,16 @@ struct TripConfigView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: Spacing.lg) {
                     // Section 1: 出行时间（日期选择器）
                     dateRangeSection
-                    
+
                     // Section 2: 场景选择
                     sceneSection
-                    
+
                     // Section 3: 运动选择
                     sportsSection
-                    
+
                     // 生成清单按钮
                     generateButton
                 }
@@ -56,7 +56,7 @@ struct TripConfigView: View {
             title: localization.currentLanguage == .chinese ? "出行时间" : "Trip Dates",
             icon: "calendar"
         ) {
-            VStack(spacing: 16) {
+            VStack(spacing: Spacing.md) {
                 DatePicker(
                     localization.currentLanguage == .chinese ? "出发日期" : "Start Date",
                     selection: $startDate,
@@ -87,7 +87,7 @@ struct TripConfigView: View {
             title: localization.currentLanguage == .chinese ? "特定场合" : "Occasions",
             icon: "building.2"
         ) {
-            HStack(spacing: 12) {
+            HStack(spacing: Spacing.sm) {
                 ForEach(PresetData.shared.tags(for: .occasion)) { tag in
                     TagButton(
                         tag: tag,
@@ -108,7 +108,7 @@ struct TripConfigView: View {
             title: localization.currentLanguage == .chinese ? "旅行活动" : "Travel Activities",
             icon: "figure.run"
         ) {
-            HStack(spacing: 12) {
+            HStack(spacing: Spacing.sm) {
                 ForEach(PresetData.shared.tags(for: .activity)) { tag in
                     TagButton(
                         tag: tag,
@@ -132,11 +132,11 @@ struct TripConfigView: View {
                 .font(.headline)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: 50)
+                .frame(height: Spacing.buttonHeight)
                 .background(Color.blue)
-                .cornerRadius(12)
+                .cornerRadius(CornerRadius.lg)
         }
-        .padding(.top, 8)
+        .padding(.top, Spacing.xs)
     }
     
     // MARK: - 方法
@@ -258,10 +258,10 @@ struct DurationButton: View {
                 }
             }
             .frame(height: buttonHeight)
-            .padding(.horizontal, 16)
+            .padding(.horizontal, Spacing.md)
             .background(isSelected ? Color.blue.opacity(0.1) : Color(.systemGray6))
             .foregroundColor(isSelected ? .blue : .primary)
-            .cornerRadius(10)
+            .cornerRadius(CornerRadius.md)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(duration.displayName(language: language))

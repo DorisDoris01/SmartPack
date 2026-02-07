@@ -24,7 +24,7 @@ struct CreateTripSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: Spacing.lg) {
                     dateRangeSection
                     destinationSection
                     tagSection
@@ -55,7 +55,7 @@ struct CreateTripSheet: View {
             title: localization.currentLanguage == .chinese ? "出行时间" : "Trip Dates",
             icon: "calendar"
         ) {
-            VStack(spacing: 16) {
+            VStack(spacing: Spacing.md) {
                 DatePicker(
                     localization.currentLanguage == .chinese ? "出发日期" : "Start Date",
                     selection: $startDate,
@@ -102,7 +102,7 @@ struct CreateTripSheet: View {
                 title: localization.currentLanguage == .chinese ? "旅行活动" : "Travel Activities",
                 icon: "figure.run"
             ) {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 12)], spacing: 12) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: Spacing.sm)], spacing: Spacing.sm) {
                     ForEach(PresetData.shared.tags(for: .activity)) { tag in
                         LabeledTagButton(
                             tag: tag,
@@ -120,7 +120,7 @@ struct CreateTripSheet: View {
                 title: localization.currentLanguage == .chinese ? "特定场合" : "Occasions",
                 icon: "building.2"
             ) {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 12)], spacing: 12) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: Spacing.sm)], spacing: Spacing.sm) {
                     ForEach(PresetData.shared.tags(for: .occasion)) { tag in
                         LabeledTagButton(
                             tag: tag,
@@ -138,7 +138,7 @@ struct CreateTripSheet: View {
                 title: localization.currentLanguage == .chinese ? "出行配置" : "Travel Config",
                 icon: "gearshape"
             ) {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 12)], spacing: 12) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: Spacing.sm)], spacing: Spacing.sm) {
                     ForEach(PresetData.shared.tags(for: .config)) { tag in
                         LabeledTagButton(
                             tag: tag,
@@ -163,11 +163,11 @@ struct CreateTripSheet: View {
                 .font(.headline)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: 50)
+                .frame(height: Spacing.buttonHeight)
                 .background(Color.blue)
-                .cornerRadius(12)
+                .cornerRadius(CornerRadius.lg)
         }
-        .padding(.top, 8)
+        .padding(.top, Spacing.xs)
     }
 
     // MARK: - 方法
