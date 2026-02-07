@@ -20,19 +20,20 @@ struct ItemRow: View {
         HStack(spacing: Spacing.sm) {
             // 复选框（左侧）
             Button {
+                HapticFeedback.light()
                 onToggle()
             } label: {
                 Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
-                    .foregroundColor(item.isChecked ? .green : .gray)
+                    .foregroundColor(item.isChecked ? AppColors.success : AppColors.textSecondary)
             }
             .buttonStyle(.plain)
 
             // Item 名称（可点击整行）
             Text(item.displayName(language: language))
-                .font(.body)
-                .foregroundColor(item.isChecked ? .secondary : .primary)
-                .strikethrough(item.isChecked, color: .secondary)
+                .font(Typography.body)
+                .foregroundColor(item.isChecked ? AppColors.textSecondary : AppColors.text)
+                .strikethrough(item.isChecked, color: AppColors.textSecondary)
 
             Spacer()
         }
@@ -49,5 +50,10 @@ struct ItemRow: View {
                 Label(localization.currentLanguage == .chinese ? "删除" : "Delete", systemImage: "trash")
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(item.displayName(language: language))
+        .accessibilityHint(item.isChecked
+            ? (localization.currentLanguage == .chinese ? "已勾选，双击取消" : "Checked, double tap to uncheck")
+            : (localization.currentLanguage == .chinese ? "未勾选，双击勾选" : "Unchecked, double tap to check"))
     }
 }

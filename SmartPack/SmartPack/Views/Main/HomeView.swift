@@ -80,24 +80,33 @@ struct HomeView: View {
                 // 空状态
                 if trips.isEmpty {
                     Section {
-                        VStack(spacing: 20) {
-                            Image(systemName: "suitcase")
-                                .font(.system(size: 60))
-                                .foregroundColor(.gray.opacity(0.5))
+                        VStack(spacing: Spacing.lg) {
+                            ZStack {
+                                Circle()
+                                    .fill(AppColors.primary.opacity(0.08))
+                                    .frame(width: 120, height: 120)
+                                Image(systemName: "suitcase.fill")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(AppColors.primary)
+                            }
+                            Image(systemName: "plus.circle.dashed")
+                                .font(.system(size: 28))
+                                .foregroundColor(AppColors.textSecondary.opacity(0.6))
                             
                             Text(localization.currentLanguage == .chinese ? "还没有行程" : "No trips yet")
-                                .font(.title2)
-                                .foregroundColor(.secondary)
+                                .font(Typography.title2)
+                                .foregroundColor(AppColors.textSecondary)
                             
                             Text(localization.currentLanguage == .chinese
                                  ? "点击右上角 + 开始你的第一次行程"
                                  : "Tap + to start your first trip")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .font(Typography.subheadline)
+                                .foregroundColor(AppColors.textSecondary)
                                 .multilineTextAlignment(.center)
+                                .padding(.horizontal, Spacing.xl)
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 60)
+                        .padding(.vertical, Spacing.xxl + 20)
                     }
                 }
             }

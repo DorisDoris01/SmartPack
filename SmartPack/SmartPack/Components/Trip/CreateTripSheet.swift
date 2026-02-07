@@ -20,6 +20,7 @@ struct CreateTripSheet: View {
 
     @State private var startDate = Date()
     @State private var endDate = Calendar.current.date(byAdding: .day, value: 3, to: Date()) ?? Date()
+    @State private var isGenerating = false
 
     var body: some View {
         NavigationStack {
@@ -156,18 +157,37 @@ struct CreateTripSheet: View {
     // MARK: - 生成按钮
 
     private var generateButton: some View {
-        Button {
-            createAndSaveTrip()
-        } label: {
-            Text(localization.currentLanguage == .chinese ? "生成行程" : "Generate Trip")
-                .font(.headline)
-                .foregroundColor(.white)
+        VStack(spacing: Spacing.sm) {
+            if isGenerating {
+                HStack(spacing: Spacing.xs) {
+                    ProgressView()
+                        .scaleEffect(0.9)
+                    Text(localization.currentLanguage == .chinese ? "正在生成…" : "Creating list…")
+                        .font(Typography.subheadline)
+                        .foregroundColor(AppColors.textSecondary)
+                }
                 .frame(maxWidth: .infinity)
-                .frame(height: Spacing.buttonHeight)
-                .background(Color.blue)
-                .cornerRadius(CornerRadius.lg)
+                .padding(.vertical, Spacing.sm)
+            }
+            
+            Button {
+                HapticFeedback.light()
+                createAndSaveTrip()
+            } label: {
+                Text(localization.currentLanguage == .chinese ? "生成行程" : "Generate Trip")
+                    .font(Typography.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: Spacing.buttonHeight)
+                    .background(isGenerating ? AppColors.textSecondary : AppColors.primary)
+                    .cornerRadius(CornerRadius.lg)
+                    .shadow(color: AppColors.primary.opacity(0.25), radius: 6, x: 0, y: 3)
+            }
+            .disabled(isGenerating)
         }
         .padding(.top, Spacing.xs)
+        .accessibilityLabel(localization.currentLanguage == .chinese ? "生成行程" : "Generate Trip")
+        .accessibilityHint(isGenerating ? (localization.currentLanguage == .chinese ? "正在创建行程" : "Creating your trip") : "")
     }
 
     // MARK: - 方法
@@ -219,6 +239,7 @@ struct CreateTripSheet: View {
 
         // SPEC: Weather Integration v1.0 - 查询天气并调整物品
         Task {
+            await MainActor.run { isGenerating = true }
             var weatherForecasts: [WeatherForecast] = []
 
             // 如果有目的地和日期范围，查询天气
@@ -257,6 +278,8 @@ struct CreateTripSheet: View {
                 )
 
                 modelContext.insert(trip)
+                isGenerating = false
+                HapticFeedback.success()
                 onTripCreated(trip)
             }
         }

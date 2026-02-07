@@ -26,8 +26,8 @@ struct LabeledTagButton: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 70)
-            .background(isSelected ? Color.blue : Color(.systemGray6))
-            .foregroundColor(isSelected ? .white : .primary)
+            .background(isSelected ? AppColors.primary : AppColors.cardBackground)
+            .foregroundColor(isSelected ? .white : AppColors.text)
             .cornerRadius(CornerRadius.lg)
         }
         .buttonStyle(.plain)

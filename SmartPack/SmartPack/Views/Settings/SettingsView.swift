@@ -60,7 +60,7 @@ struct SettingsView: View {
     private var genderRow: some View {
         HStack {
             Image(systemName: "person.fill")
-                .foregroundColor(.blue)
+                .foregroundColor(AppColors.primary)
                 .frame(width: 24)
             
             Text(localization.currentLanguage == .chinese ? "性别" : "Gender")
@@ -84,7 +84,7 @@ struct SettingsView: View {
     private var languageRow: some View {
         HStack {
             Image(systemName: "globe")
-                .foregroundColor(.blue)
+                .foregroundColor(AppColors.primary)
                 .frame(width: 24)
             
             Text(localization.currentLanguage == .chinese ? "语言" : "Language")
@@ -106,29 +106,35 @@ struct SettingsView: View {
     // MARK: - 关于
     
     private var aboutRow: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack {
                 Image(systemName: "info.circle")
-                    .foregroundColor(.blue)
+                    .foregroundColor(AppColors.primary)
                     .frame(width: 24)
                 
                 Text("SmartPack")
-                    .font(.headline)
+                    .font(Typography.headline)
                 
                 Spacer()
                 
-                Text("v1.3")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Text(appVersion)
+                    .font(Typography.caption)
+                    .foregroundColor(AppColors.textSecondary)
             }
             
             Text(localization.currentLanguage == .chinese
                  ? "基于场景的智能打包清单助手"
                  : "Smart packing list assistant based on scenarios")
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(Typography.caption)
+                .foregroundColor(AppColors.textSecondary)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, Spacing.xxs)
+    }
+    
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
+        return build.isEmpty ? "v\(version)" : "v\(version) (\(build))"
     }
 }
 

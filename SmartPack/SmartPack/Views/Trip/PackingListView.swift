@@ -81,7 +81,10 @@ struct PackingListView: View {
             
             // 庆祝动画覆盖层
             if showCelebration {
-                CelebrationOverlay(isPresented: $showCelebration) {
+                CelebrationOverlay(
+                    isPresented: $showCelebration,
+                    title: localization.string(for: .allPacked)
+                ) {
                     showArchiveAlert = true
                 }
             }
@@ -180,6 +183,7 @@ struct PackingListView: View {
                 itemToDelete = nil
             }
             Button(localization.currentLanguage == .chinese ? "删除" : "Delete", role: .destructive) {
+                HapticFeedback.light()
                 confirmDeleteItem(item.id)
             }
         } message: { item in
@@ -250,6 +254,7 @@ struct PackingListView: View {
         
         // 检查是否刚刚完成全部勾选（且未归档）
         if !wasAllChecked && trip.isAllChecked && !trip.isArchived {
+            HapticFeedback.success()
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 showCelebration = true
             }

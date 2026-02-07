@@ -47,8 +47,8 @@ struct CategorySection: View {
                 if items.isEmpty {
                     // 空状态处理
                     Text(language == .chinese ? "该分类暂无物品" : "No items in this category")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(Typography.subheadline)
+                        .foregroundColor(AppColors.textSecondary)
                         .listRowBackground(Color.clear)
                 } else {
                     ForEach(items) { item in
@@ -83,6 +83,7 @@ struct CategorySection: View {
                 totalCount: items.count,
                 icon: categoryIcon,
                 isExpanded: isExpanded,
+                language: language,
                 onToggle: onToggleExpand
             )
         }

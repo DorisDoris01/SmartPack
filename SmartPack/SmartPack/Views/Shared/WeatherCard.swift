@@ -18,22 +18,22 @@ struct WeatherCard: View {
     
     var body: some View {
         if !forecasts.isEmpty {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
                 // 头部：目的地和日期范围
                 HStack {
                     Image(systemName: "cloud.sun.fill")
-                        .foregroundColor(.blue)
-                        .font(.title3)
+                        .foregroundColor(AppColors.primary)
+                        .font(Typography.title3)
                     
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: Spacing.xxs) {
                         Text(destination.isEmpty ? (localization.currentLanguage == .chinese ? "目的地" : "Destination") : destination)
-                            .font(.headline)
-                            .foregroundColor(.primary)
+                            .font(Typography.headline)
+                            .foregroundColor(AppColors.text)
                         
                         if let start = startDate, let end = endDate {
                             Text(formatDateRange(start: start, end: end))
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .font(Typography.caption)
+                                .foregroundColor(AppColors.textSecondary)
                         }
                     }
                     
@@ -42,18 +42,22 @@ struct WeatherCard: View {
                 
                 // 多日天气展示（横向滚动）
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
+                    HStack(spacing: Spacing.sm) {
                         ForEach(forecasts.prefix(7)) { forecast in
                             WeatherDayCard(forecast: forecast)
                         }
                     }
-                    .padding(.horizontal, 4)
+                    .padding(.horizontal, Spacing.xxs)
                 }
             }
-            .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+            .padding(Spacing.md)
+            .background(AppColors.secondaryBackground)
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.lg)
+                    .stroke(AppColors.primary.opacity(0.15), lineWidth: 1)
+            )
+            .cornerRadius(CornerRadius.lg)
+            .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 2)
         }
     }
     
@@ -76,47 +80,59 @@ struct WeatherDayCard: View {
     @EnvironmentObject var localization: LocalizationManager
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.xs) {
             // 日期
             Text(formatDay(forecast.date))
-                .font(.caption2)
-                .foregroundColor(.secondary)
+                .font(Typography.caption2)
+                .foregroundColor(AppColors.textSecondary)
             
             // 天气图标
             Image(systemName: forecast.weatherIcon)
-                .font(.title2)
+                .font(Typography.title2)
                 .foregroundColor(temperatureColor(for: forecast))
                 .symbolRenderingMode(.hierarchical)
             
             // 温度范围
-            VStack(spacing: 2) {
+            VStack(spacing: Spacing.xxs) {
                 Text("\(Int(forecast.highTemp))°")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+                    .font(Typography.subheadline.weight(.semibold))
+                    .foregroundColor(AppColors.text)
                 
                 Text("\(Int(forecast.lowTemp))°")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .font(Typography.caption2)
+                    .foregroundColor(AppColors.textSecondary)
             }
             
             // 降水概率（如果有）
             if forecast.hasPrecipitation {
-                HStack(spacing: 2) {
+                HStack(spacing: Spacing.xxs) {
                     Image(systemName: "drop.fill")
-                        .font(.caption2)
-                        .foregroundColor(.blue)
+                        .font(Typography.caption2)
+                        .foregroundColor(AppColors.primary)
                     Text("\(Int(forecast.precipitationChance * 100))%")
-                        .font(.caption2)
-                        .foregroundColor(.blue)
+                        .font(Typography.caption2)
+                        .foregroundColor(AppColors.primary)
                 }
             }
         }
         .frame(width: 70)
-        .padding(.vertical, 8)
-        .padding(.horizontal, 8)
-        .background(Color(.systemGray6).opacity(0.5))
-        .cornerRadius(10)
+        .padding(.vertical, Spacing.xs)
+        .padding(.horizontal, Spacing.xs)
+        .background(AppColors.cardBackground.opacity(0.6))
+        .cornerRadius(CornerRadius.md)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilityLabel(for: forecast))
+    }
+    
+    private func accessibilityLabel(for forecast: WeatherForecast) -> String {
+        let day = formatDay(forecast.date)
+        let high = Int(forecast.highTemp)
+        let low = Int(forecast.lowTemp)
+        if forecast.hasPrecipitation {
+            let pct = Int(forecast.precipitationChance * 100)
+            return "\(day), high \(high)°, low \(low)°, \(pct)% chance of rain"
+        }
+        return "\(day), high \(high)°, low \(low)°"
     }
     
     private func formatDay(_ date: Date) -> String {

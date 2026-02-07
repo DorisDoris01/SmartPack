@@ -29,8 +29,10 @@ class WeatherService {
         endDate: Date
     ) async throws -> [WeatherForecast] {
         // 检查 API Key
-        guard apiKey != "YOUR_OPENWEATHERMAP_API_KEY" else {
-            throw WeatherError.apiKeyNotConfigured
+        guard !apiKey.isEmpty,
+              apiKey != "YOUR_OPENWEATHERMAP_API_KEY" else {
+            print("⚠️ 天气 API Key 未配置，使用模拟数据")
+            return generateMockForecasts(startDate: startDate, endDate: endDate)
         }
         
         // 构建请求 URL
@@ -44,19 +46,36 @@ class WeatherService {
         }
         
         // 发送请求
-        let (data, response) = try await URLSession.shared.data(from: url)
+        let (data, response): (Data, URLResponse)
+        do {
+            (data, response) = try await URLSession.shared.data(from: url)
+        } catch {
+            // 网络错误，使用模拟数据
+            print("⚠️ 网络错误: \(error.localizedDescription)，使用模拟数据")
+            return generateMockForecasts(startDate: startDate, endDate: endDate)
+        }
         
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw WeatherError.invalidResponse
+            print("⚠️ 无效的响应格式，使用模拟数据")
+            return generateMockForecasts(startDate: startDate, endDate: endDate)
         }
         
         guard httpResponse.statusCode == 200 else {
+            // 读取错误响应以便调试
+            if let errorData = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let message = errorData["message"] as? String {
+                print("⚠️ 天气 API 错误: \(message) (状态码: \(httpResponse.statusCode))")
+            }
+            
             if httpResponse.statusCode == 401 {
-                throw WeatherError.invalidAPIKey
+                print("⚠️ API Key 无效，使用模拟数据")
+                return generateMockForecasts(startDate: startDate, endDate: endDate)
             } else if httpResponse.statusCode == 404 {
-                throw WeatherError.cityNotFound
+                print("⚠️ 未找到城市: \(city)，使用模拟数据")
+                return generateMockForecasts(startDate: startDate, endDate: endDate)
             } else {
-                throw WeatherError.serverError(httpResponse.statusCode)
+                print("⚠️ 天气 API 服务器错误 (状态码: \(httpResponse.statusCode))，使用模拟数据")
+                return generateMockForecasts(startDate: startDate, endDate: endDate)
             }
         }
         
@@ -64,7 +83,13 @@ class WeatherService {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .secondsSince1970
         
-        let weatherResponse = try decoder.decode(OpenWeatherResponse.self, from: data)
+        let weatherResponse: OpenWeatherResponse
+        do {
+            weatherResponse = try decoder.decode(OpenWeatherResponse.self, from: data)
+        } catch {
+            print("⚠️ JSON 解析错误: \(error.localizedDescription)，使用模拟数据")
+            return generateMockForecasts(startDate: startDate, endDate: endDate)
+        }
         
         // 转换为 WeatherForecast 数组
         return convertToForecasts(

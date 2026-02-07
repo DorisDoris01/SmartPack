@@ -10,6 +10,8 @@ import SwiftUI
 /// 庆祝动画覆盖层
 struct CelebrationOverlay: View {
     @Binding var isPresented: Bool
+    /// Localized title (e.g. "All packed! 🎉" / "全部打包完成！🎉")
+    let title: String
     let onComplete: () -> Void
 
     @State private var confettiPieces: [ConfettiPiece] = []
@@ -31,16 +33,16 @@ struct CelebrationOverlay: View {
 
             // 中心祝贺内容
             if showContent {
-                VStack(spacing: 20) {
+                VStack(spacing: Spacing.lg) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 80))
-                        .foregroundColor(.green)
+                        .foregroundColor(AppColors.success)
 
                     Text("🎉")
                         .font(.system(size: 60))
 
-                    Text("All Packed!")
-                        .font(.title.bold())
+                    Text(title)
+                        .font(Typography.title1.bold())
                         .foregroundColor(.white)
                 }
                 .transition(.scale.combined(with: .opacity))
@@ -60,7 +62,7 @@ struct CelebrationOverlay: View {
     }
 
     private func generateConfetti() {
-        let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple, .pink]
+        let colors: [Color] = [AppColors.error, AppColors.warning, .yellow, AppColors.success, AppColors.primary, .purple, .pink]
 
         for i in 0..<50 {
             let piece = ConfettiPiece(

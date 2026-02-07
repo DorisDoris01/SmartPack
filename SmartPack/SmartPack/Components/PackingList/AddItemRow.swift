@@ -45,7 +45,7 @@ struct AddItemRow: View {
             // 输入框
             HStack(spacing: Spacing.xs) {
                 Image(systemName: "plus.circle.fill")
-                    .foregroundColor(.blue)
+                    .foregroundColor(AppColors.primary)
                     .font(.title3)
 
                 TextField(
@@ -65,8 +65,8 @@ struct AddItemRow: View {
                         addItem()
                     } label: {
                         Text(localization.currentLanguage == .chinese ? "添加" : "Add")
-                            .font(.subheadline)
-                            .foregroundColor(.blue)
+                            .font(Typography.subheadline)
+                            .foregroundColor(AppColors.primary)
                     }
                 }
             }
@@ -85,7 +85,7 @@ struct AddItemRow: View {
                                     .font(.caption)
                                     .padding(.horizontal, Spacing.sm)
                                     .padding(.vertical, 6)
-                                    .background(Color(.systemGray6))
+                                    .background(AppColors.cardBackground)
                                     .cornerRadius(CornerRadius.lg)
                             }
                         }
@@ -94,7 +94,7 @@ struct AddItemRow: View {
                 }
             }
         }
-        .listRowBackground(Color(.systemBackground))
+        .listRowBackground(AppColors.background)
     }
 
     private func addItem() {

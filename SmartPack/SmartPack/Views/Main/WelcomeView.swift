@@ -69,32 +69,32 @@ struct WelcomeView: View {
                 .opacity(selectedGender != nil ? 1 : 0.3)
             
             // App Logo 和标题
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.sm) {
                 Image(systemName: "suitcase.rolling.fill")
                     .font(.system(size: 60))
-                    .foregroundColor(.blue)
+                    .foregroundColor(AppColors.primary)
                 
                 Text("SmartPack")
-                    .font(.title.bold())
+                    .font(Typography.title1.bold())
                 
                 Text(localization.currentLanguage == .chinese
                      ? "基于场景的智能行程助手\n帮你减少出行遗漏"
                      : "Smart trip packing assistant\nNever forget essentials again")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(Typography.subheadline)
+                    .foregroundColor(AppColors.textSecondary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
             }
-            .padding(.top, 8)
+            .padding(.top, Spacing.xs)
             
             // 性别选择
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.sm) {
                 Text(localization.currentLanguage == .chinese
                      ? "选择你的性别"
                      : "Select your gender")
-                    .font(.headline)
+                    .font(Typography.headline)
                 
-                HStack(spacing: 16) {
+                HStack(spacing: Spacing.md) {
                     ForEach(Gender.allCases) { gender in
                         GenderSelectionCard(
                             gender: gender,
@@ -117,24 +117,24 @@ struct WelcomeView: View {
                 }
             } label: {
                 Text(localization.currentLanguage == .chinese ? "开始使用" : "Get Started")
-                    .font(.headline)
+                    .font(Typography.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(selectedGender != nil ? Color.blue : Color.gray)
-                    .cornerRadius(12)
+                    .frame(height: Spacing.buttonHeight)
+                    .background(selectedGender != nil ? AppColors.primary : AppColors.textSecondary)
+                    .cornerRadius(CornerRadius.lg)
             }
             .disabled(selectedGender == nil)
-            .padding(.horizontal, 8)
-            .padding(.bottom, 20)
+            .padding(.horizontal, Spacing.xs)
+            .padding(.bottom, Spacing.lg)
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, Spacing.lg)
         .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(Color(.systemBackground))
+            RoundedRectangle(cornerRadius: CornerRadius.xl + 8)
+                .fill(AppColors.background)
                 .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: -5)
         )
-        .padding(.horizontal, 8)
+        .padding(.horizontal, Spacing.xs)
     }
     
     // MARK: - 方法
@@ -177,12 +177,12 @@ struct GenderSelectionCard: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 100)
-            .background(isSelected ? Color.blue.opacity(0.15) : Color(.systemGray6))
-            .foregroundColor(isSelected ? .blue : .primary)
-            .cornerRadius(16)
+            .background(isSelected ? AppColors.primary.opacity(0.15) : AppColors.cardBackground)
+            .foregroundColor(isSelected ? AppColors.primary : AppColors.text)
+            .cornerRadius(CornerRadius.xl)
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
+                RoundedRectangle(cornerRadius: CornerRadius.xl)
+                    .stroke(isSelected ? AppColors.primary : Color.clear, lineWidth: 2)
             )
         }
         .buttonStyle(.plain)

@@ -24,16 +24,17 @@ struct TripRowView: View {
                 Circle()
                     .trim(from: 0, to: trip.progress)
                     .stroke(
-                        trip.isAllChecked ? Color.green : Color.blue,
+                        trip.isAllChecked ? AppColors.success : AppColors.primary,
                         style: StrokeStyle(lineWidth: Spacing.xxs, lineCap: .round)
                     )
                     .frame(width: 44, height: 44)
                     .rotationEffect(.degrees(-90))
+                    .animation(.spring(response: 0.35, dampingFraction: 0.8), value: trip.progress)
 
                 if trip.isAllChecked {
                     Image(systemName: "checkmark")
-                        .font(.caption.bold())
-                        .foregroundColor(.green)
+                        .font(Typography.caption.bold())
+                        .foregroundColor(AppColors.success)
                 }
             }
             .opacity(isArchived ? 0.6 : 1)
@@ -41,23 +42,25 @@ struct TripRowView: View {
             // 行程信息
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(trip.name)
-                    .font(.headline)
-                    .foregroundColor(isArchived ? .secondary : .primary)
+                    .font(Typography.headline)
+                    .foregroundColor(isArchived ? AppColors.textSecondary : AppColors.text)
                     .lineLimit(1)
 
                 HStack(spacing: Spacing.xs) {
                     Text(trip.formattedDate(language: language))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(Typography.caption)
+                        .foregroundColor(AppColors.textSecondary)
 
                     Text("·")
-                        .foregroundColor(.secondary)
+                        .foregroundColor(AppColors.textSecondary)
 
                     Text("\(trip.checkedCount)/\(trip.totalCount)")
-                        .font(.caption)
-                        .foregroundColor(trip.isAllChecked ? .green : .secondary)
+                        .font(Typography.caption)
+                        .foregroundColor(trip.isAllChecked ? AppColors.success : AppColors.textSecondary)
                 }
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(trip.name), \(trip.checkedCount) of \(trip.totalCount) items packed")
 
             Spacer()
         }

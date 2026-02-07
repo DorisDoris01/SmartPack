@@ -23,17 +23,17 @@ struct SectionCard<Content: View>: View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack(spacing: Spacing.xs) {
                 Image(systemName: icon)
-                    .foregroundColor(.blue)
+                    .foregroundColor(AppColors.primary)
                     .frame(width: Spacing.lg)
                 Text(title)
-                    .font(.headline)
+                    .font(Typography.headline)
             }
 
             content
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color(.systemBackground))
+        .padding(Spacing.md)
+        .background(AppColors.background)
         .cornerRadius(CornerRadius.lg)
     }
 }

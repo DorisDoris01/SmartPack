@@ -16,32 +16,32 @@ struct ProgressHeader: View {
         VStack(spacing: Spacing.sm) {
             HStack {
                 Text(language == .chinese ? "打包进度" : "Progress")
-                    .font(.headline)
+                    .font(Typography.headline)
 
                 if trip.isArchived {
                     Text(language == .chinese ? "已归档" : "Archived")
-                        .font(.caption)
+                        .font(Typography.caption)
                         .padding(.horizontal, Spacing.xs)
                         .padding(.vertical, 2)
-                        .background(Color.secondary.opacity(0.2))
+                        .background(AppColors.textSecondary.opacity(0.2))
                         .cornerRadius(CornerRadius.sm)
                 }
 
                 Spacer()
 
                 Text("\(trip.checkedCount)/\(trip.totalCount)")
-                    .font(.headline)
-                    .foregroundColor(.blue)
+                    .font(Typography.headline)
+                    .foregroundColor(AppColors.primary)
             }
 
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 6)
+                    RoundedRectangle(cornerRadius: CornerRadius.sm)
                         .fill(Color(.systemGray5))
                         .frame(height: Spacing.sm)
 
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(trip.isAllChecked ? Color.green : Color.blue)
+                    RoundedRectangle(cornerRadius: CornerRadius.sm)
+                        .fill(trip.isAllChecked ? AppColors.success : AppColors.primary)
                         .frame(width: geometry.size.width * trip.progress, height: Spacing.sm)
                         .animation(.spring(response: 0.3), value: trip.progress)
                 }
@@ -49,23 +49,36 @@ struct ProgressHeader: View {
             .frame(height: Spacing.sm)
 
             if trip.isAllChecked {
-                HStack {
+                HStack(spacing: Spacing.xs) {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
+                        .foregroundColor(AppColors.success)
                     Text(language == .chinese ? "全部打包完成！" : "All packed!")
-                        .foregroundColor(.green)
+                        .foregroundColor(AppColors.success)
                 }
-                .font(.subheadline.bold())
+                .font(Typography.subheadline.bold())
+                .padding(.vertical, Spacing.xxs)
             } else {
                 let remaining = trip.totalCount - trip.checkedCount
                 Text(language == .chinese
                      ? "还剩 \(remaining) 件物品"
                      : "\(remaining) items remaining")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(Typography.subheadline)
+                    .foregroundColor(AppColors.textSecondary)
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
+        .padding(Spacing.md)
+        .background(trip.isAllChecked ? AppColors.success.opacity(0.08) : AppColors.background)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(progressAccessibilityLabel)
+    }
+    
+    private var progressAccessibilityLabel: String {
+        if trip.isAllChecked {
+            return language == .chinese ? "全部打包完成" : "All packed"
+        }
+        let remaining = trip.totalCount - trip.checkedCount
+        return language == .chinese
+            ? "\(trip.checkedCount) 共 \(trip.totalCount) 件，还剩 \(remaining) 件"
+            : "\(trip.checkedCount) of \(trip.totalCount) items packed, \(remaining) remaining"
     }
 }
