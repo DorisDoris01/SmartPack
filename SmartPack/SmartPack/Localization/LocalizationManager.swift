@@ -111,7 +111,12 @@ class LocalizationManager: ObservableObject {
     func toggleLanguage() {
         currentLanguage = currentLanguage == .chinese ? .english : .chinese
     }
-    
+
+    /// 根据当前语言返回对应的文本（简化的本地化辅助方法）
+    func text(chinese: String, english: String) -> String {
+        return currentLanguage == .chinese ? chinese : english
+    }
+
     // MARK: - 本地化字符串表
     
     private let strings: [AppLanguage: [LocalizedKey: String]] = [

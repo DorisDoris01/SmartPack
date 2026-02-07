@@ -199,38 +199,6 @@ struct TripConfigView: View {
     }
 }
 
-// MARK: - Section 卡片容器
-
-struct SectionCard<Content: View>: View {
-    let title: String
-    let icon: String
-    let content: Content
-    
-    init(title: String, icon: String, @ViewBuilder content: () -> Content) {
-        self.title = title
-        self.icon = icon
-        self.content = content()
-    }
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .foregroundColor(.blue)
-                    .frame(width: 20)
-                Text(title)
-                    .font(.headline)
-            }
-            
-            content
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-    }
-}
-
 // MARK: - 通用选择按钮 (PRD v1.2: 统一按钮尺寸)
 
 struct SelectionButton: View {
@@ -297,31 +265,6 @@ struct DurationButton: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(duration.displayName(language: language))
-    }
-}
-
-// MARK: - 标签选择按钮 (PRD v1.2: 仅图标，去掉文案)
-
-struct TagButton: View {
-    let tag: Tag
-    let isSelected: Bool
-    let language: AppLanguage
-    let action: () -> Void
-    
-    // 统一按钮尺寸 (PRD v1.2 UI 规范)
-    private let buttonSize: CGFloat = 60
-    
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: tag.icon)
-                .font(.title2)
-                .frame(width: buttonSize, height: buttonSize)
-                .background(isSelected ? Color.blue : Color(.systemGray6))
-                .foregroundColor(isSelected ? .white : .primary)
-                .cornerRadius(12)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(tag.displayName(language: language))
     }
 }
 

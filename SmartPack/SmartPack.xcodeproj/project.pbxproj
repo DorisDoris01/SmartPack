@@ -7,27 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7B3436A52F3045E000D50327 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3436A32F3045E000D50327 /* HomeView.swift */; };
-		7B3436A62F3045E000D50327 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3436A42F3045E000D50327 /* WelcomeView.swift */; };
-		7B3436AC2F30D6DB00D50327 /* CustomItemManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3436AB2F30D6DB00D50327 /* CustomItemManager.swift */; };
-		7B3436AE2F30D6F400D50327 /* ItemManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3436AD2F30D6F400D50327 /* ItemManagementView.swift */; };
 		7B3436B42F3639BD00D50328 /* ActivityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B3436B42F3639BD00D50329 /* ActivityKit.framework */; };
 		7B3436B62F3639BD00D50327 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B3436B52F3639BD00D50327 /* WidgetKit.framework */; };
 		7B3436B82F3639BD00D50327 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B3436B72F3639BD00D50327 /* SwiftUI.framework */; };
 		7B3436C92F3639C000D50327 /* smartpackExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7B3436B32F3639BD00D50327 /* smartpackExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		A10000010000000000000001 /* SmartPackApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* SmartPackApp.swift */; };
-		A10000020000000000000002 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020000000000000002 /* Item.swift */; };
-		A10000030000000000000003 /* Tag.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000030000000000000003 /* Tag.swift */; };
-		A10000040000000000000004 /* TripConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000040000000000000004 /* TripConfig.swift */; };
-		A10000050000000000000005 /* PresetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000050000000000000005 /* PresetData.swift */; };
-		A10000060000000000000006 /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000060000000000000006 /* LocalizationManager.swift */; };
-		A10000080000000000000008 /* TripConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000080000000000000008 /* TripConfigView.swift */; };
-		A1000010000000000000000A /* PackingListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000010000000000000000A /* PackingListView.swift */; };
 		A1000011000000000000000B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000011000000000000000B /* Assets.xcassets */; };
 		A10000120000000000000012 /* Trip.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000120000000000000012 /* Trip.swift */; };
-		A10000130000000000000013 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000130000000000000013 /* MainTabView.swift */; };
-		A10000140000000000000014 /* MyListsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000140000000000000014 /* MyListsView.swift */; };
-		A10000150000000000000015 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000150000000000000015 /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -192,7 +177,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-			A5000004000000000000001B /* Models */ = {
+		A5000004000000000000001B /* Models */ = {
 			isa = PBXGroup;
 			children = (
 				A20000020000000000000002 /* Item.swift */,

@@ -11,10 +11,8 @@ import Foundation
 /// 天气服务
 class WeatherService {
     static let shared = WeatherService()
-    
-    // TODO: 将 API Key 存储在安全位置（如 Info.plist 或环境变量）
-    // 这里使用占位符，实际使用时需要替换
-    private let apiKey = "2b6127466cb2774fb88ed36e707fcad5"
+
+    private let apiKey = AppConfig.weatherAPIKey
     private let baseURL = "https://api.openweathermap.org/data/2.5"
     
     private init() {}
