@@ -18,7 +18,7 @@ struct CategoryHeader: View {
 
     var body: some View {
         Button(action: onToggle) {
-            HStack(spacing: 8) {
+            HStack(spacing: Spacing.xs) {
                 Image(systemName: icon)
                     .foregroundColor(.blue)
                     .font(.subheadline)

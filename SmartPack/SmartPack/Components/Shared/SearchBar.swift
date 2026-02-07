@@ -31,9 +31,9 @@ struct SearchBar: View {
                 }
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, Spacing.sm)
+        .padding(.vertical, Spacing.xs)
         .background(Color(.systemGray6))
-        .cornerRadius(10)
+        .cornerRadius(CornerRadius.md)
     }
 }

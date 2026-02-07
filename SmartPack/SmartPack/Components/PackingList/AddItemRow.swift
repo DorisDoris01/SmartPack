@@ -41,9 +41,9 @@ struct AddItemRow: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
             // 输入框
-            HStack(spacing: 8) {
+            HStack(spacing: Spacing.xs) {
                 Image(systemName: "plus.circle.fill")
                     .foregroundColor(.blue)
                     .font(.title3)
@@ -70,12 +70,12 @@ struct AddItemRow: View {
                     }
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, Spacing.xxs)
 
             // 预设 Item 建议（可选，类似 Reminders 的自动补全）
             if showPresetSuggestions && !filteredPresetItems.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: Spacing.xs) {
                         ForEach(filteredPresetItems) { item in
                             Button {
                                 itemName = item.displayName(language: localization.currentLanguage)
@@ -83,14 +83,14 @@ struct AddItemRow: View {
                             } label: {
                                 Text(item.displayName(language: localization.currentLanguage))
                                     .font(.caption)
-                                    .padding(.horizontal, 12)
+                                    .padding(.horizontal, Spacing.sm)
                                     .padding(.vertical, 6)
                                     .background(Color(.systemGray6))
-                                    .cornerRadius(12)
+                                    .cornerRadius(CornerRadius.lg)
                             }
                         }
                     }
-                    .padding(.horizontal, 4)
+                    .padding(.horizontal, Spacing.xxs)
                 }
             }
         }

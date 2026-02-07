@@ -14,18 +14,18 @@ struct TripRowView: View {
     var isArchived: Bool = false
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: Spacing.sm) {
             // 进度圆环
             ZStack {
                 Circle()
-                    .stroke(Color(.systemGray5), lineWidth: 4)
+                    .stroke(Color(.systemGray5), lineWidth: Spacing.xxs)
                     .frame(width: 44, height: 44)
 
                 Circle()
                     .trim(from: 0, to: trip.progress)
                     .stroke(
                         trip.isAllChecked ? Color.green : Color.blue,
-                        style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                        style: StrokeStyle(lineWidth: Spacing.xxs, lineCap: .round)
                     )
                     .frame(width: 44, height: 44)
                     .rotationEffect(.degrees(-90))
@@ -39,13 +39,13 @@ struct TripRowView: View {
             .opacity(isArchived ? 0.6 : 1)
 
             // 行程信息
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(trip.name)
                     .font(.headline)
                     .foregroundColor(isArchived ? .secondary : .primary)
                     .lineLimit(1)
 
-                HStack(spacing: 8) {
+                HStack(spacing: Spacing.xs) {
                     Text(trip.formattedDate(language: language))
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -61,6 +61,6 @@ struct TripRowView: View {
 
             Spacer()
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, Spacing.xxs)
     }
 }

@@ -13,7 +13,7 @@ struct ProgressHeader: View {
     let language: AppLanguage
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Spacing.sm) {
             HStack {
                 Text(language == .chinese ? "打包进度" : "Progress")
                     .font(.headline)
@@ -21,10 +21,10 @@ struct ProgressHeader: View {
                 if trip.isArchived {
                     Text(language == .chinese ? "已归档" : "Archived")
                         .font(.caption)
-                        .padding(.horizontal, 8)
+                        .padding(.horizontal, Spacing.xs)
                         .padding(.vertical, 2)
                         .background(Color.secondary.opacity(0.2))
-                        .cornerRadius(4)
+                        .cornerRadius(CornerRadius.sm)
                 }
 
                 Spacer()
@@ -38,15 +38,15 @@ struct ProgressHeader: View {
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 6)
                         .fill(Color(.systemGray5))
-                        .frame(height: 12)
+                        .frame(height: Spacing.sm)
 
                     RoundedRectangle(cornerRadius: 6)
                         .fill(trip.isAllChecked ? Color.green : Color.blue)
-                        .frame(width: geometry.size.width * trip.progress, height: 12)
+                        .frame(width: geometry.size.width * trip.progress, height: Spacing.sm)
                         .animation(.spring(response: 0.3), value: trip.progress)
                 }
             }
-            .frame(height: 12)
+            .frame(height: Spacing.sm)
 
             if trip.isAllChecked {
                 HStack {

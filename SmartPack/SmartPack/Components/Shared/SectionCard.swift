@@ -20,11 +20,11 @@ struct SectionCard<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(spacing: Spacing.xs) {
                 Image(systemName: icon)
                     .foregroundColor(.blue)
-                    .frame(width: 20)
+                    .frame(width: Spacing.lg)
                 Text(title)
                     .font(.headline)
             }
@@ -34,6 +34,6 @@ struct SectionCard<Content: View>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(Color(.systemBackground))
-        .cornerRadius(12)
+        .cornerRadius(CornerRadius.lg)
     }
 }

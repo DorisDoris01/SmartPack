@@ -17,7 +17,7 @@ struct ItemRow: View {
     @EnvironmentObject var localization: LocalizationManager
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Spacing.sm) {
             // 复选框（左侧）
             Button {
                 onToggle()
@@ -36,7 +36,7 @@ struct ItemRow: View {
 
             Spacer()
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, Spacing.xxs)
         .contentShape(Rectangle())
         .onTapGesture {
             onToggle()
