@@ -98,3 +98,11 @@ iOSInjectionProject/
 
 # Weather API Key (if stored separately)
 WeatherAPIKey.txt
+
+# Xcode project backups
+*.pbxproj.backup*
+*.pbxproj.corrupted
+
+# Shell scripts (temporary fix scripts)
+fix_*.sh
+sync_*.sh

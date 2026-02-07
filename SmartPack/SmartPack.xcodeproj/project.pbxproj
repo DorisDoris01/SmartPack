@@ -7,11 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7B15EA002F37149800E9425B /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020000000000000002 /* Item.swift */; };
 		7B3436B42F3639BD00D50328 /* ActivityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B3436B42F3639BD00D50329 /* ActivityKit.framework */; };
 		7B3436B62F3639BD00D50327 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B3436B52F3639BD00D50327 /* WidgetKit.framework */; };
 		7B3436B82F3639BD00D50327 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B3436B72F3639BD00D50327 /* SwiftUI.framework */; };
 		7B3436C92F3639C000D50327 /* smartpackExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7B3436B32F3639BD00D50327 /* smartpackExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		A1000011000000000000000B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000011000000000000000B /* Assets.xcassets */; };
+		7BB973D82F371B1200F76B8E /* PackingActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BB973D52F371B1200F76B8E /* PackingActivityWidget.swift */; };
+		7BB973D92F371B1200F76B8E /* PackingActivityWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BB973D62F371B1200F76B8E /* PackingActivityWidgetBundle.swift */; };
 		A10000120000000000000012 /* Trip.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000120000000000000012 /* Trip.swift */; };
 /* End PBXBuildFile section */
 
@@ -40,67 +42,48 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		7B3436A32F3045E000D50327 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		7B3436A42F3045E000D50327 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		7B3436AB2F30D6DB00D50327 /* CustomItemManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomItemManager.swift; sourceTree = "<group>"; };
-		7B3436AD2F30D6F400D50327 /* ItemManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemManagementView.swift; sourceTree = "<group>"; };
 		7B3436B32F3639BD00D50327 /* smartpackExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = smartpackExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B3436B42F3639BD00D50329 /* ActivityKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ActivityKit.framework; path = System/Library/Frameworks/ActivityKit.framework; sourceTree = SDKROOT; };
 		7B3436B52F3639BD00D50327 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		7B3436B72F3639BD00D50327 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		7B3436F82F363A3000D50327 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7B5CE9902F3646A100773FEC /* Info-Extension.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-Extension.plist"; sourceTree = "<group>"; };
+		7BB973D52F371B1200F76B8E /* PackingActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackingActivityWidget.swift; sourceTree = "<group>"; };
+		7BB973D62F371B1200F76B8E /* PackingActivityWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackingActivityWidgetBundle.swift; sourceTree = "<group>"; };
 		A20000010000000000000001 /* SmartPackApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartPackApp.swift; sourceTree = "<group>"; };
 		A20000020000000000000002 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		A20000030000000000000003 /* Tag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tag.swift; sourceTree = "<group>"; };
 		A20000040000000000000004 /* TripConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripConfig.swift; sourceTree = "<group>"; };
 		A20000050000000000000005 /* PresetData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetData.swift; sourceTree = "<group>"; };
 		A20000060000000000000006 /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
-		A20000080000000000000008 /* TripConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripConfigView.swift; sourceTree = "<group>"; };
-		A2000010000000000000000A /* PackingListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackingListView.swift; sourceTree = "<group>"; };
 		A2000011000000000000000B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A20000120000000000000012 /* Trip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Trip.swift; sourceTree = "<group>"; };
-		A20000130000000000000013 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
-		A20000140000000000000014 /* MyListsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyListsView.swift; sourceTree = "<group>"; };
-		A20000150000000000000015 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		A3000001000000000000000C /* SmartPack.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmartPack.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		7B3436CD2F3639C000D50327 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Activity/PackingActivityManager.swift,
-				AppIntent.swift,
-				"Info-Extension.plist",
-				Info.plist,
-				Models/Trip.swift,
-				Models/WeatherForecast.swift,
-				SmartPackApp.swift,
-				Views/ItemManagementView.swift,
-				Views/MyListsView.swift,
-				Views/PackingListView.swift,
-				Views/SettingsView.swift,
-				Views/TripConfigView.swift,
-			);
-			target = 7B3436B22F3639BD00D50327 /* smartpackExtension */;
-		};
 		7B3F3E712F363D0A00103BFC /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				AppIntent.swift,
 				"Info-Extension.plist",
 				Info.plist,
+				Models/Item.swift,
 				Models/Trip.swift,
-				WidgetExtension/PackingActivityWidget.swift,
-				WidgetExtension/PackingActivityWidgetBundle.swift,
 			);
 			target = A6000001000000000000002A /* SmartPack */;
+		};
+		7B9EA6C72F371E3D00BFF36A /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Activity/PackingActivityAttributes.swift,
+			);
+			target = 7B3436B22F3639BD00D50327 /* smartpackExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		7B3436B92F3639BD00D50327 /* smartpack */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (7B3F3E712F363D0A00103BFC /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 7B3436CD2F3639C000D50327 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = smartpack; sourceTree = "<group>"; };
+		7B3436B92F3639BD00D50327 /* SmartPack */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (7B3F3E712F363D0A00103BFC /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 7B9EA6C72F371E3D00BFF36A /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SmartPack; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -134,13 +117,23 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		7BB973D72F371B1200F76B8E /* WidgetExtension */ = {
+			isa = PBXGroup;
+			children = (
+				7BB973D52F371B1200F76B8E /* PackingActivityWidget.swift */,
+				7BB973D62F371B1200F76B8E /* PackingActivityWidgetBundle.swift */,
+			);
+			path = WidgetExtension;
+			sourceTree = "<group>";
+		};
 		A5000001000000000000000E = {
 			isa = PBXGroup;
 			children = (
 				A5000002000000000000000F /* SmartPack */,
-				7B3436B92F3639BD00D50327 /* smartpack */,
+				7B3436B92F3639BD00D50327 /* SmartPack */,
 				7B3436B42F3639BD00D50327 /* Frameworks */,
 				A5000003000000000000001A /* Products */,
+				7BB973D72F371B1200F76B8E /* WidgetExtension */,
 			);
 			sourceTree = "<group>";
 		};
@@ -191,14 +184,6 @@
 		A5000007000000000000001E /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				7B3436AD2F30D6F400D50327 /* ItemManagementView.swift */,
-				7B3436A32F3045E000D50327 /* HomeView.swift */,
-				7B3436A42F3045E000D50327 /* WelcomeView.swift */,
-				A20000130000000000000013 /* MainTabView.swift */,
-				A20000080000000000000008 /* TripConfigView.swift */,
-				A20000140000000000000014 /* MyListsView.swift */,
-				A20000150000000000000015 /* SettingsView.swift */,
-				A2000010000000000000000A /* PackingListView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -226,9 +211,6 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				7B3436B92F3639BD00D50327 /* smartpack */,
-			);
 			name = smartpackExtension;
 			packageProductDependencies = (
 			);
@@ -251,7 +233,7 @@
 				7B3436C82F3639C000D50327 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				7B3436B92F3639BD00D50327 /* smartpack */,
+				7B3436B92F3639BD00D50327 /* SmartPack */,
 			);
 			name = SmartPack;
 			productName = SmartPack;
@@ -307,7 +289,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1000011000000000000000B /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -318,6 +299,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7BB973D82F371B1200F76B8E /* PackingActivityWidget.swift in Sources */,
+				7BB973D92F371B1200F76B8E /* PackingActivityWidgetBundle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -326,6 +309,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000120000000000000012 /* Trip.swift in Sources */,
+				7B15EA002F37149800E9425B /* Item.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
