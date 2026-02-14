@@ -10,6 +10,14 @@ import SwiftUI
 import SwiftData
 import Foundation
 
+// MARK: - 用于检测进度/天气区域是否已滚出屏幕
+private struct HeaderBoundsKey: PreferenceKey {
+    static var defaultValue: CGRect = .zero
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        value = nextValue()
+    }
+}
+
 struct PackingListView: View {
     @Bindable var trip: Trip
     let isNewlyCreated: Bool
@@ -26,6 +34,8 @@ struct PackingListView: View {
     // SPEC v1.6 F-1.2: 删除确认对话框
     @State private var itemToDelete: TripItem?
     @State private var showDeleteAlert = false
+    /// 用户向下滑动后显示顶部紧凑进度条
+    @State private var isHeaderCollapsed = false
     
     // SPEC v1.5: Live Activity 管理器
     private let activityManager = PackingActivityManagerCompat.shared
@@ -34,50 +44,90 @@ struct PackingListView: View {
         PresetData.shared.groupByCategory(trip.items, language: localization.currentLanguage)
     }
     
+    /// 当进度/天气区域顶部滚出此高度时显示紧凑条
+    private let collapseThreshold: CGFloat = 60
+    
     var body: some View {
-        ZStack {
-            // 主内容 - SPEC v1.7: 使用 List 替代 ScrollView + LazyVStack
-            VStack(spacing: 0) {
-                progressHeader
-                
-                // SPEC: Weather Integration v1.0 - 天气卡片
-                if trip.hasWeatherData {
-                    WeatherCard(
-                        forecasts: trip.weatherForecasts,
-                        destination: trip.destination,
-                        startDate: trip.startDate,
-                        endDate: trip.endDate
+        ZStack(alignment: .top) {
+            // 主内容：进度 + 天气 + 清单 同在一个 List 内，一起滚动
+            List {
+                Section {
+                    VStack(spacing: 0) {
+                        progressHeader
+                        if trip.hasWeatherData {
+                            WeatherCard(
+                                forecasts: trip.weatherForecasts,
+                                destination: trip.destination,
+                                startDate: trip.startDate,
+                                endDate: trip.endDate
+                            )
+                            .padding(.horizontal, Spacing.md)
+                            .padding(.top, Spacing.xs)
+                        }
+                    }
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .background(
+                        GeometryReader { g in
+                            Color.clear.preference(
+                                key: HeaderBoundsKey.self,
+                                value: g.frame(in: .global)
+                            )
+                        }
                     )
-                    .padding(.horizontal)
-                    .padding(.top, 8)
                 }
-                
-                List {
-                    ForEach(groupedItems, id: \.category) { group in
-                        CategorySection(
-                            category: group.category,
-                            items: group.items,
-                            isExpanded: expandedCategories.contains(group.category),
-                            language: localization.currentLanguage,
-                            trip: trip,
-                            onToggleExpand: {
-                                toggleCategory(group.category)
-                            },
-                            onToggleItem: { itemId in
-                                toggleItemAndCheckCompletion(itemId)
-                            },
-                            onDeleteItem: { itemId in
-                                requestDeleteItem(itemId)
-                            },
-                            onAddItem: { itemName in
-                                addItemToCategory(group.category, itemName: itemName)
-                            }
-                        )
+                .listSectionSpacing(Spacing.sm)
+
+                ForEach(groupedItems, id: \.category) { group in
+                    CategorySection(
+                        category: group.category,
+                        items: group.items,
+                        isExpanded: expandedCategories.contains(group.category),
+                        language: localization.currentLanguage,
+                        trip: trip,
+                        onToggleExpand: {
+                            toggleCategory(group.category)
+                        },
+                        onToggleItem: { itemId in
+                            toggleItemAndCheckCompletion(itemId)
+                        },
+                        onDeleteItem: { itemId in
+                            requestDeleteItem(itemId)
+                        },
+                        onAddItem: { itemName in
+                            addItemToCategory(group.category, itemName: itemName)
+                        }
+                    )
+                }
+            }
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .background(Color(.systemGroupedBackground))
+            .onPreferenceChange(HeaderBoundsKey.self) { frame in
+                // 忽略初始 .zero，仅当头部区域顶部滚出阈值时折叠
+                let collapsed = frame.height > 1 && frame.maxY < collapseThreshold
+                if isHeaderCollapsed != collapsed {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        isHeaderCollapsed = collapsed
                     }
                 }
-                .listStyle(.insetGrouped)
             }
-            .background(Color(.systemGroupedBackground))
+
+            // 向下滑动后：顶部紧凑进度条（带出现/消失动画）
+            if isHeaderCollapsed {
+                CompactProgressBar(
+                    trip: trip,
+                    language: localization.currentLanguage,
+                    destination: trip.destination
+                )
+                .padding(.top, Spacing.xxs)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .top).combined(with: .opacity),
+                    removal: .move(edge: .top).combined(with: .opacity)
+                ))
+                .zIndex(1)
+            }
             
             // 庆祝动画覆盖层
             if showCelebration {
