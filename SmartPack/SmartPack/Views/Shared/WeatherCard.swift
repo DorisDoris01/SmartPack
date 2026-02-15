@@ -13,13 +13,14 @@ struct WeatherCard: View {
     let destination: String
     let startDate: Date?
     let endDate: Date?
+    @Binding var isCollapsed: Bool  // PRD: 收起/展开状态
 
     @EnvironmentObject var localization: LocalizationManager
 
     var body: some View {
         if !forecasts.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
-                // 精简的头部
+                // PRD: Packing List UI Enhancement - 头部带收起/展开按钮，移除日期范围
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Image(systemName: "location.fill")
                         .font(.system(size: 13, weight: .medium))
@@ -29,28 +30,45 @@ struct WeatherCard: View {
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.primary)
 
-                    if let start = startDate, let end = endDate {
-                        Text("·")
-                            .foregroundStyle(.quaternary)
-                        Text(formatDateRange(start: start, end: end))
-                            .font(.system(size: 13, weight: .regular))
-                            .foregroundStyle(.secondary)
-                    }
-
                     Spacer()
+
+                    // 收起/展开按钮
+                    Button {
+                        #if DEBUG
+                        print("🌤️ Weather button tapped, current state: \(isCollapsed)")
+                        #endif
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            isCollapsed.toggle()
+                        }
+                        #if DEBUG
+                        print("🌤️ Weather after toggle: \(isCollapsed)")
+                        #endif
+                    } label: {
+                        Image(systemName: isCollapsed ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 24, height: 24)
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 14)
 
-                // 精致的天气展示（横向滚动）
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(forecasts) { forecast in
-                            WeatherDayCard(forecast: forecast)
+                // PRD: 天气详情根据 isCollapsed 状态显示/隐藏
+                if !isCollapsed {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(forecasts) { forecast in
+                                WeatherDayCard(forecast: forecast)
+                            }
                         }
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 14)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 14)
+                } else {
+                    // 收起状态下添加底部内边距
+                    Spacer()
+                        .frame(height: 4)
                 }
             }
             .background(
@@ -65,15 +83,7 @@ struct WeatherCard: View {
         }
     }
 
-    private func formatDateRange(start: Date, end: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = localization.currentLanguage == .chinese ? "M/d" : "M/d"
-
-        let startStr = formatter.string(from: start)
-        let endStr = formatter.string(from: end)
-
-        return "\(startStr)-\(endStr)"
-    }
+    // PRD: formatDateRange 方法已移除，不再显示日期范围
 }
 
 // MARK: - 单日天气卡片（精致版）
@@ -248,7 +258,8 @@ struct WeatherDayCard: View {
         forecasts: forecasts,
         destination: "北京",
         startDate: Date(),
-        endDate: Calendar.current.date(byAdding: .day, value: 3, to: Date())
+        endDate: Calendar.current.date(byAdding: .day, value: 3, to: Date()),
+        isCollapsed: .constant(false)  // PRD: 添加 isCollapsed 参数
     )
     .environmentObject(LocalizationManager.shared)
     .padding()

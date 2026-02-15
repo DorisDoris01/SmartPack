@@ -95,12 +95,44 @@ class WeatherService {
     }
 
     /// 地理编码 - 将城市名称转换为经纬度
+    /// 支持中英文城市名称
     private func geocodeCity(_ city: String) async throws -> (Double, Double)? {
         guard let encodedCity = city.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
             throw WeatherError.invalidCityName
         }
 
-        let urlString = "\(geocodingURL)?name=\(encodedCity)&count=1&language=en&format=json"
+        // 检测输入语言（简单判断：如果包含中文字符则先用中文搜索）
+        let containsChinese = city.range(of: "\\p{Han}", options: .regularExpression) != nil
+
+        // 先尝试根据输入语言搜索
+        if containsChinese {
+            // 中文输入：先尝试中文，再尝试无语言限制
+            if let result = try? await geocodeWithLanguage(encodedCity, language: "zh") {
+                return result
+            }
+            print("🌤️ 中文搜索失败，尝试无语言限制搜索")
+        } else {
+            // 英文输入：先尝试英文，再尝试无语言限制
+            if let result = try? await geocodeWithLanguage(encodedCity, language: "en") {
+                return result
+            }
+            print("🌤️ 英文搜索失败，尝试无语言限制搜索")
+        }
+
+        // 最后尝试无语言限制搜索
+        return try? await geocodeWithLanguage(encodedCity, language: nil)
+    }
+
+    /// 使用指定语言进行地理编码
+    private func geocodeWithLanguage(_ encodedCity: String, language: String?) async throws -> (Double, Double)? {
+        var urlString = "\(geocodingURL)?name=\(encodedCity)&count=1&format=json"
+        if let lang = language {
+            urlString += "&language=\(lang)"
+            print("🌤️ 尝试使用语言 \(lang) 搜索城市")
+        } else {
+            print("🌤️ 尝试无语言限制搜索城市")
+        }
+
         guard let url = URL(string: urlString) else {
             throw WeatherError.invalidURL
         }
@@ -110,9 +142,11 @@ class WeatherService {
         let geocodingResponse = try decoder.decode(GeocodingResponse.self, from: data)
 
         guard let firstResult = geocodingResponse.results?.first else {
+            print("🌤️ 未找到城市结果")
             return nil
         }
 
+        print("🌤️ ✅ 找到城市: \(firstResult.name) (\(firstResult.latitude), \(firstResult.longitude))")
         return (firstResult.latitude, firstResult.longitude)
     }
     

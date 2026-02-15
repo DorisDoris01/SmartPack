@@ -13,41 +13,47 @@ struct ProgressHeader: View {
     let language: AppLanguage
 
     var body: some View {
-        VStack(spacing: Spacing.sm) {
-            HStack {
-                Text(language == .chinese ? "打包进度" : "Progress")
-                    .font(Typography.headline)
-
-                if trip.isArchived {
-                    Text(language == .chinese ? "已归档" : "Archived")
-                        .font(Typography.caption)
-                        .padding(.horizontal, Spacing.xs)
-                        .padding(.vertical, 2)
-                        .background(AppColors.textSecondary.opacity(0.2))
-                        .cornerRadius(CornerRadius.sm)
-                }
-
-                Spacer()
-
-                Text("\(trip.checkedCount)/\(trip.totalCount)")
-                    .font(Typography.headline)
-                    .foregroundColor(AppColors.primary)
-            }
-
+        VStack(spacing: Spacing.xs) {
+            // PRD: Packing List UI Enhancement - 简化进度显示，将计数叠加在进度条上
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
+                    // 背景进度条
                     RoundedRectangle(cornerRadius: CornerRadius.sm)
                         .fill(Color(.systemGray5))
                         .frame(height: Spacing.sm)
 
+                    // 填充进度条
                     RoundedRectangle(cornerRadius: CornerRadius.sm)
                         .fill(trip.isAllChecked ? AppColors.success : AppColors.primary)
                         .frame(width: geometry.size.width * trip.progress, height: Spacing.sm)
                         .animation(.spring(response: 0.3), value: trip.progress)
+
+                    // 计数文字叠加在进度条上（居中）
+                    HStack {
+                        Spacer()
+                        HStack(spacing: 4) {
+                            Text("\(trip.checkedCount)/\(trip.totalCount)")
+                                .font(Typography.caption.weight(.semibold))
+                                .foregroundColor(trip.isAllChecked ? AppColors.success : AppColors.primary)
+                                .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 0.5)
+
+                            // 已归档标签
+                            if trip.isArchived {
+                                Text(language == .chinese ? "已归档" : "Archived")
+                                    .font(Typography.caption2)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(AppColors.textSecondary.opacity(0.2))
+                                    .cornerRadius(CornerRadius.sm)
+                            }
+                        }
+                        Spacer()
+                    }
                 }
             }
             .frame(height: Spacing.sm)
 
+            // 保留完成状态提示
             if trip.isAllChecked {
                 HStack(spacing: Spacing.xs) {
                     Image(systemName: "checkmark.circle.fill")
@@ -57,16 +63,9 @@ struct ProgressHeader: View {
                 }
                 .font(Typography.subheadline.bold())
                 .padding(.vertical, Spacing.xxs)
-            } else {
-                let remaining = trip.totalCount - trip.checkedCount
-                Text(language == .chinese
-                     ? "还剩 \(remaining) 件物品"
-                     : "\(remaining) items remaining")
-                    .font(Typography.subheadline)
-                    .foregroundColor(AppColors.textSecondary)
             }
         }
-        .padding(Spacing.md)
+        .padding(Spacing.sm) // 减小内边距使布局更紧凑
         .background(trip.isAllChecked ? AppColors.success.opacity(0.08) : AppColors.background)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(progressAccessibilityLabel)
@@ -76,9 +75,8 @@ struct ProgressHeader: View {
         if trip.isAllChecked {
             return language == .chinese ? "全部打包完成" : "All packed"
         }
-        let remaining = trip.totalCount - trip.checkedCount
         return language == .chinese
-            ? "\(trip.checkedCount) 共 \(trip.totalCount) 件，还剩 \(remaining) 件"
-            : "\(trip.checkedCount) of \(trip.totalCount) items packed, \(remaining) remaining"
+            ? "打包进度：已完成 \(trip.checkedCount) 件，共 \(trip.totalCount) 件"
+            : "Progress: \(trip.checkedCount) of \(trip.totalCount) items packed"
     }
 }

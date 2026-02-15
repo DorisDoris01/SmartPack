@@ -21,13 +21,13 @@ struct HomeView: View {
     @State private var tripToDelete: Trip?
     @State private var showingDeleteAlert = false
     
-    // 排序：Active 在前，Archived 置底
+    // Performance: @Query 已按 createdAt 倒序排序，无需再次排序
     private var activeTrips: [Trip] {
-        trips.filter { !$0.isArchived }.sorted { $0.createdAt > $1.createdAt }
+        trips.filter { !$0.isArchived }
     }
-    
+
     private var archivedTrips: [Trip] {
-        trips.filter { $0.isArchived }.sorted { $0.createdAt > $1.createdAt }
+        trips.filter { $0.isArchived }
     }
     
     var body: some View {

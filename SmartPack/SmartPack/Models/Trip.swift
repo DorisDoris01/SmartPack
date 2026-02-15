@@ -49,6 +49,10 @@ final class Trip {
     var startDate: Date? = nil   // 出发日期
     var endDate: Date? = nil     // 返回日期
     var weatherData: Data? = nil  // 天气数据（序列化的 [WeatherForecast]）
+
+    // Performance: 缓存已解码的 items 和 weather，避免重复 JSON 解码
+    @Transient private var cachedItems: [TripItem]? = nil
+    @Transient private var cachedWeather: [WeatherForecast]? = nil
     
     init(
         name: String,
@@ -76,13 +80,23 @@ final class Trip {
         self.weatherData = (try? JSONEncoder().encode(weatherForecasts)) ?? nil
     }
     
-    /// 获取物品列表
+    /// 获取物品列表（带缓存优化）
     var items: [TripItem] {
         get {
-            (try? JSONDecoder().decode([TripItem].self, from: itemsData)) ?? []
+            // 如果有缓存，直接返回
+            if let cached = cachedItems {
+                return cached
+            }
+
+            // 否则解码并缓存
+            let decoded = (try? JSONDecoder().decode([TripItem].self, from: itemsData)) ?? []
+            cachedItems = decoded
+            return decoded
         }
         set {
+            // 更新数据和缓存
             itemsData = (try? JSONEncoder().encode(newValue)) ?? Data()
+            cachedItems = newValue
         }
     }
     
@@ -145,14 +159,24 @@ final class Trip {
     
     // MARK: - SPEC: Weather Integration v1.0
     
-    /// 获取天气预报
+    /// 获取天气预报（带缓存优化）
     var weatherForecasts: [WeatherForecast] {
         get {
+            // 如果有缓存，直接返回
+            if let cached = cachedWeather {
+                return cached
+            }
+
+            // 否则解码并缓存
             guard let data = weatherData else { return [] }
-            return (try? JSONDecoder().decode([WeatherForecast].self, from: data)) ?? []
+            let decoded = (try? JSONDecoder().decode([WeatherForecast].self, from: data)) ?? []
+            cachedWeather = decoded
+            return decoded
         }
         set {
+            // 更新数据和缓存
             weatherData = try? JSONEncoder().encode(newValue)
+            cachedWeather = newValue
         }
     }
     

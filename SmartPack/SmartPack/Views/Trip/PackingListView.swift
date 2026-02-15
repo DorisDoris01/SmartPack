@@ -36,13 +36,16 @@ struct PackingListView: View {
     @State private var showDeleteAlert = false
     /// 用户向下滑动后显示顶部紧凑进度条
     @State private var isHeaderCollapsed = false
+    /// PRD: Packing List UI Enhancement - Weather Section 收起状态（每个 Trip 独立管理）
+    @State private var isWeatherCollapsed = false
+    /// PRD: Trip Settings Enhancement - Trip Settings Section 收起状态（每个 Trip 独立管理）
+    @State private var isTripSettingsCollapsed = false
     
     // SPEC v1.5: Live Activity 管理器
     private let activityManager = PackingActivityManagerCompat.shared
-    
-    private var groupedItems: [(category: String, items: [TripItem])] {
-        PresetData.shared.groupByCategory(trip.items, language: localization.currentLanguage)
-    }
+
+    // Performance: 缓存分组结果，避免每次渲染都重新分组
+    @State private var groupedItems: [(category: String, items: [TripItem])] = []
     
     /// 当进度/天气区域顶部滚出此高度时显示紧凑条
     private let collapseThreshold: CGFloat = 60
@@ -54,12 +57,22 @@ struct PackingListView: View {
                 Section {
                     VStack(spacing: 0) {
                         progressHeader
+
+                        // PRD: Packing List UI Enhancement - 新增 Trip 基本设置 Section
+                        if trip.totalCount > 0 {
+                            TripSettingsCard(trip: trip, isCollapsed: $isTripSettingsCollapsed)
+                                .padding(.horizontal, Spacing.md)
+                                .padding(.top, Spacing.xs)
+                        }
+
+                        // PRD: Packing List UI Enhancement - Weather Section 支持收起/展开
                         if trip.hasWeatherData {
                             WeatherCard(
                                 forecasts: trip.weatherForecasts,
                                 destination: trip.destination,
                                 startDate: trip.startDate,
-                                endDate: trip.endDate
+                                endDate: trip.endDate,
+                                isCollapsed: $isWeatherCollapsed
                             )
                             .padding(.horizontal, Spacing.md)
                             .padding(.top, Spacing.xs)
@@ -243,9 +256,25 @@ struct PackingListView: View {
                  : "Are you sure you want to delete \"\(item.displayName(language: localization.currentLanguage))\"?")
         }
         .onAppear {
+            // Performance: 初始化分组缓存
+            groupedItems = PresetData.shared.groupByCategory(trip.items, language: localization.currentLanguage)
             expandedCategories = Set(groupedItems.map { $0.category })
             previousCheckedCount = trip.checkedCount
-            
+
+            // PRD: Packing List UI Enhancement - 读取该 Trip 的 Weather Section 收起状态
+            let weatherKey = "weatherSectionCollapsed_\(trip.id.uuidString)"
+            isWeatherCollapsed = UserDefaults.standard.bool(forKey: weatherKey)
+            #if DEBUG
+            print("🌤️ Weather onAppear: loaded isWeatherCollapsed = \(isWeatherCollapsed) from key: \(weatherKey)")
+            #endif
+
+            // PRD: Trip Settings Enhancement - 读取该 Trip 的 Trip Settings Section 收起状态
+            let tripSettingsKey = "tripSettingsSectionCollapsed_\(trip.id.uuidString)"
+            isTripSettingsCollapsed = UserDefaults.standard.bool(forKey: tripSettingsKey)
+            #if DEBUG
+            print("🔧 TripSettings onAppear: loaded isTripSettingsCollapsed = \(isTripSettingsCollapsed) from key: \(tripSettingsKey)")
+            #endif
+
             // SPEC v1.5 F-5.1: 启动 Live Activity（如果未完成）
             if !trip.isArchived && !trip.isAllChecked {
                 activityManager.startActivity(
@@ -285,6 +314,26 @@ struct PackingListView: View {
                 }
             }
         }
+        .onChange(of: isWeatherCollapsed) { oldValue, newValue in
+            // PRD: Packing List UI Enhancement - 保存 Weather Section 收起状态（每个 Trip 独立）
+            let weatherKey = "weatherSectionCollapsed_\(trip.id.uuidString)"
+            UserDefaults.standard.set(newValue, forKey: weatherKey)
+            #if DEBUG
+            print("🌤️ Weather onChange: \(oldValue) -> \(newValue), saved to \(weatherKey)")
+            #endif
+        }
+        .onChange(of: isTripSettingsCollapsed) { oldValue, newValue in
+            // PRD: Trip Settings Enhancement - 保存 Trip Settings Section 收起状态（每个 Trip 独立）
+            let tripSettingsKey = "tripSettingsSectionCollapsed_\(trip.id.uuidString)"
+            UserDefaults.standard.set(newValue, forKey: tripSettingsKey)
+            #if DEBUG
+            print("🔧 TripSettings onChange: \(oldValue) -> \(newValue), saved to \(tripSettingsKey)")
+            #endif
+        }
+        .onChange(of: localization.currentLanguage) { (_: AppLanguage, newValue: AppLanguage) in
+            // Performance: 更新分组缓存当语言改变时
+            groupedItems = PresetData.shared.groupByCategory(trip.items, language: newValue)
+        }
     }
     
     // MARK: - 进度头部
@@ -306,7 +355,7 @@ struct PackingListView: View {
     private func toggleItemAndCheckCompletion(_ itemId: String) {
         let wasAllChecked = trip.isAllChecked
         trip.toggleItem(itemId)
-        
+
         // 检查是否刚刚完成全部勾选（且未归档）
         if !wasAllChecked && trip.isAllChecked && !trip.isArchived {
             HapticFeedback.success()
@@ -329,6 +378,10 @@ struct PackingListView: View {
         var currentItems = trip.items
         currentItems.removeAll { $0.id == itemId }
         trip.items = currentItems
+
+        // Performance: 立即更新分组缓存
+        groupedItems = PresetData.shared.groupByCategory(trip.items, language: localization.currentLanguage)
+
         // 数据会自动持久化（SwiftData @Bindable）
         // SPEC v1.6 F-1.3: 删除后更新 Live Activity
         if !trip.isArchived {
@@ -386,7 +439,10 @@ struct PackingListView: View {
         var currentItems = trip.items
         currentItems.append(newItem)
         trip.items = currentItems
-        
+
+        // Performance: 立即更新分组缓存
+        groupedItems = PresetData.shared.groupByCategory(trip.items, language: localization.currentLanguage)
+
         // SPEC v1.7 F-2.5: 添加后更新 Live Activity
         if !trip.isArchived {
             activityManager.updateActivity(

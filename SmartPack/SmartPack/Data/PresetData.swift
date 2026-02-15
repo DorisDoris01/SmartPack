@@ -63,7 +63,7 @@ class PresetData {
         Item(id: "female_007", name: "卫生巾/棉条", nameEn: "Sanitary Pads/Tampons", category: .toiletries, genderSpecific: .female),
         Item(id: "female_008", name: "内衣", nameEn: "Bra", category: .clothing, genderSpecific: .female),
         Item(id: "female_009", name: "裙子", nameEn: "Dress", category: .clothing, genderSpecific: .female),
-        Item(id: "female_010", name: "饰品", nameEn: "Accessories", category: .clothing, genderSpecific: .female),
+        Item(id: "female_010", name: "配饰", nameEn: "Accessories", category: .clothing, genderSpecific: .female),
         
         // ========== SPEC 4.2: 旅行活动 - 跑步 ==========
         Item(id: "act_run_001", name: "跑鞋", nameEn: "Running Shoes", category: .sports, genderSpecific: nil),
@@ -146,13 +146,13 @@ class PresetData {
         // ========== SPEC 4.3: 特定场合 - 宴会 ==========
         Item(id: "occ_party_001", name: "礼服/西装", nameEn: "Formal Dress/Suit", category: .clothing, genderSpecific: nil),
         Item(id: "occ_party_002", name: "皮鞋/高跟鞋", nameEn: "Leather Shoes/High Heels", category: .clothing, genderSpecific: nil),
-        Item(id: "occ_party_003", name: "配饰（领带/珠宝）", nameEn: "Accessories (Tie/Jewelry)", category: .clothing, genderSpecific: nil),
+        Item(id: "occ_party_003", name: "配饰", nameEn: "Accessories", category: .clothing, genderSpecific: nil),
         Item(id: "occ_party_004", name: "发胶", nameEn: "Hair Gel", category: .toiletries, genderSpecific: nil),
         
         // ========== SPEC 4.3: 特定场合 - 商务会议 ==========
         Item(id: "occ_biz_001", name: "正装", nameEn: "Business Attire", category: .clothing, genderSpecific: nil),
         Item(id: "occ_biz_002", name: "皮鞋/高跟鞋", nameEn: "Leather Shoes/High Heels", category: .clothing, genderSpecific: nil),
-        Item(id: "occ_biz_003", name: "配饰（领带/珠宝）", nameEn: "Accessories (Tie/Jewelry)", category: .clothing, genderSpecific: nil),
+        Item(id: "occ_biz_003", name: "配饰", nameEn: "Accessories", category: .clothing, genderSpecific: nil),
         Item(id: "occ_biz_004", name: "发胶", nameEn: "Hair Gel", category: .toiletries, genderSpecific: nil),
         Item(id: "occ_biz_005", name: "笔记本电脑", nameEn: "Laptop", category: .electronics, genderSpecific: nil),
         Item(id: "occ_biz_006", name: "演示翻页笔", nameEn: "Presentation Remote", category: .electronics, genderSpecific: nil),
