@@ -40,8 +40,9 @@ struct HomeView: View {
                             NavigationLink(value: trip) {
                                 TripRowView(trip: trip, language: localization.currentLanguage)
                             }
-                            // SPEC v1.5 F-4.1: Trip 横滑删除
+                            // PRD: Trip Archive Enhancement - Active trips 横滑操作
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                // 删除按钮（红色，需要确认）
                                 Button(role: .destructive) {
                                     deleteTrip(trip)
                                 } label: {
@@ -50,6 +51,17 @@ struct HomeView: View {
                                         systemImage: "trash"
                                     )
                                 }
+
+                                // 归档按钮（蓝色，无需确认）
+                                Button {
+                                    archiveTrip(trip)
+                                } label: {
+                                    Label(
+                                        localization.currentLanguage == .chinese ? "归档" : "Archive",
+                                        systemImage: "archivebox"
+                                    )
+                                }
+                                .tint(.blue)
                             }
                         }
                     }
@@ -62,8 +74,9 @@ struct HomeView: View {
                             NavigationLink(value: trip) {
                                 TripRowView(trip: trip, language: localization.currentLanguage, isArchived: true)
                             }
-                            // SPEC v1.5 F-4.1: Trip 横滑删除
+                            // PRD: Trip Archive Enhancement - Archived trips 横滑操作
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                // 删除按钮（红色，需要确认）
                                 Button(role: .destructive) {
                                     deleteTrip(trip)
                                 } label: {
@@ -72,6 +85,17 @@ struct HomeView: View {
                                         systemImage: "trash"
                                     )
                                 }
+
+                                // 取消归档按钮（蓝色，无需确认）
+                                Button {
+                                    unarchiveTrip(trip)
+                                } label: {
+                                    Label(
+                                        localization.currentLanguage == .chinese ? "取消归档" : "Unarchive",
+                                        systemImage: "arrow.uturn.backward"
+                                    )
+                                }
+                                .tint(.blue)
                             }
                         }
                     }
@@ -204,6 +228,18 @@ struct HomeView: View {
         modelContext.delete(trip)
         try? modelContext.save()
         tripToDelete = nil
+    }
+
+    // PRD: Trip Archive Enhancement - 归档操作（无需确认）
+    private func archiveTrip(_ trip: Trip) {
+        trip.archive()
+        try? modelContext.save()
+    }
+
+    // PRD: Trip Archive Enhancement - 取消归档操作（无需确认）
+    private func unarchiveTrip(_ trip: Trip) {
+        trip.unarchive()
+        try? modelContext.save()
     }
 }
 

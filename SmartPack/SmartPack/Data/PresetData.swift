@@ -31,9 +31,9 @@ class PresetData {
         // 证件
         Item(id: "base_doc_001", name: "身份证", nameEn: "ID Card", category: .documents, genderSpecific: nil),
         // 电子
-        Item(id: "base_ele_001", name: "数据线", nameEn: "Data Cable", category: .electronics, genderSpecific: nil),
+        Item(id: "base_ele_001", name: "数据线", nameEn: "Data&Charing Cable", category: .electronics, genderSpecific: nil),
         Item(id: "base_ele_002", name: "充电宝", nameEn: "Power Bank", category: .electronics, genderSpecific: nil),
-        Item(id: "base_ele_003", name: "耳机", nameEn: "Headphones", category: .electronics, genderSpecific: nil),
+        Item(id: "base_ele_003", name: "耳机", nameEn: "Headphone", category: .electronics, genderSpecific: nil),
         // 卫生
         Item(id: "base_hyg_001", name: "纸巾", nameEn: "Tissues", category: .toiletries, genderSpecific: nil),
         Item(id: "base_hyg_002", name: "墨镜", nameEn: "Sunglasses", category: .other, genderSpecific: nil),
@@ -55,10 +55,10 @@ class PresetData {
         
         // ========== SPEC 3.1: 女性特有项 ==========
         Item(id: "female_001", name: "卸妆油", nameEn: "Makeup Remover", category: .toiletries, genderSpecific: .female),
-        Item(id: "female_002", name: "护发素", nameEn: "Conditioner", category: .toiletries, genderSpecific: .female),
+        Item(id: "female_002", name: "护发素", nameEn: "Hair Conditioner", category: .toiletries, genderSpecific: .female),
         Item(id: "female_003", name: "化妆品", nameEn: "Makeup", category: .toiletries, genderSpecific: .female),
         Item(id: "female_004", name: "面膜", nameEn: "Face Mask", category: .toiletries, genderSpecific: .female),
-        Item(id: "female_005", name: "护肤品", nameEn: "Skincare Products", category: .toiletries, genderSpecific: .female),
+        Item(id: "female_005", name: "护肤品", nameEn: "Skincare Kit", category: .toiletries, genderSpecific: .female),
         Item(id: "female_006", name: "发圈", nameEn: "Hair Tie", category: .toiletries, genderSpecific: .female),
         Item(id: "female_007", name: "卫生巾/棉条", nameEn: "Sanitary Pads/Tampons", category: .toiletries, genderSpecific: .female),
         Item(id: "female_008", name: "内衣", nameEn: "Bra", category: .clothing, genderSpecific: .female),
@@ -137,11 +137,11 @@ class PresetData {
         Item(id: "act_ski_007", name: "滑雪袜", nameEn: "Ski Socks", category: .clothing, genderSpecific: nil),
         
         // ========== SPEC 4.2: 旅行活动 - 海滩 ==========
-        Item(id: "act_beach_001", name: "泳衣/裤", nameEn: "Swimsuit/Swim Trunks", category: .clothing, genderSpecific: nil),
+        Item(id: "act_beach_001", name: "泳衣", nameEn: "Swimsuit", category: .clothing, genderSpecific: nil),
         Item(id: "act_beach_002", name: "沙滩鞋", nameEn: "Beach Sandals", category: .clothing, genderSpecific: nil),
         Item(id: "act_beach_003", name: "防水手机袋", nameEn: "Waterproof Phone Pouch", category: .electronics, genderSpecific: nil),
         Item(id: "act_beach_004", name: "沙滩浴巾", nameEn: "Beach Towel", category: .other, genderSpecific: nil),
-        Item(id: "act_beach_005", name: "晒后修复", nameEn: "After-Sun Lotion", category: .toiletries, genderSpecific: nil),
+        Item(id: "act_beach_005", name: "晒后修复", nameEn: "After-Sun Care", category: .toiletries, genderSpecific: nil),
         
         // ========== SPEC 4.3: 特定场合 - 宴会 ==========
         Item(id: "occ_party_001", name: "礼服/西装", nameEn: "Formal Dress/Suit", category: .clothing, genderSpecific: nil),
@@ -172,7 +172,7 @@ class PresetData {
         Item(id: "cfg_intl_003", name: "转换插头", nameEn: "Adapter", category: .electronics, genderSpecific: nil),
         Item(id: "cfg_intl_004", name: "SIM卡", nameEn: "SIM Card", category: .electronics, genderSpecific: nil),
         Item(id: "cfg_intl_005", name: "外币", nameEn: "Foreign Currency", category: .documents, genderSpecific: nil),
-        Item(id: "cfg_intl_006", name: "常备急救药（创可贴、胃药、感冒药）", nameEn: "First Aid Kit (Band-Aids, Stomach Medicine, Cold Medicine)", category: .other, genderSpecific: nil),
+        Item(id: "cfg_intl_006", name: "常备急救药", nameEn: "First Aid Kit", category: .other, genderSpecific: nil),
         Item(id: "cfg_intl_007", name: "洗发水", nameEn: "Shampoo", category: .toiletries, genderSpecific: nil),
         Item(id: "cfg_intl_008", name: "沐浴露", nameEn: "Body Wash", category: .toiletries, genderSpecific: nil),
         Item(id: "cfg_intl_009", name: "身体乳", nameEn: "Body Lotion", category: .toiletries, genderSpecific: nil),

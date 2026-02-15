@@ -2,8 +2,8 @@
 //  WeatherCard.swift
 //  SmartPack
 //
-//  天气卡片组件 - 简约美观的天气展示
-//  SPEC: Weather Integration v1.0
+//  天气卡片组件 - 精致简约的天气展示
+//  SPEC: Weather Integration v1.0 + Frontend Design Refresh
 //
 
 import SwiftUI
@@ -13,119 +13,145 @@ struct WeatherCard: View {
     let destination: String
     let startDate: Date?
     let endDate: Date?
-    
+
     @EnvironmentObject var localization: LocalizationManager
-    
+
     var body: some View {
         if !forecasts.isEmpty {
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                // 头部：目的地和日期范围
-                HStack {
-                    Image(systemName: "cloud.sun.fill")
-                        .foregroundColor(AppColors.primary)
-                        .font(Typography.title3)
-                    
-                    VStack(alignment: .leading, spacing: Spacing.xxs) {
-                        Text(destination.isEmpty ? (localization.currentLanguage == .chinese ? "目的地" : "Destination") : destination)
-                            .font(Typography.headline)
-                            .foregroundColor(AppColors.text)
-                        
-                        if let start = startDate, let end = endDate {
-                            Text(formatDateRange(start: start, end: end))
-                                .font(Typography.caption)
-                                .foregroundColor(AppColors.textSecondary)
-                        }
+            VStack(alignment: .leading, spacing: 12) {
+                // 精简的头部
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Image(systemName: "location.fill")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.secondary)
+
+                    Text(destination.isEmpty ? (localization.currentLanguage == .chinese ? "目的地" : "Destination") : destination)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.primary)
+
+                    if let start = startDate, let end = endDate {
+                        Text("·")
+                            .foregroundStyle(.quaternary)
+                        Text(formatDateRange(start: start, end: end))
+                            .font(.system(size: 13, weight: .regular))
+                            .foregroundStyle(.secondary)
                     }
-                    
+
                     Spacer()
                 }
-                
-                // 多日天气展示（横向滚动）
+                .padding(.horizontal, 16)
+                .padding(.top, 14)
+
+                // 精致的天气展示（横向滚动）
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: Spacing.sm) {
+                    HStack(spacing: 8) {
                         ForEach(forecasts) { forecast in
                             WeatherDayCard(forecast: forecast)
                         }
                     }
-                    .padding(.horizontal, Spacing.xxs)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 14)
                 }
             }
-            .padding(Spacing.md)
-            .background(AppColors.secondaryBackground)
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.lg)
-                    .stroke(AppColors.primary.opacity(0.15), lineWidth: 1)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(.ultraThinMaterial)
             )
-            .cornerRadius(CornerRadius.lg)
-            .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 2)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(.primary.opacity(0.08), lineWidth: 0.5)
+            )
+            .shadow(color: .black.opacity(0.04), radius: 12, x: 0, y: 4)
         }
     }
-    
+
     private func formatDateRange(start: Date, end: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = localization.currentLanguage == .chinese ? "M月d日" : "MMM d"
-        
+        formatter.dateFormat = localization.currentLanguage == .chinese ? "M/d" : "M/d"
+
         let startStr = formatter.string(from: start)
         let endStr = formatter.string(from: end)
-        
-        return "\(startStr) - \(endStr)"
+
+        return "\(startStr)-\(endStr)"
     }
 }
 
-// MARK: - 单日天气卡片
+// MARK: - 单日天气卡片（精致版）
 
 struct WeatherDayCard: View {
     let forecast: WeatherForecast
-    
+
     @EnvironmentObject var localization: LocalizationManager
-    
+
     var body: some View {
-        VStack(spacing: Spacing.xs) {
-            // 日期
+        VStack(spacing: 6) {
+            // 日期 - 更精致的排版
             Text(formatDay(forecast.date))
-                .font(Typography.caption2)
-                .foregroundColor(AppColors.textSecondary)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+                .tracking(0.3)
 
-            // 天气图标
+            // 天气图标 - 更小巧精致
             Image(systemName: forecast.weatherIcon)
-                .font(Typography.title2)
-                .foregroundColor(forecast.isAvailable ? temperatureColor(for: forecast) : AppColors.textSecondary)
+                .font(.system(size: 22, weight: .regular))
+                .foregroundStyle(forecast.isAvailable ? temperatureColor(for: forecast) : Color.secondary.opacity(0.6))
                 .symbolRenderingMode(.hierarchical)
+                .frame(height: 26)
 
-            // 温度范围或不可用标识
+            // 温度范围 - 主要信息
             if forecast.isAvailable, let highTemp = forecast.highTemp, let lowTemp = forecast.lowTemp {
-                VStack(spacing: Spacing.xxs) {
+                VStack(spacing: 2) {
+                    // 高温 - 更突出
                     Text("\(Int(highTemp))°")
-                        .font(Typography.subheadline.weight(.semibold))
-                        .foregroundColor(AppColors.text)
+                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [temperatureColor(for: forecast), temperatureColor(for: forecast).opacity(0.8)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
 
+                    // 低温 - 更低调
                     Text("\(Int(lowTemp))°")
-                        .font(Typography.caption2)
-                        .foregroundColor(AppColors.textSecondary)
+                        .font(.system(size: 12, weight: .regular, design: .rounded))
+                        .foregroundStyle(.tertiary)
                 }
             } else {
-                Text("N/A")
-                    .font(Typography.caption)
-                    .foregroundColor(AppColors.textSecondary)
+                Text("--")
+                    .font(.system(size: 15, weight: .regular, design: .rounded))
+                    .foregroundStyle(.quaternary)
             }
 
-            // 降水概率（如果有）
+            // 降水概率 - 极简处理
             if forecast.hasPrecipitation, let precipChance = forecast.precipitationChance {
-                HStack(spacing: Spacing.xxs) {
+                HStack(spacing: 2) {
                     Image(systemName: "drop.fill")
-                        .font(Typography.caption2)
-                        .foregroundColor(AppColors.primary)
-                    Text("\(Int(precipChance * 100))%")
-                        .font(Typography.caption2)
-                        .foregroundColor(AppColors.primary)
+                        .font(.system(size: 8, weight: .semibold))
+                    Text("\(Int(precipChance * 100))")
+                        .font(.system(size: 9, weight: .medium))
                 }
+                .foregroundStyle(Color.blue.opacity(0.7))
+                .padding(.horizontal, 5)
+                .padding(.vertical, 2)
+                .background(
+                    Capsule()
+                        .fill(Color.blue.opacity(0.08))
+                )
             }
         }
-        .frame(width: 70)
-        .padding(.vertical, Spacing.xs)
-        .padding(.horizontal, Spacing.xs)
-        .background(AppColors.cardBackground.opacity(forecast.isAvailable ? 0.6 : 0.3))
-        .cornerRadius(CornerRadius.md)
+        .frame(width: 52)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(uiColor: .systemBackground))
+                .opacity(forecast.isAvailable ? 1.0 : 0.5)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(Color.primary.opacity(forecast.isAvailable ? 0.06 : 0.03), lineWidth: 0.5)
+        )
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel(for: forecast))
     }
@@ -165,23 +191,24 @@ struct WeatherDayCard: View {
         }
     }
     
-    /// 根据温度计算颜色
+    /// 根据温度计算颜色 - 更精致的色彩
     private func temperatureColor(for forecast: WeatherForecast) -> Color {
         guard let highTemp = forecast.highTemp, let lowTemp = forecast.lowTemp else {
-            return AppColors.textSecondary
+            return .secondary
         }
 
         let avgTemp = (highTemp + lowTemp) / 2
-        if avgTemp < 5 {
-            return .blue
-        } else if avgTemp < 15 {
-            return .cyan
-        } else if avgTemp < 25 {
-            return .green
-        } else if avgTemp < 30 {
-            return .orange
-        } else {
-            return .red
+        switch avgTemp {
+        case ..<5:
+            return Color(red: 0.2, green: 0.6, blue: 0.95) // 冰蓝
+        case 5..<15:
+            return Color(red: 0.3, green: 0.7, blue: 0.85) // 青色
+        case 15..<25:
+            return Color(red: 0.3, green: 0.75, blue: 0.4) // 翠绿
+        case 25..<30:
+            return Color(red: 0.95, green: 0.6, blue: 0.2) // 暖橙
+        default:
+            return Color(red: 0.95, green: 0.3, blue: 0.3) // 热红
         }
     }
 }

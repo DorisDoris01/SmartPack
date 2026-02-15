@@ -135,7 +135,8 @@ struct PackingListView: View {
                     isPresented: $showCelebration,
                     title: localization.string(for: .allPacked)
                 ) {
-                    showArchiveAlert = true
+                    // PRD: Trip Archive Enhancement - 庆祝动画结束后自动返回列表页
+                    dismiss()
                 }
             }
         }
@@ -275,9 +276,13 @@ struct PackingListView: View {
             }
         }
         .onChange(of: trip.isAllChecked) { oldValue, newValue in
-            // SPEC v1.5 F-5.4: 全部完成时结束 Live Activity
+            // PRD: Trip Archive Enhancement - 完成后自动归档并结束 Live Activity
             if newValue {
                 activityManager.endActivity()
+                // 自动归档（无需确认）
+                if !trip.isArchived {
+                    trip.archive()
+                }
             }
         }
     }
