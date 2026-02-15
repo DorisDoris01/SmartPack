@@ -12,21 +12,21 @@ import Foundation
 struct WeatherForecast: Codable, Identifiable {
     let id: UUID
     let date: Date
-    let highTemp: Double      // 最高温度（摄氏度）
-    let lowTemp: Double       // 最低温度（摄氏度）
-    let condition: String     // 天气状况（如 "clear", "rain", "cloudy"）
-    let conditionDescription: String  // 天气描述（如 "晴天", "小雨"）
-    let precipitationChance: Double   // 降水概率（0-1）
-    let icon: String          // 天气图标名称（OpenWeatherMap icon code）
-    
+    let highTemp: Double?     // 最高温度（摄氏度），nil 表示数据不可用
+    let lowTemp: Double?      // 最低温度（摄氏度），nil 表示数据不可用
+    let condition: String     // 天气状况（如 "clear", "rain", "cloudy", "unavailable"）
+    let conditionDescription: String  // 天气描述（如 "晴天", "小雨", "数据不可用"）
+    let precipitationChance: Double?  // 降水概率（0-1），nil 表示数据不可用
+    let icon: String          // 天气图标名称
+
     init(
         id: UUID = UUID(),
         date: Date,
-        highTemp: Double,
-        lowTemp: Double,
+        highTemp: Double?,
+        lowTemp: Double?,
         condition: String,
         conditionDescription: String,
-        precipitationChance: Double,
+        precipitationChance: Double?,
         icon: String
     ) {
         self.id = id
@@ -37,6 +37,25 @@ struct WeatherForecast: Codable, Identifiable {
         self.conditionDescription = conditionDescription
         self.precipitationChance = precipitationChance
         self.icon = icon
+    }
+
+    /// 天气数据是否可用
+    var isAvailable: Bool {
+        return highTemp != nil && lowTemp != nil
+    }
+
+    /// 创建一个"数据不可用"的天气预报
+    static func unavailable(for date: Date, language: AppLanguage = .chinese) -> WeatherForecast {
+        let description = language == .chinese ? "数据不可用" : "Not Available"
+        return WeatherForecast(
+            date: date,
+            highTemp: nil,
+            lowTemp: nil,
+            condition: "unavailable",
+            conditionDescription: description,
+            precipitationChance: nil,
+            icon: "questionmark.circle"
+        )
     }
     
     /// 根据天气状况返回本地化描述
@@ -52,6 +71,8 @@ struct WeatherForecast: Codable, Identifiable {
     /// 根据天气状况返回 SF Symbol 名称
     var weatherIcon: String {
         switch condition.lowercased() {
+        case "unavailable":
+            return "questionmark.circle"
         case "clear", "sunny":
             return "sun.max.fill"
         case "rain", "drizzle", "shower":
@@ -68,19 +89,22 @@ struct WeatherForecast: Codable, Identifiable {
             return "cloud.fill"
         }
     }
-    
+
     /// 是否有降水
     var hasPrecipitation: Bool {
-        precipitationChance > 0.3
+        guard let chance = precipitationChance else { return false }
+        return chance > 0.3
     }
-    
+
     /// 是否需要保暖
     var needsWarmClothing: Bool {
-        lowTemp < 10
+        guard let temp = lowTemp else { return false }
+        return temp < 10
     }
-    
+
     /// 是否需要防晒
     var needsSunProtection: Bool {
-        highTemp > 25 && condition.lowercased().contains("clear")
+        guard let temp = highTemp else { return false }
+        return temp > 25 && condition.lowercased().contains("clear")
     }
 }

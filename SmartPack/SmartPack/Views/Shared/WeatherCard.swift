@@ -43,7 +43,7 @@ struct WeatherCard: View {
                 // 多日天气展示（横向滚动）
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: Spacing.sm) {
-                        ForEach(forecasts.prefix(7)) { forecast in
+                        ForEach(forecasts) { forecast in
                             WeatherDayCard(forecast: forecast)
                         }
                     }
@@ -85,31 +85,37 @@ struct WeatherDayCard: View {
             Text(formatDay(forecast.date))
                 .font(Typography.caption2)
                 .foregroundColor(AppColors.textSecondary)
-            
+
             // 天气图标
             Image(systemName: forecast.weatherIcon)
                 .font(Typography.title2)
-                .foregroundColor(temperatureColor(for: forecast))
+                .foregroundColor(forecast.isAvailable ? temperatureColor(for: forecast) : AppColors.textSecondary)
                 .symbolRenderingMode(.hierarchical)
-            
-            // 温度范围
-            VStack(spacing: Spacing.xxs) {
-                Text("\(Int(forecast.highTemp))°")
-                    .font(Typography.subheadline.weight(.semibold))
-                    .foregroundColor(AppColors.text)
-                
-                Text("\(Int(forecast.lowTemp))°")
-                    .font(Typography.caption2)
+
+            // 温度范围或不可用标识
+            if forecast.isAvailable, let highTemp = forecast.highTemp, let lowTemp = forecast.lowTemp {
+                VStack(spacing: Spacing.xxs) {
+                    Text("\(Int(highTemp))°")
+                        .font(Typography.subheadline.weight(.semibold))
+                        .foregroundColor(AppColors.text)
+
+                    Text("\(Int(lowTemp))°")
+                        .font(Typography.caption2)
+                        .foregroundColor(AppColors.textSecondary)
+                }
+            } else {
+                Text("N/A")
+                    .font(Typography.caption)
                     .foregroundColor(AppColors.textSecondary)
             }
-            
+
             // 降水概率（如果有）
-            if forecast.hasPrecipitation {
+            if forecast.hasPrecipitation, let precipChance = forecast.precipitationChance {
                 HStack(spacing: Spacing.xxs) {
                     Image(systemName: "drop.fill")
                         .font(Typography.caption2)
                         .foregroundColor(AppColors.primary)
-                    Text("\(Int(forecast.precipitationChance * 100))%")
+                    Text("\(Int(precipChance * 100))%")
                         .font(Typography.caption2)
                         .foregroundColor(AppColors.primary)
                 }
@@ -118,7 +124,7 @@ struct WeatherDayCard: View {
         .frame(width: 70)
         .padding(.vertical, Spacing.xs)
         .padding(.horizontal, Spacing.xs)
-        .background(AppColors.cardBackground.opacity(0.6))
+        .background(AppColors.cardBackground.opacity(forecast.isAvailable ? 0.6 : 0.3))
         .cornerRadius(CornerRadius.md)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel(for: forecast))
@@ -126,13 +132,23 @@ struct WeatherDayCard: View {
     
     private func accessibilityLabel(for forecast: WeatherForecast) -> String {
         let day = formatDay(forecast.date)
-        let high = Int(forecast.highTemp)
-        let low = Int(forecast.lowTemp)
-        if forecast.hasPrecipitation {
-            let pct = Int(forecast.precipitationChance * 100)
-            return "\(day), high \(high)°, low \(low)°, \(pct)% chance of rain"
+
+        if !forecast.isAvailable {
+            return "\(day), weather data not available"
         }
-        return "\(day), high \(high)°, low \(low)°"
+
+        guard let high = forecast.highTemp, let low = forecast.lowTemp else {
+            return "\(day), weather data not available"
+        }
+
+        let highInt = Int(high)
+        let lowInt = Int(low)
+
+        if forecast.hasPrecipitation, let precipChance = forecast.precipitationChance {
+            let pct = Int(precipChance * 100)
+            return "\(day), high \(highInt)°, low \(lowInt)°, \(pct)% chance of rain"
+        }
+        return "\(day), high \(highInt)°, low \(lowInt)°"
     }
     
     private func formatDay(_ date: Date) -> String {
@@ -151,7 +167,11 @@ struct WeatherDayCard: View {
     
     /// 根据温度计算颜色
     private func temperatureColor(for forecast: WeatherForecast) -> Color {
-        let avgTemp = (forecast.highTemp + forecast.lowTemp) / 2
+        guard let highTemp = forecast.highTemp, let lowTemp = forecast.lowTemp else {
+            return AppColors.textSecondary
+        }
+
+        let avgTemp = (highTemp + lowTemp) / 2
         if avgTemp < 5 {
             return .blue
         } else if avgTemp < 15 {

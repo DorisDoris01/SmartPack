@@ -12,9 +12,9 @@ import Foundation
 class WeatherService {
     static let shared = WeatherService()
 
-    private let apiKey = AppConfig.weatherAPIKey
-    private let baseURL = "https://api.openweathermap.org/data/2.5"
-    
+    private let forecastURL = "https://api.open-meteo.com/v1/forecast"
+    private let geocodingURL = "https://geocoding-api.open-meteo.com/v1/search"
+
     private init() {}
     
     /// 查询天气预报
@@ -28,69 +28,64 @@ class WeatherService {
         startDate: Date,
         endDate: Date
     ) async throws -> [WeatherForecast] {
-        // 检查 API Key
-        guard !apiKey.isEmpty,
-              apiKey != "YOUR_OPENWEATHERMAP_API_KEY" else {
-            print("⚠️ 天气 API Key 未配置，使用模拟数据")
-            return generateMockForecasts(startDate: startDate, endDate: endDate)
+        print("🌤️ 获取天气: 城市=\(city), 从 \(startDate) 到 \(endDate)")
+
+        // 步骤 1: 地理编码 - 将城市名称转换为经纬度
+        guard let (latitude, longitude) = try? await geocodeCity(city) else {
+            print("⚠️ 无法找到城市: \(city)，返回不可用数据")
+            return generateUnavailableForecasts(startDate: startDate, endDate: endDate)
         }
-        
+
+        print("🌤️ 城市坐标: \(latitude), \(longitude)")
+
+        // 步骤 2: 获取天气预报
+        let dateFormatter = ISO8601DateFormatter()
+        dateFormatter.formatOptions = [.withFullDate]
+
+        let startDateStr = dateFormatter.string(from: startDate)
+        let endDateStr = dateFormatter.string(from: endDate)
+
+        print("🌤️ 请求日期范围: \(startDateStr) 到 \(endDateStr)")
+
         // 构建请求 URL
-        guard let encodedCity = city.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-            throw WeatherError.invalidCityName
-        }
-        
-        let urlString = "\(baseURL)/forecast?q=\(encodedCity)&appid=\(apiKey)&units=metric&lang=zh_cn"
+        let urlString = "\(forecastURL)?latitude=\(latitude)&longitude=\(longitude)&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weathercode&timezone=auto&start_date=\(startDateStr)&end_date=\(endDateStr)"
+
+        print("🌤️ API URL: \(urlString)")
+
         guard let url = URL(string: urlString) else {
             throw WeatherError.invalidURL
         }
-        
+
         // 发送请求
         let (data, response): (Data, URLResponse)
         do {
             (data, response) = try await URLSession.shared.data(from: url)
         } catch {
-            // 网络错误，使用模拟数据
-            print("⚠️ 网络错误: \(error.localizedDescription)，使用模拟数据")
-            return generateMockForecasts(startDate: startDate, endDate: endDate)
+            // 网络错误，返回不可用数据
+            print("⚠️ 网络错误: \(error.localizedDescription)，返回不可用数据")
+            return generateUnavailableForecasts(startDate: startDate, endDate: endDate)
         }
-        
+
         guard let httpResponse = response as? HTTPURLResponse else {
-            print("⚠️ 无效的响应格式，使用模拟数据")
-            return generateMockForecasts(startDate: startDate, endDate: endDate)
+            print("⚠️ 无效的响应格式，返回不可用数据")
+            return generateUnavailableForecasts(startDate: startDate, endDate: endDate)
         }
-        
+
         guard httpResponse.statusCode == 200 else {
-            // 读取错误响应以便调试
-            if let errorData = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let message = errorData["message"] as? String {
-                print("⚠️ 天气 API 错误: \(message) (状态码: \(httpResponse.statusCode))")
-            }
-            
-            if httpResponse.statusCode == 401 {
-                print("⚠️ API Key 无效，使用模拟数据")
-                return generateMockForecasts(startDate: startDate, endDate: endDate)
-            } else if httpResponse.statusCode == 404 {
-                print("⚠️ 未找到城市: \(city)，使用模拟数据")
-                return generateMockForecasts(startDate: startDate, endDate: endDate)
-            } else {
-                print("⚠️ 天气 API 服务器错误 (状态码: \(httpResponse.statusCode))，使用模拟数据")
-                return generateMockForecasts(startDate: startDate, endDate: endDate)
-            }
+            print("⚠️ API 错误 (状态码: \(httpResponse.statusCode))，返回不可用数据")
+            return generateUnavailableForecasts(startDate: startDate, endDate: endDate)
         }
-        
+
         // 解析响应
         let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        
-        let weatherResponse: OpenWeatherResponse
+        let weatherResponse: OpenMeteoResponse
         do {
-            weatherResponse = try decoder.decode(OpenWeatherResponse.self, from: data)
+            weatherResponse = try decoder.decode(OpenMeteoResponse.self, from: data)
         } catch {
-            print("⚠️ JSON 解析错误: \(error.localizedDescription)，使用模拟数据")
-            return generateMockForecasts(startDate: startDate, endDate: endDate)
+            print("⚠️ JSON 解析错误: \(error.localizedDescription)，返回不可用数据")
+            return generateUnavailableForecasts(startDate: startDate, endDate: endDate)
         }
-        
+
         // 转换为 WeatherForecast 数组
         return convertToForecasts(
             response: weatherResponse,
@@ -98,81 +93,189 @@ class WeatherService {
             endDate: endDate
         )
     }
+
+    /// 地理编码 - 将城市名称转换为经纬度
+    private func geocodeCity(_ city: String) async throws -> (Double, Double)? {
+        guard let encodedCity = city.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            throw WeatherError.invalidCityName
+        }
+
+        let urlString = "\(geocodingURL)?name=\(encodedCity)&count=1&language=en&format=json"
+        guard let url = URL(string: urlString) else {
+            throw WeatherError.invalidURL
+        }
+
+        let (data, _) = try await URLSession.shared.data(from: url)
+        let decoder = JSONDecoder()
+        let geocodingResponse = try decoder.decode(GeocodingResponse.self, from: data)
+
+        guard let firstResult = geocodingResponse.results?.first else {
+            return nil
+        }
+
+        return (firstResult.latitude, firstResult.longitude)
+    }
     
-    /// 将 OpenWeatherMap 响应转换为 WeatherForecast 数组
+    /// 将 Open-Meteo 响应转换为 WeatherForecast 数组
     private func convertToForecasts(
-        response: OpenWeatherResponse,
+        response: OpenMeteoResponse,
         startDate: Date,
         endDate: Date
     ) -> [WeatherForecast] {
         let calendar = Calendar.current
-        var forecasts: [WeatherForecast] = []
-        var processedDates = Set<String>()
-        
-        // 按日期分组，每天取一个代表性的预报
-        for item in response.list {
-            let date = Date(timeIntervalSince1970: item.dt)
-            let dateKey = calendar.startOfDay(for: date).timeIntervalSince1970
-            
-            // 只处理行程日期范围内的数据
-            guard date >= calendar.startOfDay(for: startDate),
-                  date <= calendar.startOfDay(for: endDate) else {
+        let dateFormatter = ISO8601DateFormatter()
+        dateFormatter.formatOptions = [.withFullDate]
+
+        guard let daily = response.daily else {
+            print("🌤️ ⚠️ 未找到每日预报数据")
+            return generateUnavailableForecasts(startDate: startDate, endDate: endDate)
+        }
+
+        print("🌤️ API 返回了 \(daily.time.count) 天的预报")
+        print("🌤️ API 返回的日期: \(daily.time.joined(separator: ", "))")
+
+        // 创建日期到预报的映射
+        var forecastMap: [Date: WeatherForecast] = [:]
+
+        // Open-Meteo 提供数组格式的每日预报
+        for (index, dateStr) in daily.time.enumerated() {
+            print("🌤️ 处理日期: \(dateStr)")
+
+            guard let date = dateFormatter.date(from: dateStr) else {
                 continue
             }
-            
-            // 每天只取一个预报（选择中午时段的预报）
-            let hour = calendar.component(.hour, from: date)
-            guard hour >= 10 && hour <= 14 else {
+
+            let dayStart = calendar.startOfDay(for: date)
+
+            // 获取该日的天气数据
+            guard index < daily.temperatureMax.count,
+                  index < daily.temperatureMin.count,
+                  index < daily.precipitationProbability.count,
+                  index < daily.weathercode.count else {
                 continue
             }
-            
-            if !processedDates.contains(String(dateKey)) {
-                let forecast = WeatherForecast(
-                    date: calendar.startOfDay(for: date),
-                    highTemp: item.main.tempMax,
-                    lowTemp: item.main.tempMin,
-                    condition: item.weather.first?.main ?? "unknown",
-                    conditionDescription: item.weather.first?.description ?? "未知",
-                    precipitationChance: item.pop ?? 0.0,
-                    icon: item.weather.first?.icon ?? "01d"
-                )
-                forecasts.append(forecast)
-                processedDates.insert(String(dateKey))
+
+            let highTemp = daily.temperatureMax[index]
+            let lowTemp = daily.temperatureMin[index]
+            let precipProb = daily.precipitationProbability[index]
+            let weathercode = daily.weathercode[index]
+
+            let (condition, conditionDesc) = weatherCodeToCondition(weathercode)
+
+            print("🌤️ ✅ 添加日期 \(dateStr): \(lowTemp)°C - \(highTemp)°C")
+            let forecast = WeatherForecast(
+                date: dayStart,
+                highTemp: highTemp,
+                lowTemp: lowTemp,
+                condition: condition,
+                conditionDescription: conditionDesc,
+                precipitationChance: precipProb / 100.0,
+                icon: weatherCodeToIcon(weathercode)
+            )
+            forecastMap[dayStart] = forecast
+        }
+
+        // 现在为行程中的每一天生成预报（有数据的用真实数据，没有的标记为不可用）
+        var allForecasts: [WeatherForecast] = []
+        let tripStartDay = calendar.startOfDay(for: startDate)
+        let tripEndDay = calendar.startOfDay(for: endDate)
+        let daysBetween = calendar.dateComponents([.day], from: tripStartDay, to: tripEndDay).day ?? 0
+        let totalDays = daysBetween + 1
+
+        print("🌤️ 行程需要 \(totalDays) 天的数据 (从 \(dateFormatter.string(from: tripStartDay)) 到 \(dateFormatter.string(from: tripEndDay)))")
+
+        for dayOffset in 0..<totalDays {
+            guard let currentDay = calendar.date(byAdding: .day, value: dayOffset, to: tripStartDay) else {
+                continue
+            }
+
+            let dayStart = calendar.startOfDay(for: currentDay)
+
+            if let forecast = forecastMap[dayStart] {
+                // 有真实数据
+                allForecasts.append(forecast)
+            } else {
+                // 数据不可用
+                print("🌤️ ⚠️ 日期 \(dateFormatter.string(from: currentDay)) 无天气数据，标记为不可用")
+                let unavailableForecast = WeatherForecast.unavailable(for: dayStart)
+                allForecasts.append(unavailableForecast)
             }
         }
-        
-        // 如果没有找到预报，生成模拟数据（用于演示）
-        if forecasts.isEmpty {
-            return generateMockForecasts(startDate: startDate, endDate: endDate)
+
+        print("🌤️ 最终返回 \(allForecasts.count) 天的预报 (\(forecastMap.count) 天有数据, \(allForecasts.count - forecastMap.count) 天不可用)")
+        return allForecasts
+    }
+
+    /// 将 WMO 天气代码转换为条件和描述
+    private func weatherCodeToCondition(_ code: Int) -> (String, String) {
+        switch code {
+        case 0:
+            return ("clear", "晴天")
+        case 1, 2, 3:
+            return ("cloudy", "多云")
+        case 45, 48:
+            return ("fog", "雾")
+        case 51, 53, 55:
+            return ("drizzle", "毛毛雨")
+        case 61, 63, 65:
+            return ("rain", "雨")
+        case 66, 67:
+            return ("rain", "冻雨")
+        case 71, 73, 75:
+            return ("snow", "雪")
+        case 77:
+            return ("snow", "雪粒")
+        case 80, 81, 82:
+            return ("shower", "阵雨")
+        case 85, 86:
+            return ("snow", "阵雪")
+        case 95:
+            return ("thunderstorm", "雷暴")
+        case 96, 99:
+            return ("thunderstorm", "雷暴伴冰雹")
+        default:
+            return ("unknown", "未知")
         }
-        
-        return forecasts.sorted { $0.date < $1.date }
+    }
+
+    /// 将 WMO 天气代码转换为图标代码
+    private func weatherCodeToIcon(_ code: Int) -> String {
+        switch code {
+        case 0:
+            return "01d"
+        case 1, 2, 3:
+            return "03d"
+        case 45, 48:
+            return "50d"
+        case 51, 53, 55, 61, 63, 65, 66, 67, 80, 81, 82:
+            return "10d"
+        case 71, 73, 75, 77, 85, 86:
+            return "13d"
+        case 95, 96, 99:
+            return "11d"
+        default:
+            return "01d"
+        }
     }
     
-    /// 生成模拟天气预报（用于演示或 API 不可用时）
-    private func generateMockForecasts(startDate: Date, endDate: Date) -> [WeatherForecast] {
+    /// 生成不可用天气预报（当 API 不可用或无数据时）
+    private func generateUnavailableForecasts(startDate: Date, endDate: Date) -> [WeatherForecast] {
         let calendar = Calendar.current
         var forecasts: [WeatherForecast] = []
-        var currentDate = calendar.startOfDay(for: startDate)
-        
-        while currentDate <= endDate {
-            let forecast = WeatherForecast(
-                date: currentDate,
-                highTemp: Double.random(in: 15...25),
-                lowTemp: Double.random(in: 5...15),
-                condition: ["clear", "cloudy", "rain"].randomElement() ?? "clear",
-                conditionDescription: "晴天",
-                precipitationChance: Double.random(in: 0...0.3),
-                icon: "01d"
-            )
-            forecasts.append(forecast)
-            
-            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else {
-                break
+        let tripStartDay = calendar.startOfDay(for: startDate)
+        let tripEndDay = calendar.startOfDay(for: endDate)
+        let daysBetween = calendar.dateComponents([.day], from: tripStartDay, to: tripEndDay).day ?? 0
+        let totalDays = daysBetween + 1
+
+        for dayOffset in 0..<totalDays {
+            guard let currentDay = calendar.date(byAdding: .day, value: dayOffset, to: tripStartDay) else {
+                continue
             }
-            currentDate = nextDate
+
+            let forecast = WeatherForecast.unavailable(for: currentDay)
+            forecasts.append(forecast)
         }
-        
+
         return forecasts
     }
     
@@ -207,10 +310,18 @@ class WeatherService {
             }
         }
         
-        // 检查温度范围
-        let avgLowTemp = forecasts.map { $0.lowTemp }.reduce(0, +) / Double(forecasts.count)
-        let avgHighTemp = forecasts.map { $0.highTemp }.reduce(0, +) / Double(forecasts.count)
-        
+        // 检查温度范围（仅使用有效数据）
+        let validLowTemps = forecasts.compactMap { $0.lowTemp }
+        let validHighTemps = forecasts.compactMap { $0.highTemp }
+
+        guard !validLowTemps.isEmpty && !validHighTemps.isEmpty else {
+            // 没有有效温度数据，不进行温度相关的物品调整
+            return adjustedItems
+        }
+
+        let avgLowTemp = validLowTemps.reduce(0, +) / Double(validLowTemps.count)
+        let avgHighTemp = validHighTemps.reduce(0, +) / Double(validHighTemps.count)
+
         // 低温：添加保暖物品
         if avgLowTemp < 10 {
             let hasWarmClothing = adjustedItems.contains { item in
@@ -267,35 +378,38 @@ class WeatherService {
     }
 }
 
-// MARK: - OpenWeatherMap API 响应模型
+// MARK: - Open-Meteo API 响应模型
 
-struct OpenWeatherResponse: Codable {
-    let list: [WeatherItem]
+struct OpenMeteoResponse: Codable {
+    let daily: DailyForecast?
 }
 
-struct WeatherItem: Codable {
-    let dt: TimeInterval  // 时间戳
-    let main: MainInfo
-    let weather: [WeatherInfo]
-    let pop: Double?  // 降水概率
-}
+struct DailyForecast: Codable {
+    let time: [String]  // 日期数组，格式: "yyyy-MM-dd"
+    let temperatureMax: [Double]
+    let temperatureMin: [Double]
+    let precipitationProbability: [Double]
+    let weathercode: [Int]  // WMO 天气代码
 
-struct MainInfo: Codable {
-    let temp: Double
-    let tempMin: Double
-    let tempMax: Double
-    
     enum CodingKeys: String, CodingKey {
-        case temp
-        case tempMin = "temp_min"
-        case tempMax = "temp_max"
+        case time
+        case temperatureMax = "temperature_2m_max"
+        case temperatureMin = "temperature_2m_min"
+        case precipitationProbability = "precipitation_probability_max"
+        case weathercode
     }
 }
 
-struct WeatherInfo: Codable {
-    let main: String  // 主要天气状况
-    let description: String  // 天气描述
-    let icon: String  // 图标代码
+// MARK: - 地理编码响应模型
+
+struct GeocodingResponse: Codable {
+    let results: [GeocodingResult]?
+}
+
+struct GeocodingResult: Codable {
+    let latitude: Double
+    let longitude: Double
+    let name: String
 }
 
 // MARK: - 错误类型

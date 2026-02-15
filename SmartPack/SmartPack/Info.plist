@@ -9,7 +9,5 @@
 	</array>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
-	<key>WEATHER_API_KEY</key>
-	<string>2b6127466cb2774fb88ed36e707fcad5</string>
 </dict>
 </plist>

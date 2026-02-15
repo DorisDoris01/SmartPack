@@ -13,7 +13,11 @@ import SwiftData
 struct SmartPackApp: App {
     @StateObject private var localization = LocalizationManager.shared
     @State private var showWelcome = false
-    
+
+    init() {
+        print("✅ SmartPack 启动成功 - 控制台正常工作")
+    }
+
     var body: some Scene {
         WindowGroup {
             HomeView()

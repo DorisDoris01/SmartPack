@@ -242,15 +242,19 @@ struct CreateTripSheet: View {
             await MainActor.run { isGenerating = true }
             var weatherForecasts: [WeatherForecast] = []
 
+            print("🚀 开始创建行程: 目的地=\(tripConfig.destination), 开始日期=\(startDate), 结束日期=\(endDate)")
+
             // 如果有目的地和日期范围，查询天气
             if !tripConfig.destination.isEmpty,
                let dateRange = tripConfig.dateRange {
+                print("🚀 准备查询天气...")
                 do {
                     weatherForecasts = try await WeatherService.shared.fetchWeatherForecast(
                         city: tripConfig.destination,
                         startDate: dateRange.startDate,
                         endDate: dateRange.endDate
                     )
+                    print("🚀 天气查询成功，获得 \(weatherForecasts.count) 天预报")
 
                     // 根据天气调整物品
                     items = WeatherService.shared.adjustItemsForWeather(
