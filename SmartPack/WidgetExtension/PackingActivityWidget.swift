@@ -25,15 +25,15 @@ struct PackingActivityWidget: Widget {
                         Image(systemName: "suitcase.fill")
                             .foregroundColor(.blue)
                         Text(context.state.tripName)
-                            .font(.headline)
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
                             .lineLimit(1)
                     }
                 }
-                
+
                 // 紧凑视图（Dynamic Island 右侧）
                 DynamicIslandExpandedRegion(.trailing) {
                     Text("\(Int(context.state.progress * 100))%")
-                        .font(.headline)
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundColor(.blue)
                 }
                 
@@ -45,7 +45,7 @@ struct PackingActivityWidget: Widget {
                         
                         HStack {
                             Text("\(context.state.checkedCount)/\(context.state.totalCount) items")
-                                .font(.caption)
+                                .font(.system(size: 12, weight: .semibold, design: .rounded))
                                 .foregroundColor(.secondary)
                             Spacer()
                         }
@@ -59,7 +59,7 @@ struct PackingActivityWidget: Widget {
             } compactTrailing: {
                 // 最小视图（右侧）
                 Text("\(Int(context.state.progress * 100))%")
-                    .font(.caption2)
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
                     .foregroundColor(.blue)
             } minimal: {
                 // 最小化视图
@@ -80,32 +80,31 @@ struct LockScreenLiveActivityView: View {
         HStack(spacing: 12) {
             // 左侧图标
             Image(systemName: "suitcase.fill")
-                .font(.title2)
+                .font(.system(size: 22, weight: .semibold, design: .rounded))
                 .foregroundColor(.blue)
                 .frame(width: 40)
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 // 行程名称
                 Text(context.state.tripName)
-                    .font(.headline)
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
                     .lineLimit(1)
-                
+
                 // 进度条
                 ProgressView(value: context.state.progress)
                     .tint(.blue)
-                
+
                 // 进度文本
                 HStack {
                     Text("\(context.state.checkedCount)/\(context.state.totalCount) items")
-                        .font(.caption)
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
                         .foregroundColor(.secondary)
-                    
+
                     Spacer()
-                    
+
                     Text("\(Int(context.state.progress * 100))%")
-                        .font(.caption)
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
                         .foregroundColor(.blue)
-                        .fontWeight(.semibold)
                 }
             }
             

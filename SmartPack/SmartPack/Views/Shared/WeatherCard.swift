@@ -13,62 +13,36 @@ struct WeatherCard: View {
     let destination: String
     let startDate: Date?
     let endDate: Date?
-    @Binding var isCollapsed: Bool  // PRD: 收起/展开状态
 
     @EnvironmentObject var localization: LocalizationManager
 
     var body: some View {
         if !forecasts.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
-                // PRD: Packing List UI Enhancement - 头部带收起/展开按钮，移除日期范围
+                // 头部
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Image(systemName: "location.fill")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(Typography.footnote)
                         .foregroundStyle(.secondary)
 
                     Text(destination.isEmpty ? (localization.currentLanguage == .chinese ? "目的地" : "Destination") : destination)
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(Typography.subheadline)
                         .foregroundColor(.primary)
 
                     Spacer()
-
-                    // 收起/展开按钮
-                    Button {
-                        #if DEBUG
-                        print("🌤️ Weather button tapped, current state: \(isCollapsed)")
-                        #endif
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                            isCollapsed.toggle()
-                        }
-                        #if DEBUG
-                        print("🌤️ Weather after toggle: \(isCollapsed)")
-                        #endif
-                    } label: {
-                        Image(systemName: isCollapsed ? "chevron.up" : "chevron.down")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(.secondary)
-                            .frame(width: 24, height: 24)
-                    }
-                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 14)
 
-                // PRD: 天气详情根据 isCollapsed 状态显示/隐藏
-                if !isCollapsed {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(forecasts) { forecast in
-                                WeatherDayCard(forecast: forecast)
-                            }
+                // 天气详情
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(forecasts) { forecast in
+                            WeatherDayCard(forecast: forecast)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 14)
                     }
-                } else {
-                    // 收起状态下添加底部内边距
-                    Spacer()
-                        .frame(height: 4)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 14)
                 }
             }
             .background(
@@ -97,13 +71,13 @@ struct WeatherDayCard: View {
         VStack(spacing: 6) {
             // 日期 - 更精致的排版
             Text(formatDay(forecast.date))
-                .font(.system(size: 11, weight: .medium))
+                .font(Typography.caption2)
                 .foregroundStyle(.secondary)
                 .tracking(0.3)
 
             // 天气图标 - 更小巧精致
             Image(systemName: forecast.weatherIcon)
-                .font(.system(size: 22, weight: .regular))
+                .font(.system(size: 22, weight: .regular, design: .rounded))
                 .foregroundStyle(forecast.isAvailable ? temperatureColor(for: forecast) : Color.secondary.opacity(0.6))
                 .symbolRenderingMode(.hierarchical)
                 .frame(height: 26)
@@ -113,7 +87,7 @@ struct WeatherDayCard: View {
                 VStack(spacing: 2) {
                     // 高温 - 更突出
                     Text("\(Int(highTemp))°")
-                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .font(Typography.headline)
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [temperatureColor(for: forecast), temperatureColor(for: forecast).opacity(0.8)],
@@ -124,12 +98,12 @@ struct WeatherDayCard: View {
 
                     // 低温 - 更低调
                     Text("\(Int(lowTemp))°")
-                        .font(.system(size: 12, weight: .regular, design: .rounded))
+                        .font(Typography.caption)
                         .foregroundStyle(.tertiary)
                 }
             } else {
                 Text("--")
-                    .font(.system(size: 15, weight: .regular, design: .rounded))
+                    .font(Typography.subheadline)
                     .foregroundStyle(.quaternary)
             }
 
@@ -137,9 +111,9 @@ struct WeatherDayCard: View {
             if forecast.hasPrecipitation, let precipChance = forecast.precipitationChance {
                 HStack(spacing: 2) {
                     Image(systemName: "drop.fill")
-                        .font(.system(size: 8, weight: .semibold))
+                        .font(.system(size: 8, weight: .semibold, design: .rounded))
                     Text("\(Int(precipChance * 100))")
-                        .font(.system(size: 9, weight: .medium))
+                        .font(.system(size: 9, weight: .medium, design: .rounded))
                 }
                 .foregroundStyle(Color.blue.opacity(0.7))
                 .padding(.horizontal, 5)
@@ -258,8 +232,7 @@ struct WeatherDayCard: View {
         forecasts: forecasts,
         destination: "北京",
         startDate: Date(),
-        endDate: Calendar.current.date(byAdding: .day, value: 3, to: Date()),
-        isCollapsed: .constant(false)  // PRD: 添加 isCollapsed 参数
+        endDate: Calendar.current.date(byAdding: .day, value: 3, to: Date())
     )
     .environmentObject(LocalizationManager.shared)
     .padding()

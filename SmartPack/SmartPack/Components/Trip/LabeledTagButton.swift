@@ -18,11 +18,11 @@ struct LabeledTagButton: View {
         Button(action: action) {
             VStack(spacing: 6) {
                 Image(systemName: tag.icon)
-                    .font(.title3)
+                    .font(Typography.title3)
                     .frame(height: 24) // 固定图标高度
 
                 Text(tag.displayName(language: language))
-                    .font(.caption)
+                    .font(Typography.caption)
                     .lineLimit(2) // 允许最多2行
                     .multilineTextAlignment(.center) // 居中对齐
                     .minimumScaleFactor(0.9) // 允许轻微缩小以适应空间

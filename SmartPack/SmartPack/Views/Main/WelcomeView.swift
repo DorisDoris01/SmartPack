@@ -71,7 +71,7 @@ struct WelcomeView: View {
             // App Logo 和标题
             VStack(spacing: Spacing.sm) {
                 Image(systemName: "suitcase.rolling.fill")
-                    .font(.system(size: 60))
+                    .font(.system(size: 60, weight: .regular, design: .rounded))
                     .foregroundColor(AppColors.primary)
                 
                 Text("SmartPack")
@@ -172,10 +172,10 @@ struct GenderSelectionCard: View {
         Button(action: action) {
             VStack(spacing: 12) {
                 Image(systemName: gender.icon)
-                    .font(.system(size: 36))
-                
+                    .font(.system(size: 36, weight: .regular, design: .rounded))
+
                 Text(gender.displayName(language: language))
-                    .font(.subheadline.weight(.medium))
+                    .font(Typography.subheadline)
             }
             .frame(maxWidth: .infinity)
             .frame(height: 100)

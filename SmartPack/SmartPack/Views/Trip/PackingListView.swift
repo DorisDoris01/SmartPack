@@ -2,18 +2,19 @@
 //  PackingListView.swift
 //  SmartPack
 //
-//  行程物品页 - 分类展示、勾选交互、一键清空
-//  Refactor v2.1: MVVM 架构，View 只负责 UI 描述
+//  行程物品页 - 原生 List(.insetGrouped) 布局
+//  环形进度 + 原生分类 Section + 毛玻璃浮动条
 //
 
 import SwiftUI
 import SwiftData
 import Foundation
 
-// MARK: - 用于检测进度/天气区域是否已滚出屏幕
+// MARK: - PreferenceKey for header scroll detection
+
 private struct HeaderBoundsKey: PreferenceKey {
-    static var defaultValue: CGRect = .zero
-    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+    static var defaultValue: CGFloat = .zero
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
     }
 }
@@ -30,16 +31,14 @@ struct PackingListView: View {
     // MARK: ViewModel（业务逻辑全部委托）
     @State private var vm: PackingListViewModel?
 
-    // MARK: 纯 UI 状态（与业务无关，留在 View 层）
+    // MARK: 纯 UI 状态
     @State private var showResetAlert = false
     @State private var showArchiveAlert = false
     @State private var itemToDelete: TripItem?
     @State private var showDeleteAlert = false
     @State private var isHeaderCollapsed = false
-    @State private var isWeatherCollapsed = false
-    @State private var isTripSettingsCollapsed = false
-
-    private let collapseThreshold: CGFloat = 60
+    @State private var showWeatherCard = true
+    @State private var showTripSettings = true
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -62,12 +61,6 @@ struct PackingListView: View {
             message: { deleteAlertMessage($0) }
         .onAppear { onViewAppear() }
         .onDisappear { vm?.stopLiveActivity() }
-        .onChange(of: isWeatherCollapsed) { _, newValue in
-            UserDefaults.standard.set(newValue, forKey: "weatherSectionCollapsed_\(trip.id.uuidString)")
-        }
-        .onChange(of: isTripSettingsCollapsed) { _, newValue in
-            UserDefaults.standard.set(newValue, forKey: "tripSettingsSectionCollapsed_\(trip.id.uuidString)")
-        }
         .onChange(of: localization.currentLanguage) { _, newValue in
             vm?.rebuildGroups(language: newValue)
         }
@@ -78,80 +71,150 @@ struct PackingListView: View {
 
 private extension PackingListView {
 
+    /// 提取当前行程包含的分类列表
+    func presentCategories(vm: PackingListViewModel) -> [ItemCategory] {
+        vm.groupedItems.compactMap { group in
+            ItemCategory.allCases.first { $0.nameCN == group.category || $0.nameEN == group.category }
+        }
+    }
+
+    /// 根据分类名称获取强调色
+    func accentColor(for categoryName: String) -> Color {
+        let cat = ItemCategory.allCases.first { $0.nameCN == categoryName || $0.nameEN == categoryName }
+        return cat?.accentColor ?? AppColors.textSecondary
+    }
+
     func mainContent(vm: PackingListViewModel) -> some View {
         List {
-            headerSection
-            itemSections(vm: vm)
+            // MARK: 英雄进度环 + 上下文行 + 天气 + 设置
+            Section {
+                VStack(spacing: Spacing.md) {
+                    ProgressHeader(
+                        trip: trip,
+                        language: localization.currentLanguage,
+                        categories: presentCategories(vm: vm)
+                    )
+
+                    contextRow
+
+                    if showWeatherCard && trip.hasWeatherData {
+                        WeatherCard(
+                            forecasts: trip.weatherForecasts,
+                            destination: trip.destination,
+                            startDate: trip.startDate,
+                            endDate: trip.endDate
+                        )
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .top).combined(with: .opacity),
+                            removal: .opacity
+                        ))
+                    }
+
+                    if showTripSettings && trip.totalCount > 0 {
+                        TripSettingsCard(trip: trip)
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .top).combined(with: .opacity),
+                                removal: .opacity
+                            ))
+                    }
+                }
+                .listRowInsets(EdgeInsets())
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear
+                            .preference(key: HeaderBoundsKey.self, value: proxy.frame(in: .global).maxY)
+                    }
+                )
+            }
+
+            // MARK: 分类 Section
+            ForEach(vm.groupedItems, id: \.category) { group in
+                CategorySection(
+                    category: group.category,
+                    items: group.items,
+                    isExpanded: vm.expandedCategories.contains(group.category),
+                    language: localization.currentLanguage,
+                    existingItemIds: vm.existingItemIds,
+                    accentColor: accentColor(for: group.category),
+                    onToggleExpand: {
+                        toggleCategory(group.category, vm: vm)
+                    },
+                    onToggleItem: { itemId in
+                        vm.toggleItem(itemId)
+                    },
+                    onDeleteItem: { itemId in
+                        requestDeleteItem(itemId)
+                    },
+                    onAddItem: { itemName in
+                        vm.addItem(to: group.category, name: itemName, language: localization.currentLanguage)
+                    }
+                )
+            }
         }
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
-        .background(Color(.systemGroupedBackground))
-        .onPreferenceChange(HeaderBoundsKey.self) { frame in
-            let collapsed = frame.height > 1 && frame.maxY < collapseThreshold
+        .background(AppColors.background.ignoresSafeArea())
+        .onPreferenceChange(HeaderBoundsKey.self) { maxY in
+            let collapsed = maxY < 0
             if isHeaderCollapsed != collapsed {
-                withAnimation(.easeInOut(duration: 0.25)) {
+                withAnimation(PremiumAnimation.snappy) {
                     isHeaderCollapsed = collapsed
                 }
             }
         }
     }
 
-    var headerSection: some View {
-        Section {
-            VStack(spacing: 0) {
-                ProgressHeader(trip: trip, language: localization.currentLanguage)
-
-                if trip.totalCount > 0 {
-                    TripSettingsCard(trip: trip, isCollapsed: $isTripSettingsCollapsed)
-                        .padding(.horizontal, Spacing.md)
-                        .padding(.top, Spacing.xs)
+    // 上下文行：天气 + 设置胶囊按钮
+    @ViewBuilder
+    var contextRow: some View {
+        HStack(spacing: Spacing.sm) {
+            // 天气胶囊
+            if trip.hasWeatherData {
+                Button {
+                    withAnimation(PremiumAnimation.standard) {
+                        showWeatherCard.toggle()
+                    }
+                } label: {
+                    HStack(spacing: Spacing.xxs) {
+                        Image(systemName: "cloud.sun.fill")
+                            .font(Typography.caption)
+                        Text(localization.currentLanguage == .chinese ? "天气" : "Weather")
+                            .font(Typography.caption)
+                    }
+                    .foregroundColor(showWeatherCard ? .white : AppColors.primary)
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, Spacing.xs)
+                    .background(showWeatherCard ? AppColors.primary : AppColors.primary.opacity(0.12))
+                    .clipShape(Capsule())
                 }
-
-                if trip.hasWeatherData {
-                    WeatherCard(
-                        forecasts: trip.weatherForecasts,
-                        destination: trip.destination,
-                        startDate: trip.startDate,
-                        endDate: trip.endDate,
-                        isCollapsed: $isWeatherCollapsed
-                    )
-                    .padding(.horizontal, Spacing.md)
-                    .padding(.top, Spacing.xs)
-                }
+                .buttonStyle(.plain)
             }
-            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-            .listRowSeparator(.hidden)
-            .listRowBackground(Color.clear)
-            .background(
-                GeometryReader { g in
-                    Color.clear.preference(key: HeaderBoundsKey.self, value: g.frame(in: .global))
-                }
-            )
-        }
-        .listSectionSpacing(Spacing.sm)
-    }
 
-    func itemSections(vm: PackingListViewModel) -> some View {
-        ForEach(vm.groupedItems, id: \.category) { group in
-            CategorySection(
-                category: group.category,
-                items: group.items,
-                isExpanded: vm.expandedCategories.contains(group.category),
-                language: localization.currentLanguage,
-                existingItemIds: vm.existingItemIds,
-                onToggleExpand: {
-                    toggleCategory(group.category, vm: vm)
-                },
-                onToggleItem: { itemId in
-                    vm.toggleItem(itemId)
-                },
-                onDeleteItem: { itemId in
-                    requestDeleteItem(itemId)
-                },
-                onAddItem: { itemName in
-                    vm.addItem(to: group.category, name: itemName, language: localization.currentLanguage)
+            // 设置胶囊
+            if trip.totalCount > 0 {
+                Button {
+                    withAnimation(PremiumAnimation.standard) {
+                        showTripSettings.toggle()
+                    }
+                } label: {
+                    HStack(spacing: Spacing.xxs) {
+                        Image(systemName: "gearshape.fill")
+                            .font(Typography.caption)
+                        Text(localization.currentLanguage == .chinese ? "设置" : "Settings")
+                            .font(Typography.caption)
+                    }
+                    .foregroundColor(showTripSettings ? .white : AppColors.secondary)
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, Spacing.xs)
+                    .background(showTripSettings ? AppColors.secondary : AppColors.secondary.opacity(0.12))
+                    .clipShape(Capsule())
                 }
-            )
+                .buttonStyle(.plain)
+            }
+
+            Spacer()
         }
     }
 }
@@ -205,6 +268,7 @@ private extension PackingListView {
                     dismiss()
                 } label: {
                     Text(localization.currentLanguage == .chinese ? "完成" : "Done")
+                        .font(Typography.body)
                         .fontWeight(.medium)
                 }
             }
@@ -244,7 +308,7 @@ private extension PackingListView {
                 }
             } label: {
                 Image(systemName: "ellipsis.circle")
-                    .font(.body)
+                    .font(Typography.body)
                     .frame(width: 44, height: 44)
             }
         }
@@ -324,14 +388,6 @@ private extension PackingListView {
         if vm == nil {
             vm = PackingListViewModel(trip: trip, language: localization.currentLanguage)
         }
-
-        // 读取 Section 收起状态
-        isWeatherCollapsed = UserDefaults.standard.bool(
-            forKey: "weatherSectionCollapsed_\(trip.id.uuidString)"
-        )
-        isTripSettingsCollapsed = UserDefaults.standard.bool(
-            forKey: "tripSettingsSectionCollapsed_\(trip.id.uuidString)"
-        )
 
         vm?.startLiveActivityIfNeeded()
     }

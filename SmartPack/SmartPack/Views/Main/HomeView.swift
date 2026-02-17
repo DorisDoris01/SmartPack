@@ -11,16 +11,17 @@ import SwiftData
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var localization: LocalizationManager
-    
+
     @Query(sort: \Trip.createdAt, order: .reverse) private var trips: [Trip]
-    
+
     @State private var showingCreateTrip = false
     @State private var showingSettings = false
     @State private var showingItemManagement = false
     @State private var selectedTrip: Trip?
     @State private var tripToDelete: Trip?
     @State private var showingDeleteAlert = false
-    
+    @State private var emptyStateAppeared = false
+
     // Performance: @Query 已按 createdAt 倒序排序，无需再次排序
     private var activeTrips: [Trip] {
         trips.filter { !$0.isArchived }
@@ -29,7 +30,7 @@ struct HomeView: View {
     private var archivedTrips: [Trip] {
         trips.filter { $0.isArchived }
     }
-    
+
     var body: some View {
         NavigationStack {
             List {
@@ -52,7 +53,7 @@ struct HomeView: View {
                                     )
                                 }
 
-                                // 归档按钮（蓝色，无需确认）
+                                // 归档按钮
                                 Button {
                                     archiveTrip(trip)
                                 } label: {
@@ -61,15 +62,23 @@ struct HomeView: View {
                                         systemImage: "archivebox"
                                     )
                                 }
-                                .tint(.blue)
+                                .tint(AppColors.archiveAccent)
                             }
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets(
+                                top: Spacing.xs,
+                                leading: Spacing.md,
+                                bottom: Spacing.xs,
+                                trailing: Spacing.md
+                            ))
                         }
                     }
                 }
-                
+
                 // Archived 行程
                 if !archivedTrips.isEmpty {
-                    Section(header: Text(localization.currentLanguage == .chinese ? "已归档" : "Archived")) {
+                    Section {
                         ForEach(archivedTrips) { trip in
                             NavigationLink(value: trip) {
                                 TripRowView(trip: trip, language: localization.currentLanguage, isArchived: true)
@@ -86,7 +95,7 @@ struct HomeView: View {
                                     )
                                 }
 
-                                // 取消归档按钮（蓝色，无需确认）
+                                // 取消归档按钮
                                 Button {
                                     unarchiveTrip(trip)
                                 } label: {
@@ -95,45 +104,71 @@ struct HomeView: View {
                                         systemImage: "arrow.uturn.backward"
                                     )
                                 }
-                                .tint(.blue)
+                                .tint(AppColors.archiveAccent)
                             }
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets(
+                                top: Spacing.xs,
+                                leading: Spacing.md,
+                                bottom: Spacing.xs,
+                                trailing: Spacing.md
+                            ))
                         }
+                    } header: {
+                        Text(localization.currentLanguage == .chinese ? "已归档" : "Archived")
+                            .sectionHeaderStyle()
+                            .padding(.leading, Spacing.xxs)
                     }
                 }
-                
+
                 // 空状态
                 if trips.isEmpty {
                     Section {
                         VStack(spacing: Spacing.lg) {
+                            // Halo: two concentric circles + suitcase icon
                             ZStack {
                                 Circle()
-                                    .fill(AppColors.primary.opacity(0.08))
+                                    .stroke(AppColors.primary.opacity(0.06), lineWidth: 1)
                                     .frame(width: 120, height: 120)
-                                Image(systemName: "suitcase.fill")
-                                    .font(.system(size: 50))
+                                Circle()
+                                    .stroke(AppColors.primary.opacity(0.12), lineWidth: 1)
+                                    .frame(width: 88, height: 88)
+                                Image(systemName: "suitcase")
+                                    .font(.system(size: 42, weight: .medium, design: .rounded))
                                     .foregroundColor(AppColors.primary)
                             }
-                            Image(systemName: "plus.circle.dashed")
-                                .font(.system(size: 28))
-                                .foregroundColor(AppColors.textSecondary.opacity(0.6))
-                            
+
                             Text(localization.currentLanguage == .chinese ? "还没有行程" : "No trips yet")
-                                .font(Typography.title2)
+                                .font(Typography.displayMedium)
                                 .foregroundColor(AppColors.textSecondary)
-                            
+
                             Text(localization.currentLanguage == .chinese
                                  ? "点击右上角 + 开始你的第一次行程"
                                  : "Tap + to start your first trip")
                                 .font(Typography.subheadline)
+                                .tracking(Typography.Tracking.wide)
                                 .foregroundColor(AppColors.textSecondary)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, Spacing.xl)
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, Spacing.xxl + 20)
+                        .padding(.vertical, Spacing.xxxl)
+                        .opacity(emptyStateAppeared ? 1 : 0)
+                        .offset(y: emptyStateAppeared ? 0 : 12)
+                        .onAppear {
+                            withAnimation(PremiumAnimation.entrance) {
+                                emptyStateAppeared = true
+                            }
+                        }
                     }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
                 }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(AppColors.background)
             .navigationTitle(localization.currentLanguage == .chinese ? "我的行程" : "My Trips")
             .navigationDestination(for: Trip.self) { trip in
                 PackingListView(trip: trip, isNewlyCreated: false)
@@ -146,7 +181,7 @@ struct HomeView: View {
                         Image(systemName: "plus")
                     }
                 }
-                
+
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
                         Button {
@@ -157,7 +192,7 @@ struct HomeView: View {
                                 systemImage: "checklist"
                             )
                         }
-                        
+
                         Button {
                             showingSettings = true
                         } label: {
@@ -214,15 +249,16 @@ struct HomeView: View {
                      ? "删除后无法恢复，确认删除？"
                      : "This action cannot be undone. Are you sure?")
             }
+            .tint(AppColors.primary)
         }
     }
-    
+
     // SPEC v1.5 F-4.1: 删除 Trip（带确认）
     private func deleteTrip(_ trip: Trip) {
         tripToDelete = trip
         showingDeleteAlert = true
     }
-    
+
     // SPEC v1.5 F-4.3: 确认删除
     private func deleteTripConfirmed(_ trip: Trip) {
         modelContext.delete(trip)

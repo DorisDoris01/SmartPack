@@ -2,12 +2,12 @@
 //  CategoryHeader.swift
 //  SmartPack
 //
-//  打包清单组件 - 分类头部
+//  打包清单组件 - 分类头部（iOS Reminders 风格）
 //
 
 import SwiftUI
 
-/// 分类头部
+/// 分类头部 — Reminders 风格
 struct CategoryHeader: View {
     let category: String
     let checkedCount: Int
@@ -15,32 +15,47 @@ struct CategoryHeader: View {
     let icon: String
     let isExpanded: Bool
     let language: AppLanguage
+    let accentColor: Color
     let onToggle: () -> Void
 
     var body: some View {
         Button(action: onToggle) {
             HStack(spacing: Spacing.xs) {
-                Image(systemName: icon)
-                    .foregroundColor(AppColors.primary)
-                    .font(Typography.subheadline)
+                // 图标圆圈背景
+                ZStack {
+                    Circle()
+                        .fill(accentColor.opacity(0.15))
+                        .frame(width: 28, height: 28)
+
+                    Image(systemName: icon)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(accentColor)
+                }
 
                 Text(category)
-                    .font(Typography.headline)
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundColor(AppColors.text)
+
+                // 计数
+                Text("\(checkedCount)/\(totalCount)")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(Color(.systemGray))
 
                 Spacer()
 
-                Text("\(checkedCount)/\(totalCount)")
-                    .font(Typography.caption)
-                    .foregroundColor(AppColors.textSecondary)
-
-                Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                    .font(Typography.caption2)
-                    .foregroundColor(AppColors.textSecondary)
+                // 旋转展开箭头
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(Color(.systemGray2))
+                    .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                    .animation(PremiumAnimation.snappy, value: isExpanded)
             }
+            .padding(.vertical, Spacing.xxs)
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(category), \(checkedCount) of \(totalCount) items")
-        .accessibilityHint(isExpanded ? (language == .chinese ? "双击折叠" : "Double tap to collapse") : (language == .chinese ? "双击展开" : "Double tap to expand"))
+        .accessibilityHint(isExpanded
+            ? (language == .chinese ? "双击折叠" : "Double tap to collapse")
+            : (language == .chinese ? "双击展开" : "Double tap to expand"))
     }
 }

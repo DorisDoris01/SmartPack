@@ -98,7 +98,7 @@ struct ItemManagementView: View {
                 
                 // SPEC v1.5: 显示活跃 Item 数量（不包括已删除的预设 Item）
                 Text("\(presetItems.count + customItems.count)")
-                    .font(.caption)
+                    .font(Typography.caption)
                     .foregroundColor(.secondary)
             }
         }
@@ -112,12 +112,12 @@ struct ItemManagementView: View {
         return HStack {
             Text(item.displayName(language: localization.currentLanguage))
                 .foregroundColor(isDeleted ? .secondary : .primary)
-                .strikethrough(isDeleted)
+                .strikethrough(isDeleted, color: .orange)
             
             Spacer()
             
             Text(localization.currentLanguage == .chinese ? "预设" : "Preset")
-                .font(.caption2)
+                .font(Typography.caption2)
                 .foregroundColor(.secondary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 2)
@@ -222,7 +222,7 @@ struct AddCustomItemSheet: View {
                     Text(localization.currentLanguage == .chinese
                          ? "新增的物品会在选择「\(tag.name)」标签时自动加入行程清单。"
                          : "The new item will be automatically added to the packing list when \"\(tag.nameEn)\" tag is selected.")
-                        .font(.caption)
+                        .font(Typography.caption)
                         .foregroundColor(.secondary)
                 }
             }

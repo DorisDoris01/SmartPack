@@ -20,7 +20,7 @@ struct TagButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: tag.icon)
-                .font(.title2)
+                .font(Typography.title2)
                 .frame(width: buttonSize, height: buttonSize)
                 .background(isSelected ? Color.blue : Color(.systemGray6))
                 .foregroundColor(isSelected ? .white : .primary)

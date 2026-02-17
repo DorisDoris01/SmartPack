@@ -9,15 +9,21 @@ import Foundation
 
 /// 统一的圆角半径定义
 enum CornerRadius {
-    /// 4pt
-    static let sm: CGFloat = 4
-
-    /// 10pt
-    static let md: CGFloat = 10
+    /// 6pt
+    static let sm: CGFloat = 6
 
     /// 12pt
-    static let lg: CGFloat = 12
+    static let md: CGFloat = 12
 
     /// 16pt
-    static let xl: CGFloat = 16
+    static let lg: CGFloat = 16
+
+    /// 22pt
+    static let xl: CGFloat = 22
+
+    /// 28pt
+    static let xxl: CGFloat = 28
+
+    /// 999pt — Capsule / pill
+    static let full: CGFloat = 999
 }

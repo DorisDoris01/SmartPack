@@ -23,7 +23,7 @@ struct SettingsView: View {
                 Text(localization.currentLanguage == .chinese
                      ? "修改后将影响后续新建清单的物品过滤"
                      : "Changes will affect items in future lists")
-                    .font(.caption)
+                    .font(Typography.caption)
             }
             
             // 语言设置
@@ -49,6 +49,7 @@ struct SettingsView: View {
                     dismiss()
                 } label: {
                     Text(localization.currentLanguage == .chinese ? "完成" : "Done")
+                        .font(Typography.body)
                         .fontWeight(.medium)
                 }
             }

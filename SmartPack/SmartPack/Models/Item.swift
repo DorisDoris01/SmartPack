@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import SwiftUI
 
 /// 物品对象（预设数据）
 struct Item: Identifiable, Hashable {
@@ -110,6 +111,18 @@ enum ItemCategory: String, CaseIterable, Identifiable {
         case .electronics: return 3
         case .sports: return 4
         case .other: return 5
+        }
+    }
+
+    /// 分类强调色（用于 UI 色彩编码）
+    var accentColor: Color {
+        switch self {
+        case .documents: return AppColors.warning
+        case .clothing: return AppColors.primary
+        case .toiletries: return Color(red: 0.40, green: 0.70, blue: 0.65)
+        case .electronics: return AppColors.secondary
+        case .sports: return AppColors.error
+        case .other: return AppColors.textSecondary
         }
     }
 }

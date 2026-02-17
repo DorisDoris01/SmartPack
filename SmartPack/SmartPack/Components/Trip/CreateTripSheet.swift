@@ -42,7 +42,7 @@ struct CreateTripSheet: View {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
-                            .font(.body.weight(.medium))
+                            .font(Typography.body.weight(.medium))
                     }
                 }
             }
@@ -73,7 +73,7 @@ struct CreateTripSheet: View {
                 if endDate >= startDate {
                     let days = Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 0
                     Text(localization.currentLanguage == .chinese ? "共 \(days + 1) 天" : "\(days + 1) days")
-                        .font(.caption)
+                        .font(Typography.caption)
                         .foregroundColor(.secondary)
                 }
             }

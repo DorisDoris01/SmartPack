@@ -2,22 +2,25 @@
 //  AddItemRow.swift
 //  SmartPack
 //
-//  打包清单组件 - SPEC v1.7 F-2.1: 添加物品输入框（参照 Reminders）
+//  打包清单组件 - 添加物品输入框（iOS Reminders 风格）
 //
 
 import SwiftUI
 
-/// 添加物品输入框
+/// 添加物品输入框 — 模仿 iOS Reminders "新提醒事项" 行
 struct AddItemRow: View {
     let category: String
     let categoryEnum: ItemCategory
     let existingItemIds: Set<String>
+    let accentColor: Color
     let onAddItem: (String) -> Void
 
     @EnvironmentObject var localization: LocalizationManager
     @FocusState private var isFocused: Bool
     @State private var itemName = ""
     @State private var showPresetSuggestions = false
+
+    private let circleSize: CGFloat = 22
 
     // 获取当前分类下的预设 Item（用于自动补全）
     private var presetItemsForCategory: [Item] {
@@ -42,37 +45,52 @@ struct AddItemRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
-            // 输入框
-            HStack(spacing: Spacing.xs) {
-                Image(systemName: "plus.circle.fill")
-                    .foregroundColor(AppColors.primary)
-                    .font(.title3)
+            HStack(spacing: Spacing.sm) {
+                // 空心圆图标 — 与 ItemRow 的未选中状态一致
+                Circle()
+                    .stroke(Color(.systemGray3), lineWidth: 1.5)
+                    .frame(width: circleSize, height: circleSize)
 
-                TextField(
-                    localization.currentLanguage == .chinese ? "添加物品..." : "Add item...",
-                    text: $itemName
-                )
-                .focused($isFocused)
-                .onSubmit {
-                    addItem()
-                }
-                .onChange(of: itemName) { oldValue, newValue in
-                    showPresetSuggestions = !newValue.isEmpty && !filteredPresetItems.isEmpty
-                }
-
-                if !itemName.isEmpty {
-                    Button {
+                if isFocused || !itemName.isEmpty {
+                    // 激活态：TextField
+                    TextField(
+                        localization.currentLanguage == .chinese ? "添加物品..." : "Add item...",
+                        text: $itemName
+                    )
+                    .font(.system(size: 17))
+                    .focused($isFocused)
+                    .onSubmit {
                         addItem()
-                    } label: {
-                        Text(localization.currentLanguage == .chinese ? "添加" : "Add")
-                            .font(Typography.subheadline)
-                            .foregroundColor(AppColors.primary)
                     }
-                }
-            }
-            .padding(.vertical, Spacing.xxs)
+                    .onChange(of: itemName) { oldValue, newValue in
+                        showPresetSuggestions = !newValue.isEmpty && !filteredPresetItems.isEmpty
+                    }
 
-            // 预设 Item 建议（可选，类似 Reminders 的自动补全）
+                    if !itemName.isEmpty {
+                        Button {
+                            addItem()
+                        } label: {
+                            Text(localization.currentLanguage == .chinese ? "添加" : "Add")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundColor(accentColor)
+                        }
+                    }
+                } else {
+                    // 未激活态：点击区域 — 类似 Reminders "新提醒事项"
+                    Button {
+                        isFocused = true
+                    } label: {
+                        Text(localization.currentLanguage == .chinese ? "添加物品" : "Add Item")
+                            .font(.system(size: 17))
+                            .foregroundColor(Color(.systemGray2))
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Spacer()
+            }
+
+            // 预设 Item 建议
             if showPresetSuggestions && !filteredPresetItems.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: Spacing.xs) {
@@ -82,19 +100,19 @@ struct AddItemRow: View {
                                 addItem()
                             } label: {
                                 Text(item.displayName(language: localization.currentLanguage))
-                                    .font(.caption)
+                                    .font(Typography.caption)
                                     .padding(.horizontal, Spacing.sm)
                                     .padding(.vertical, 6)
-                                    .background(AppColors.cardBackground)
+                                    .background(accentColor.opacity(0.12))
                                     .cornerRadius(CornerRadius.lg)
                             }
                         }
                     }
-                    .padding(.horizontal, Spacing.xxs)
                 }
             }
         }
-        .listRowBackground(AppColors.background)
+        .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
+        .listRowSeparator(.hidden)
     }
 
     private func addItem() {

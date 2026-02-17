@@ -73,7 +73,7 @@ struct TripConfigView: View {
                 if endDate >= startDate {
                     let days = Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 0
                     Text(localization.text(chinese: "共 \(days + 1) 天", english: "\(days + 1) days"))
-                        .font(.caption)
+                        .font(Typography.caption)
                         .foregroundColor(.secondary)
                 }
             }
@@ -129,7 +129,7 @@ struct TripConfigView: View {
             createAndSaveTrip()
         } label: {
             Text(localization.text(chinese: "生成行程", english: "Generate Trip"))
-                .font(.headline)
+                .font(Typography.headline)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: Spacing.buttonHeight)
@@ -213,7 +213,7 @@ struct SelectionButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.title2)
+                .font(Typography.title2)
                 .frame(maxWidth: .infinity)
                 .frame(height: buttonHeight)
                 .background(isSelected ? Color.blue.opacity(0.15) : Color(.systemGray6))
@@ -244,11 +244,11 @@ struct DurationButton: View {
         Button(action: action) {
             HStack {
                 Image(systemName: duration.icon)
-                    .font(.title3)
+                    .font(Typography.title3)
                     .frame(width: 28)
-                
+
                 Text(duration.displayName(language: language))
-                    .font(.subheadline)
+                    .font(Typography.subheadline)
                 
                 Spacer()
                 

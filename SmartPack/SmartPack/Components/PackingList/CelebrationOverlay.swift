@@ -35,11 +35,11 @@ struct CelebrationOverlay: View {
             if showContent {
                 VStack(spacing: Spacing.lg) {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 80))
+                        .font(.system(size: 80, weight: .regular, design: .rounded))
                         .foregroundColor(AppColors.success)
 
                     Text("🎉")
-                        .font(.system(size: 60))
+                        .font(.system(size: 60, weight: .regular, design: .rounded))
 
                     Text(title)
                         .font(Typography.title1.bold())

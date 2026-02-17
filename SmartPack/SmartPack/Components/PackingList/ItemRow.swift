@@ -2,52 +2,90 @@
 //  ItemRow.swift
 //  SmartPack
 //
-//  打包清单组件 - 物品行（SPEC v1.7: 使用 List 原生样式）
+//  打包清单组件 - 物品行（iOS Reminders 风格圆形复选框）
 //
 
 import SwiftUI
 
-/// 物品行
+/// 物品行 — 模仿 iOS Reminders
 struct ItemRow: View {
     let item: TripItem
     let language: AppLanguage
+    let accentColor: Color
     let onToggle: () -> Void
     let onDelete: () -> Void
 
     @EnvironmentObject var localization: LocalizationManager
+    @State private var checkboxScale: CGFloat = 1.0
+
+    private let circleSize: CGFloat = 22
 
     var body: some View {
-        HStack(spacing: Spacing.sm) {
-            // 复选框（左侧）
-            Button {
-                HapticFeedback.light()
-                onToggle()
-            } label: {
-                Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
-                    .foregroundColor(item.isChecked ? AppColors.success : AppColors.textSecondary)
+        Button {
+            HapticFeedback.light()
+            withAnimation(PremiumAnimation.snappy) {
+                checkboxScale = 1.2
             }
-            .buttonStyle(.plain)
-
-            // Item 名称（可点击整行）
-            Text(item.displayName(language: language))
-                .font(Typography.body)
-                .foregroundColor(item.isChecked ? AppColors.textSecondary : AppColors.text)
-                .strikethrough(item.isChecked, color: AppColors.textSecondary)
-
-            Spacer()
-        }
-        .padding(.vertical, Spacing.xxs)
-        .contentShape(Rectangle())
-        .onTapGesture {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                withAnimation(PremiumAnimation.snappy) {
+                    checkboxScale = 1.0
+                }
+            }
             onToggle()
+        } label: {
+            HStack(spacing: Spacing.sm) {
+                // 圆形复选框 — Reminders 风格
+                ZStack {
+                    Circle()
+                        .stroke(
+                            item.isChecked ? accentColor : Color(.systemGray3),
+                            lineWidth: 1.5
+                        )
+                        .frame(width: circleSize, height: circleSize)
+
+                    if item.isChecked {
+                        Circle()
+                            .fill(accentColor)
+                            .frame(width: circleSize, height: circleSize)
+
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                }
+                .scaleEffect(checkboxScale)
+
+                // 物品名称
+                Text(item.displayName(language: language))
+                    .font(.system(size: 17))
+                    .foregroundColor(item.isChecked ? Color(.systemGray) : AppColors.text)
+                    .strikethrough(item.isChecked, color: Color(.systemGray3))
+
+                Spacer()
+            }
+            .contentShape(Rectangle())
         }
-        // SPEC v1.7 F-1.1: 横滑删除
+        .buttonStyle(.plain)
+        .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive) {
+                HapticFeedback.light()
+                onDelete()
+            } label: {
+                Label(
+                    localization.currentLanguage == .chinese ? "删除" : "Delete",
+                    systemImage: "trash"
+                )
+            }
+        }
+        .contextMenu {
             Button(role: .destructive) {
                 onDelete()
             } label: {
-                Label(localization.currentLanguage == .chinese ? "删除" : "Delete", systemImage: "trash")
+                Label(
+                    localization.currentLanguage == .chinese ? "删除" : "Delete",
+                    systemImage: "trash"
+                )
             }
         }
         .accessibilityElement(children: .combine)

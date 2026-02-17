@@ -2,28 +2,26 @@
 //  CategorySection.swift
 //  SmartPack
 //
-//  打包清单组件 - 分类区域
-//  Refactor v2.1: 移除 Trip 依赖，接收轻量级 existingItemIds
+//  打包清单组件 - 原生 List Section（iOS Reminders 风格）
 //
 
 import SwiftUI
 
-/// 分类区域
-///
-/// 视图隔离原则：
-/// - 不持有 Trip 引用（Trip.checkedItemCount 变化不会触发本组件重绘）
-/// - existingItemIds 由 ViewModel 增量维护并传入
-/// - checkedCount 依赖 @Model observation 精确追踪（只在本分类 item 的 isChecked 变化时重算）
+/// 分类 Section（用于 List(.insetGrouped)）— Reminders 风格
 struct CategorySection: View {
     let category: String
     let items: [TripItem]
     let isExpanded: Bool
     let language: AppLanguage
     let existingItemIds: Set<String>
+    let accentColor: Color
     let onToggleExpand: () -> Void
     let onToggleItem: (String) -> Void
     let onDeleteItem: (String) -> Void
     let onAddItem: (String) -> Void
+
+    /// 分隔线对齐偏移：leading inset (20) + circleSize (22) + spacing (12)
+    private let separatorLeadingInset: CGFloat = 54
 
     private var checkedCount: Int {
         items.filter { $0.isChecked }.count
@@ -51,17 +49,21 @@ struct CategorySection: View {
             if isExpanded {
                 if items.isEmpty {
                     Text(language == .chinese ? "该分类暂无物品" : "No items in this category")
-                        .font(Typography.subheadline)
-                        .foregroundColor(AppColors.textSecondary)
+                        .font(.system(size: 15))
+                        .foregroundColor(Color(.systemGray))
                         .listRowBackground(Color.clear)
                 } else {
                     ForEach(items) { item in
                         ItemRow(
                             item: item,
                             language: language,
+                            accentColor: accentColor,
                             onToggle: { onToggleItem(item.id) },
                             onDelete: { onDeleteItem(item.id) }
                         )
+                        .alignmentGuide(.listRowSeparatorLeading) { _ in
+                            separatorLeadingInset
+                        }
                     }
                 }
 
@@ -69,6 +71,7 @@ struct CategorySection: View {
                     category: category,
                     categoryEnum: categoryEnum,
                     existingItemIds: existingItemIds,
+                    accentColor: accentColor,
                     onAddItem: { itemName in onAddItem(itemName) }
                 )
             }
@@ -80,8 +83,10 @@ struct CategorySection: View {
                 icon: categoryIcon,
                 isExpanded: isExpanded,
                 language: language,
+                accentColor: accentColor,
                 onToggle: onToggleExpand
             )
         }
+        .animation(PremiumAnimation.standard, value: isExpanded)
     }
 }

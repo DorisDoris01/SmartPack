@@ -36,19 +36,19 @@ struct MyListsView: View {
     private var emptyState: some View {
         VStack(spacing: 20) {
             Image(systemName: "suitcase")
-                .font(.system(size: 70))
+                .font(.system(size: 70, weight: .regular, design: .rounded))
                 .foregroundColor(.gray.opacity(0.5))
-            
+
             Text(localization.currentLanguage == .chinese
                  ? "还没有清单"
                  : "No lists yet")
-                .font(.title2)
+                .font(Typography.title2)
                 .foregroundColor(.secondary)
-            
+
             Text(localization.currentLanguage == .chinese
                  ? "点击右下角 + 创建你的第一个打包清单"
                  : "Tap + to create your first packing list")
-                .font(.subheadline)
+                .font(Typography.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
