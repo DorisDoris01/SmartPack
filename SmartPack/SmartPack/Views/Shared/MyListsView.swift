@@ -85,5 +85,5 @@ struct MyListsView: View {
 #Preview {
     MyListsView()
         .environmentObject(LocalizationManager.shared)
-        .modelContainer(for: Trip.self, inMemory: true)
+        .modelContainer(for: [Trip.self, TripItem.self], inMemory: true)
 }

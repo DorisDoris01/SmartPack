@@ -32,7 +32,8 @@ struct Item: Identifiable, Hashable {
             nameEn: nameEn,
             category: category.nameCN,
             categoryEn: category.nameEN,
-            isChecked: false
+            isChecked: false,
+            sortOrder: category.sortOrder
         )
     }
     

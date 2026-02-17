@@ -2,18 +2,24 @@
 //  CategorySection.swift
 //  SmartPack
 //
-//  打包清单组件 - 分类区域（SPEC v1.7: 使用 List Section）
+//  打包清单组件 - 分类区域
+//  Refactor v2.1: 移除 Trip 依赖，接收轻量级 existingItemIds
 //
 
 import SwiftUI
 
 /// 分类区域
+///
+/// 视图隔离原则：
+/// - 不持有 Trip 引用（Trip.checkedItemCount 变化不会触发本组件重绘）
+/// - existingItemIds 由 ViewModel 增量维护并传入
+/// - checkedCount 依赖 @Model observation 精确追踪（只在本分类 item 的 isChecked 变化时重算）
 struct CategorySection: View {
     let category: String
     let items: [TripItem]
     let isExpanded: Bool
     let language: AppLanguage
-    let trip: Trip
+    let existingItemIds: Set<String>
     let onToggleExpand: () -> Void
     let onToggleItem: (String) -> Void
     let onDeleteItem: (String) -> Void
@@ -43,9 +49,7 @@ struct CategorySection: View {
     var body: some View {
         Section {
             if isExpanded {
-                // Item 列表
                 if items.isEmpty {
-                    // 空状态处理
                     Text(language == .chinese ? "该分类暂无物品" : "No items in this category")
                         .font(Typography.subheadline)
                         .foregroundColor(AppColors.textSecondary)
@@ -55,28 +59,20 @@ struct CategorySection: View {
                         ItemRow(
                             item: item,
                             language: language,
-                            onToggle: {
-                                onToggleItem(item.id)
-                            },
-                            onDelete: {
-                                onDeleteItem(item.id)
-                            }
+                            onToggle: { onToggleItem(item.id) },
+                            onDelete: { onDeleteItem(item.id) }
                         )
                     }
                 }
 
-                // SPEC v1.7 F-2.1: 添加输入框（参照 Reminders）
                 AddItemRow(
                     category: category,
                     categoryEnum: categoryEnum,
-                    existingItemIds: Set(trip.items.map { $0.id }),
-                    onAddItem: { itemName in
-                        onAddItem(itemName)
-                    }
+                    existingItemIds: existingItemIds,
+                    onAddItem: { itemName in onAddItem(itemName) }
                 )
             }
         } header: {
-            // Section Header（分类名称 + 统计）
             CategoryHeader(
                 category: category,
                 checkedCount: checkedCount,

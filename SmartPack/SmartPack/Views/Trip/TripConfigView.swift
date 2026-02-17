@@ -271,5 +271,5 @@ struct DurationButton: View {
 #Preview {
     TripConfigView()
         .environmentObject(LocalizationManager.shared)
-        .modelContainer(for: Trip.self, inMemory: true)
+        .modelContainer(for: [Trip.self, TripItem.self], inMemory: true)
 }

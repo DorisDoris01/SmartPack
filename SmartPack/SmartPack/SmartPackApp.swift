@@ -35,6 +35,6 @@ struct SmartPackApp: App {
                         .interactiveDismissDisabled(true)
                 }
         }
-        .modelContainer(for: Trip.self)
+        .modelContainer(for: [Trip.self, TripItem.self])
     }
 }

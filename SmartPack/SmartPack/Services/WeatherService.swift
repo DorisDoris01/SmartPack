@@ -319,37 +319,34 @@ class WeatherService {
         forecasts: [WeatherForecast]
     ) -> [TripItem] {
         var adjustedItems = items
-        
+
         // 检查是否有雨天
         let hasRain = forecasts.contains { $0.hasPrecipitation }
         if hasRain {
-            // 检查是否已有雨具
             let hasUmbrella = adjustedItems.contains { item in
-                item.name.contains("雨伞") || item.name.contains("雨衣") || 
-                item.nameEn.lowercased().contains("umbrella") || 
+                item.name.contains("雨伞") || item.name.contains("雨衣") ||
+                item.nameEn.lowercased().contains("umbrella") ||
                 item.nameEn.lowercased().contains("raincoat")
             }
-            
+
             if !hasUmbrella {
-                // 添加雨伞
                 let umbrella = TripItem(
                     id: "weather_umbrella_\(UUID().uuidString)",
                     name: "雨伞",
                     nameEn: "Umbrella",
                     category: "其他",
                     categoryEn: "Other",
-                    isChecked: false
+                    sortOrder: ItemCategory.other.sortOrder
                 )
                 adjustedItems.append(umbrella)
             }
         }
-        
+
         // 检查温度范围（仅使用有效数据）
         let validLowTemps = forecasts.compactMap { $0.lowTemp }
         let validHighTemps = forecasts.compactMap { $0.highTemp }
 
         guard !validLowTemps.isEmpty && !validHighTemps.isEmpty else {
-            // 没有有效温度数据，不进行温度相关的物品调整
             return adjustedItems
         }
 
@@ -363,7 +360,7 @@ class WeatherService {
                 item.nameEn.lowercased().contains("jacket") ||
                 item.nameEn.lowercased().contains("coat")
             }
-            
+
             if !hasWarmClothing {
                 let jacket = TripItem(
                     id: "weather_jacket_\(UUID().uuidString)",
@@ -371,12 +368,12 @@ class WeatherService {
                     nameEn: "Warm Jacket",
                     category: "衣物",
                     categoryEn: "Clothing",
-                    isChecked: false
+                    sortOrder: ItemCategory.clothing.sortOrder
                 )
                 adjustedItems.append(jacket)
             }
         }
-        
+
         // 高温：添加防晒物品
         if avgHighTemp > 25 {
             let hasSunProtection = adjustedItems.contains { item in
@@ -384,7 +381,7 @@ class WeatherService {
                 item.nameEn.lowercased().contains("sunscreen") ||
                 item.nameEn.lowercased().contains("sunglasses")
             }
-            
+
             if !hasSunProtection {
                 let sunscreen = TripItem(
                     id: "weather_sunscreen_\(UUID().uuidString)",
@@ -392,22 +389,22 @@ class WeatherService {
                     nameEn: "Sunscreen",
                     category: "洗漱用品",
                     categoryEn: "Toiletries",
-                    isChecked: false
+                    sortOrder: ItemCategory.toiletries.sortOrder
                 )
                 adjustedItems.append(sunscreen)
-                
+
                 let sunglasses = TripItem(
                     id: "weather_sunglasses_\(UUID().uuidString)",
                     name: "太阳镜",
                     nameEn: "Sunglasses",
                     category: "其他",
                     categoryEn: "Other",
-                    isChecked: false
+                    sortOrder: ItemCategory.other.sortOrder
                 )
                 adjustedItems.append(sunglasses)
             }
         }
-        
+
         return adjustedItems
     }
 }

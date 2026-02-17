@@ -432,7 +432,7 @@ class PresetData {
                     nameEn: customName,
                     category: ItemCategory.other.nameCN,
                     categoryEn: ItemCategory.other.nameEN,
-                    isChecked: false
+                    sortOrder: ItemCategory.other.sortOrder
                 )
                 tripItems.append(customTripItem)
             } else {
