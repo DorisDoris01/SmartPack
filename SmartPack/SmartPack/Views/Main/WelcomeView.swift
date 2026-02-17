@@ -149,8 +149,10 @@ struct WelcomeView: View {
     }
     
     private func saveAndDismiss(gender: Gender) {
-        // 保存性别选择
+        // 保存性别选择到 UserDefaults
         UserDefaults.standard.set(gender.rawValue, forKey: "user_gender")
+        // 同步更新 LocalizationManager 中的性别（这样 UI 会立即更新）
+        localization.userGender = gender
         // 标记已完成欢迎页
         UserDefaults.standard.set(true, forKey: "has_completed_onboarding")
         
