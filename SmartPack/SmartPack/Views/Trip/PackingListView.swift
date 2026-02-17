@@ -334,6 +334,10 @@ struct PackingListView: View {
             // Performance: 更新分组缓存当语言改变时
             groupedItems = PresetData.shared.groupByCategory(trip.items, language: newValue)
         }
+        .onChange(of: trip.itemsData) { _, _ in
+            // Performance: 更新分组缓存当 items 改变时（观察底层 Data 属性以确保触发）
+            groupedItems = PresetData.shared.groupByCategory(trip.items, language: localization.currentLanguage)
+        }
     }
     
     // MARK: - 进度头部
@@ -355,6 +359,9 @@ struct PackingListView: View {
     private func toggleItemAndCheckCompletion(_ itemId: String) {
         let wasAllChecked = trip.isAllChecked
         trip.toggleItem(itemId)
+
+        // Performance: 立即更新分组缓存
+        groupedItems = PresetData.shared.groupByCategory(trip.items, language: localization.currentLanguage)
 
         // 检查是否刚刚完成全部勾选（且未归档）
         if !wasAllChecked && trip.isAllChecked && !trip.isArchived {
