@@ -13,7 +13,7 @@ import Foundation
 // MARK: - PreferenceKey for header scroll detection
 
 private struct HeaderBoundsKey: PreferenceKey {
-    static var defaultValue: CGFloat = .zero
+    static var defaultValue: CGFloat = .infinity
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
     }
@@ -71,13 +71,6 @@ struct PackingListView: View {
 
 private extension PackingListView {
 
-    /// 提取当前行程包含的分类列表
-    func presentCategories(vm: PackingListViewModel) -> [ItemCategory] {
-        vm.groupedItems.compactMap { group in
-            ItemCategory.allCases.first { $0.nameCN == group.category || $0.nameEN == group.category }
-        }
-    }
-
     /// 根据分类名称获取强调色
     func accentColor(for categoryName: String) -> Color {
         let cat = ItemCategory.allCases.first { $0.nameCN == categoryName || $0.nameEN == categoryName }
@@ -91,8 +84,13 @@ private extension PackingListView {
                 VStack(spacing: Spacing.md) {
                     ProgressHeader(
                         trip: trip,
-                        language: localization.currentLanguage,
-                        categories: presentCategories(vm: vm)
+                        language: localization.currentLanguage
+                    )
+                    .background(
+                        GeometryReader { proxy in
+                            Color.clear
+                                .preference(key: HeaderBoundsKey.self, value: proxy.frame(in: .global).maxY)
+                        }
                     )
 
                     contextRow
@@ -121,12 +119,6 @@ private extension PackingListView {
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
-                .background(
-                    GeometryReader { proxy in
-                        Color.clear
-                            .preference(key: HeaderBoundsKey.self, value: proxy.frame(in: .global).maxY)
-                    }
-                )
             }
 
             // MARK: 分类 Section
@@ -157,7 +149,8 @@ private extension PackingListView {
         .scrollContentBackground(.hidden)
         .background(AppColors.background.ignoresSafeArea())
         .onPreferenceChange(HeaderBoundsKey.self) { maxY in
-            let collapsed = maxY < 0
+            // 当 ProgressHeader 底部滚动到导航栏下方时，显示浮动进度条
+            let collapsed = maxY < 100
             if isHeaderCollapsed != collapsed {
                 withAnimation(PremiumAnimation.snappy) {
                     isHeaderCollapsed = collapsed
@@ -226,17 +219,17 @@ private extension PackingListView {
     @ViewBuilder
     var compactProgressOverlay: some View {
         if isHeaderCollapsed {
-            CompactProgressBar(
+            ProgressHeader(
                 trip: trip,
                 language: localization.currentLanguage,
-                destination: trip.destination
+                isFloating: true
             )
-            .padding(.top, Spacing.xxs)
+            .padding(.top, 8)
             .transition(.asymmetric(
                 insertion: .move(edge: .top).combined(with: .opacity),
                 removal: .move(edge: .top).combined(with: .opacity)
             ))
-            .zIndex(1)
+            .zIndex(1000)
         }
     }
 

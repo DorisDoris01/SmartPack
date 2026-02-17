@@ -2,7 +2,7 @@
 //  CompactProgressBar.swift
 //  SmartPack
 //
-//  滚动时顶部紧凑进度条 — 迷你环形 + 毛玻璃
+//  滚动时顶部紧凑进度条 — 进度条 + 毛玻璃浮动
 //
 
 import SwiftUI
@@ -11,39 +11,58 @@ import SwiftUI
 struct CompactProgressBar: View {
     let trip: Trip
     let language: AppLanguage
-    let destination: String
 
-    private var ringColor: Color {
+    private var barColor: Color {
         trip.isAllChecked ? AppColors.success : AppColors.primary
+    }
+
+    private var percentage: Int {
+        trip.totalCount > 0 ? Int(trip.progress * 100) : 0
     }
 
     var body: some View {
         HStack(spacing: Spacing.sm) {
-            // 迷你环形进度
-            ZStack {
-                Circle()
-                    .stroke(AppColors.secondary.opacity(0.12), lineWidth: 2)
-                    .frame(width: 20, height: 20)
+            // 进度条 + 百分比叠加
+            GeometryReader { geo in
+                let fillWidth = geo.size.width * trip.progress
+                let barY = geo.size.height / 2
 
-                Circle()
-                    .trim(from: 0, to: trip.progress)
-                    .stroke(ringColor, style: StrokeStyle(lineWidth: 2, lineCap: .round))
-                    .frame(width: 20, height: 20)
-                    .rotationEffect(.degrees(-90))
+                // 轨道
+                Capsule()
+                    .fill(AppColors.secondary.opacity(0.12))
+                    .frame(width: geo.size.width, height: 4)
+                    .position(x: geo.size.width / 2, y: barY)
+
+                // 填充
+                if trip.progress > 0 {
+                    Capsule()
+                        .fill(barColor)
+                        .frame(width: fillWidth, height: 4)
+                        .position(x: fillWidth / 2, y: barY)
+                }
+
+                // 百分比文字
+                if percentage > 0 && !trip.isAllChecked {
+                    Text("\(percentage)%")
+                        .font(.system(size: 9, weight: .bold, design: .rounded))
+                        .foregroundStyle(barColor)
+                        .shadow(color: AppColors.background.opacity(0.9), radius: 1)
+                        .position(
+                            x: trip.progress <= 0.15
+                                ? max(fillWidth / 2, 12)
+                                : min(fillWidth, geo.size.width - 12),
+                            y: barY
+                        )
+                        .allowsHitTesting(false)
+                }
             }
+            .frame(height: 14)
 
+            // 计数
             Text("\(trip.checkedCount)/\(trip.totalCount)")
                 .font(Typography.caption.weight(.semibold))
-                .foregroundColor(ringColor)
-
-            if !destination.isEmpty {
-                Text(destination)
-                    .font(Typography.caption2)
-                    .foregroundColor(AppColors.textSecondary)
-                    .lineLimit(1)
-            }
-
-            Spacer()
+                .foregroundColor(barColor)
+                .fixedSize()
         }
         .padding(.horizontal, Spacing.md)
         .padding(.vertical, Spacing.xs)
