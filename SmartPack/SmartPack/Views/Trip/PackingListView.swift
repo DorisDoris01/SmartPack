@@ -34,8 +34,6 @@ struct PackingListView: View {
     // MARK: 纯 UI 状态
     @State private var showResetAlert = false
     @State private var showArchiveAlert = false
-    @State private var itemToDelete: TripItem?
-    @State private var showDeleteAlert = false
     @State private var isHeaderCollapsed = false
     @State private var showWeatherCard = true
     @State private var showTripSettings = true
@@ -57,8 +55,6 @@ struct PackingListView: View {
             message: { resetAlertMessage }
         .alert(archiveAlertTitle, isPresented: $showArchiveAlert) { archiveAlertActions }
             message: { archiveAlertMessage }
-        .alert(deleteAlertTitle, isPresented: $showDeleteAlert, presenting: itemToDelete) { deleteAlertActions($0) }
-            message: { deleteAlertMessage($0) }
         .onAppear { onViewAppear() }
         .onDisappear { vm?.stopLiveActivity() }
         .onChange(of: localization.currentLanguage) { _, newValue in
@@ -146,6 +142,7 @@ private extension PackingListView {
             }
         }
         .listStyle(.insetGrouped)
+        .contentMargins(.top, Spacing.xxs, for: .scrollContent)
         .scrollContentBackground(.hidden)
         .background(AppColors.background.ignoresSafeArea())
         .onPreferenceChange(HeaderBoundsKey.self) { maxY in
@@ -349,28 +346,6 @@ private extension PackingListView {
              : "Archived trips will be shown at the bottom of the list for easy reuse.")
     }
 
-    var deleteAlertTitle: String {
-        localization.currentLanguage == .chinese ? "删除物品" : "Delete Item"
-    }
-
-    func deleteAlertActions(_ item: TripItem) -> some View {
-        Group {
-            Button(localization.currentLanguage == .chinese ? "取消" : "Cancel", role: .cancel) {
-                itemToDelete = nil
-            }
-            Button(localization.currentLanguage == .chinese ? "删除" : "Delete", role: .destructive) {
-                HapticFeedback.light()
-                vm?.deleteItem(item.id, language: localization.currentLanguage)
-                itemToDelete = nil
-            }
-        }
-    }
-
-    func deleteAlertMessage(_ item: TripItem) -> some View {
-        Text(localization.currentLanguage == .chinese
-             ? "确定要删除「\(item.displayName(language: localization.currentLanguage))」吗？"
-             : "Are you sure you want to delete \"\(item.displayName(language: localization.currentLanguage))\"?")
-    }
 }
 
 // MARK: - Actions
@@ -394,10 +369,7 @@ private extension PackingListView {
     }
 
     func requestDeleteItem(_ itemId: String) {
-        if let item = trip.items.first(where: { $0.id == itemId }) {
-            itemToDelete = item
-            showDeleteAlert = true
-        }
+        vm?.deleteItem(itemId, language: localization.currentLanguage)
     }
 }
 

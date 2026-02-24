@@ -33,8 +33,12 @@ struct ItemManagementView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button(localization.currentLanguage == .chinese ? "完成" : "Done") {
+                Button {
                     dismiss()
+                } label: {
+                    Text(localization.currentLanguage == .chinese ? "完成" : "Done")
+                        .font(Typography.body)
+                        .fontWeight(.medium)
                 }
             }
         }
@@ -81,18 +85,20 @@ struct ItemManagementView: View {
             } label: {
                 HStack {
                     Image(systemName: "plus.circle.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(AppColors.primary)
                     Text(localization.currentLanguage == .chinese ? "添加物品" : "Add Item")
-                        .foregroundColor(.blue)
+                        .font(Typography.body)
+                        .foregroundColor(AppColors.primary)
                 }
             }
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: tag.icon)
-                    .foregroundColor(.blue)
+                    .foregroundColor(AppColors.primary)
                     .frame(width: 24)
-                
+
                 Text(tag.displayName(language: localization.currentLanguage))
+                    .font(Typography.body)
                 
                 Spacer()
                 
@@ -111,6 +117,7 @@ struct ItemManagementView: View {
         
         return HStack {
             Text(item.displayName(language: localization.currentLanguage))
+                .font(Typography.body)
                 .foregroundColor(isDeleted ? .secondary : .primary)
                 .strikethrough(isDeleted, color: .orange)
             
@@ -134,7 +141,7 @@ struct ItemManagementView: View {
                 } label: {
                     Label(localization.currentLanguage == .chinese ? "恢复" : "Restore", systemImage: "arrow.uturn.backward")
                 }
-                .tint(.blue)
+                .tint(AppColors.primary)
             } else {
                 // 删除按钮
                 Button {
@@ -152,6 +159,7 @@ struct ItemManagementView: View {
     private func customItemRow(itemName: String, tagId: String, presetCount: Int, customCount: Int) -> some View {
         HStack {
             Text(itemName)
+                .font(Typography.body)
                 .foregroundColor(.primary)
             
             Spacer()
@@ -230,14 +238,22 @@ struct AddCustomItemSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(localization.currentLanguage == .chinese ? "取消" : "Cancel") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Text(localization.currentLanguage == .chinese ? "取消" : "Cancel")
+                            .font(Typography.body)
+                            .fontWeight(.medium)
                     }
                 }
-                
+
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(localization.currentLanguage == .chinese ? "添加" : "Add") {
+                    Button {
                         addItem()
+                    } label: {
+                        Text(localization.currentLanguage == .chinese ? "添加" : "Add")
+                            .font(Typography.body)
+                            .fontWeight(.medium)
                     }
                     .disabled(itemName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }

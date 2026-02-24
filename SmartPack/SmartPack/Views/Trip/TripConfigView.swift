@@ -23,7 +23,7 @@ struct TripConfigView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: Spacing.lg) {
+                VStack(spacing: Spacing.sm) {
                     // Section 1: 出行时间（日期选择器）
                     dateRangeSection
 
@@ -57,23 +57,20 @@ struct TripConfigView: View {
             icon: "calendar"
         ) {
             VStack(spacing: Spacing.md) {
-                DatePicker(
-                    localization.text(chinese: "出发日期", english: "Start Date"),
-                    selection: $startDate,
-                    displayedComponents: .date
-                )
-                
-                DatePicker(
-                    localization.text(chinese: "返回日期", english: "End Date"),
-                    selection: $endDate,
-                    in: startDate...,
-                    displayedComponents: .date
-                )
-                
+                DatePicker(selection: $startDate, displayedComponents: .date) {
+                    Text(localization.text(chinese: "出发日期", english: "Start Date"))
+                        .font(Typography.body)
+                }
+
+                DatePicker(selection: $endDate, in: startDate..., displayedComponents: .date) {
+                    Text(localization.text(chinese: "返回日期", english: "End Date"))
+                        .font(Typography.body)
+                }
+
                 if endDate >= startDate {
                     let days = Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 0
                     Text(localization.text(chinese: "共 \(days + 1) 天", english: "\(days + 1) days"))
-                        .font(Typography.caption)
+                        .font(Typography.footnote)
                         .foregroundColor(.secondary)
                 }
             }
@@ -133,7 +130,7 @@ struct TripConfigView: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: Spacing.buttonHeight)
-                .background(Color.blue)
+                .background(AppColors.primary)
                 .cornerRadius(CornerRadius.lg)
         }
         .padding(.top, Spacing.xs)
@@ -216,12 +213,12 @@ struct SelectionButton: View {
                 .font(Typography.title2)
                 .frame(maxWidth: .infinity)
                 .frame(height: buttonHeight)
-                .background(isSelected ? Color.blue.opacity(0.15) : Color(.systemGray6))
-                .foregroundColor(isSelected ? .blue : .primary)
+                .background(isSelected ? AppColors.primaryLight : Color(.systemGray6))
+                .foregroundColor(isSelected ? AppColors.primary : .primary)
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
+                        .stroke(isSelected ? AppColors.primary : Color.clear, lineWidth: 2)
                 )
         }
         .buttonStyle(.plain)
@@ -254,13 +251,13 @@ struct DurationButton: View {
                 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(AppColors.primary)
                 }
             }
             .frame(height: buttonHeight)
             .padding(.horizontal, Spacing.md)
-            .background(isSelected ? Color.blue.opacity(0.1) : Color(.systemGray6))
-            .foregroundColor(isSelected ? .blue : .primary)
+            .background(isSelected ? AppColors.primaryLight : Color(.systemGray6))
+            .foregroundColor(isSelected ? AppColors.primary : .primary)
             .cornerRadius(CornerRadius.md)
         }
         .buttonStyle(.plain)

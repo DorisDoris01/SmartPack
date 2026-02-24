@@ -28,24 +28,24 @@ struct CategoryHeader: View {
                         .frame(width: 28, height: 28)
 
                     Image(systemName: icon)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(Typography.footnote)
                         .foregroundColor(accentColor)
                 }
 
                 Text(category)
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(Typography.title3)
                     .foregroundColor(AppColors.text)
 
                 // 计数
                 Text("\(checkedCount)/\(totalCount)")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(Typography.footnote)
                     .foregroundColor(Color(.systemGray))
 
                 Spacer()
 
                 // 旋转展开箭头
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(Typography.footnote)
                     .foregroundColor(Color(.systemGray2))
                     .rotationEffect(.degrees(isExpanded ? 90 : 0))
                     .animation(PremiumAnimation.snappy, value: isExpanded)

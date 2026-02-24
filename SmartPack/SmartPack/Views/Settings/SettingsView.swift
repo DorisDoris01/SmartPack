@@ -65,7 +65,8 @@ struct SettingsView: View {
                 .frame(width: 24)
             
             Text(localization.currentLanguage == .chinese ? "性别" : "Gender")
-            
+                .font(Typography.body)
+
             Spacer()
             
             Picker("", selection: Binding(
@@ -89,7 +90,8 @@ struct SettingsView: View {
                 .frame(width: 24)
             
             Text(localization.currentLanguage == .chinese ? "语言" : "Language")
-            
+                .font(Typography.body)
+
             Spacer()
             
             Picker("", selection: Binding(

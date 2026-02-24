@@ -140,7 +140,7 @@ struct HomeView: View {
                             }
 
                             Text(localization.currentLanguage == .chinese ? "还没有行程" : "No trips yet")
-                                .font(Typography.displayMedium)
+                                .font(Typography.title1)
                                 .foregroundColor(AppColors.textSecondary)
 
                             Text(localization.currentLanguage == .chinese

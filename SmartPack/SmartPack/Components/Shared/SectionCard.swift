@@ -24,7 +24,7 @@ struct SectionCard<Content: View>: View {
             HStack(spacing: Spacing.xs) {
                 Image(systemName: icon)
                     .foregroundColor(AppColors.primary)
-                    .frame(width: Spacing.lg)
+                    .frame(width: Spacing.md)
                 Text(title)
                     .font(Typography.headline)
             }
@@ -32,7 +32,7 @@ struct SectionCard<Content: View>: View {
             content
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Spacing.md)
+        .padding(16)
         .background(AppColors.background)
         .cornerRadius(CornerRadius.lg)
     }

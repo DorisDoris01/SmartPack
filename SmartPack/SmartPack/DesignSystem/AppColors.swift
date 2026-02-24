@@ -26,48 +26,48 @@ enum AppColors {
 
     // MARK: - Core Palette
 
-    /// 主题色 — Steel blue #6998AB
-    static let primary = adaptive(light: (0.41, 0.60, 0.67), dark: (0.52, 0.70, 0.77))
+    /// 主题色 — Deep teal #0E7490 / Bright cyan #22D3EE
+    static let primary = adaptive(light: (0.055, 0.455, 0.565), dark: (0.133, 0.827, 0.933))
 
-    /// 次要颜色 — Cool slate gray
-    static let secondary = adaptive(light: (0.47, 0.51, 0.55), dark: (0.60, 0.64, 0.68))
+    /// 次要颜色 — Teal-gray #4B6072 / #7A95AA
+    static let secondary = adaptive(light: (0.294, 0.376, 0.447), dark: (0.478, 0.584, 0.667))
 
-    /// 成功色 — Teal-green
-    static let success = adaptive(light: (0.35, 0.62, 0.50), dark: (0.45, 0.72, 0.58))
+    /// 成功色 — Deep forest #166534 / Bright green #4ADE80
+    static let success = adaptive(light: (0.086, 0.396, 0.204), dark: (0.290, 0.871, 0.502))
 
-    /// 警告色 — Gold amber
-    static let warning = adaptive(light: (0.80, 0.64, 0.32), dark: (0.88, 0.72, 0.42))
+    /// 警告色 — Deep amber #B45309 / Gold #FBBF24
+    static let warning = adaptive(light: (0.706, 0.325, 0.035), dark: (0.984, 0.749, 0.141))
 
-    /// 错误色 — Muted coral-red
-    static let error = adaptive(light: (0.77, 0.40, 0.38), dark: (0.85, 0.50, 0.47))
+    /// 错误色 — Deep red #B91C1C / Soft red #F87171
+    static let error = adaptive(light: (0.725, 0.110, 0.110), dark: (0.973, 0.443, 0.443))
 
     // MARK: - Backgrounds
 
-    /// 背景色 — Cool off-white / dark charcoal
-    static let background = adaptive(light: (0.96, 0.965, 0.97), dark: (0.10, 0.11, 0.12))
+    /// 背景色 — Teal-tinted white #F0F4F5 / Very dark teal #0C1418
+    static let background = adaptive(light: (0.941, 0.957, 0.961), dark: (0.047, 0.078, 0.094))
 
-    /// 次要背景色 — Subtle cool gray
-    static let secondaryBackground = adaptive(light: (0.93, 0.935, 0.94), dark: (0.14, 0.15, 0.16))
+    /// 次要背景色 — #E4ECEF / #141E24
+    static let secondaryBackground = adaptive(light: (0.894, 0.925, 0.937), dark: (0.078, 0.118, 0.141))
 
-    /// 卡片背景 — Near-white card
-    static let cardBackground = adaptive(light: (0.98, 0.98, 0.985), dark: (0.17, 0.18, 0.19))
+    /// 卡片背景 — #F8FAFB / #1A2830
+    static let cardBackground = adaptive(light: (0.973, 0.980, 0.984), dark: (0.102, 0.157, 0.188))
 
     // MARK: - Text
 
-    /// 文字主色 — Cool near-black
-    static let text = adaptive(light: (0.12, 0.13, 0.16), dark: (0.93, 0.94, 0.95))
+    /// 文字主色 — Dark teal-black #0C1E24 / #EDF4F7
+    static let text = adaptive(light: (0.047, 0.118, 0.141), dark: (0.929, 0.957, 0.969))
 
-    /// 文字次要色 — Medium cool gray
-    static let textSecondary = adaptive(light: (0.48, 0.51, 0.55), dark: (0.62, 0.65, 0.69))
+    /// 文字次要色 — #446070 / #7A9BAA
+    static let textSecondary = adaptive(light: (0.267, 0.376, 0.439), dark: (0.478, 0.608, 0.667))
 
     // MARK: - Derived / Utility
 
-    /// 主色浅底 — 12% opacity steel blue
-    static let primaryLight = adaptive(light: (0.41, 0.60, 0.67), dark: (0.52, 0.70, 0.77)).opacity(0.12)
+    /// 主色浅底 — 12% opacity teal
+    static let primaryLight = adaptive(light: (0.055, 0.455, 0.565), dark: (0.133, 0.827, 0.933)).opacity(0.12)
 
     /// 分割线
-    static let divider = adaptive(light: (0.47, 0.51, 0.55), dark: (0.60, 0.64, 0.68)).opacity(0.15)
+    static let divider = adaptive(light: (0.294, 0.376, 0.447), dark: (0.478, 0.584, 0.667)).opacity(0.15)
 
-    /// 归档强调色 — Muted slate
-    static let archiveAccent = adaptive(light: (0.50, 0.52, 0.60), dark: (0.61, 0.63, 0.71))
+    /// 归档强调色 — Teal slate #4A7080 / #6A90A0
+    static let archiveAccent = adaptive(light: (0.290, 0.439, 0.502), dark: (0.416, 0.565, 0.627))
 }

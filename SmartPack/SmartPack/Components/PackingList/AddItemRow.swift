@@ -17,6 +17,7 @@ struct AddItemRow: View {
 
     @EnvironmentObject var localization: LocalizationManager
     @FocusState private var isFocused: Bool
+    @State private var isEditing = false
     @State private var itemName = ""
     @State private var showPresetSuggestions = false
 
@@ -51,14 +52,17 @@ struct AddItemRow: View {
                     .stroke(Color(.systemGray3), lineWidth: 1.5)
                     .frame(width: circleSize, height: circleSize)
 
-                if isFocused || !itemName.isEmpty {
+                if isEditing || !itemName.isEmpty {
                     // 激活态：TextField
                     TextField(
                         localization.currentLanguage == .chinese ? "添加物品..." : "Add item...",
                         text: $itemName
                     )
-                    .font(.system(size: 17))
+                    .font(Typography.body)
                     .focused($isFocused)
+                    .onAppear {
+                        isFocused = true
+                    }
                     .onSubmit {
                         addItem()
                     }
@@ -71,17 +75,17 @@ struct AddItemRow: View {
                             addItem()
                         } label: {
                             Text(localization.currentLanguage == .chinese ? "添加" : "Add")
-                                .font(.system(size: 15, weight: .medium))
+                                .font(Typography.subheadline)
                                 .foregroundColor(accentColor)
                         }
                     }
                 } else {
                     // 未激活态：点击区域 — 类似 Reminders "新提醒事项"
                     Button {
-                        isFocused = true
+                        isEditing = true
                     } label: {
                         Text(localization.currentLanguage == .chinese ? "添加物品" : "Add Item")
-                            .font(.system(size: 17))
+                            .font(Typography.body)
                             .foregroundColor(Color(.systemGray2))
                     }
                     .buttonStyle(.plain)
@@ -122,6 +126,7 @@ struct AddItemRow: View {
         onAddItem(trimmedName)
         itemName = ""
         isFocused = false
+        isEditing = false
         showPresetSuggestions = false
     }
 }

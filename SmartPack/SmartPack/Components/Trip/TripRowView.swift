@@ -38,7 +38,7 @@ struct TripRowView: View {
                         .foregroundColor(AppColors.success)
                 } else {
                     Text("\(Int(trip.progress * 100))")
-                        .font(Typography.caption2)
+                        .font(Typography.caption)
                         .foregroundColor(AppColors.textSecondary)
                 }
             }
@@ -52,14 +52,14 @@ struct TripRowView: View {
             // 行程信息
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(trip.name)
-                    .font(Typography.headline)
+                    .font(Typography.title3)
                     .tracking(Typography.Tracking.tight)
                     .foregroundColor(isArchived ? AppColors.textSecondary : AppColors.text)
                     .lineLimit(1)
 
                 HStack(spacing: Spacing.xs) {
                     Text(trip.formattedDate(language: language))
-                        .font(Typography.caption)
+                        .font(Typography.footnote)
                         .tracking(Typography.Tracking.wide)
                         .foregroundColor(AppColors.textSecondary)
 
@@ -69,7 +69,7 @@ struct TripRowView: View {
                         .frame(width: 1, height: 10)
 
                     Text("\(trip.checkedCount)/\(trip.totalCount)")
-                        .font(Typography.caption)
+                        .font(Typography.footnote)
                         .tracking(Typography.Tracking.wide)
                         .foregroundColor(trip.isAllChecked ? AppColors.success : AppColors.textSecondary)
                 }

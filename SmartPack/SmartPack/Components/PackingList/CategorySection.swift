@@ -49,7 +49,7 @@ struct CategorySection: View {
             if isExpanded {
                 if items.isEmpty {
                     Text(language == .chinese ? "该分类暂无物品" : "No items in this category")
-                        .font(.system(size: 15))
+                        .font(Typography.footnote)
                         .foregroundColor(Color(.systemGray))
                         .listRowBackground(Color.clear)
                 } else {

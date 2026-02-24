@@ -25,7 +25,7 @@ struct CreateTripSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: Spacing.lg) {
+                VStack(spacing: Spacing.sm) {
                     dateRangeSection
                     destinationSection
                     tagSection
@@ -57,23 +57,20 @@ struct CreateTripSheet: View {
             icon: "calendar"
         ) {
             VStack(spacing: Spacing.md) {
-                DatePicker(
-                    localization.currentLanguage == .chinese ? "出发日期" : "Start Date",
-                    selection: $startDate,
-                    displayedComponents: .date
-                )
+                DatePicker(selection: $startDate, displayedComponents: .date) {
+                    Text(localization.currentLanguage == .chinese ? "出发日期" : "Start Date")
+                        .font(Typography.body)
+                }
 
-                DatePicker(
-                    localization.currentLanguage == .chinese ? "返回日期" : "End Date",
-                    selection: $endDate,
-                    in: startDate...,
-                    displayedComponents: .date
-                )
+                DatePicker(selection: $endDate, in: startDate..., displayedComponents: .date) {
+                    Text(localization.currentLanguage == .chinese ? "返回日期" : "End Date")
+                        .font(Typography.body)
+                }
 
                 if endDate >= startDate {
                     let days = Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 0
                     Text(localization.currentLanguage == .chinese ? "共 \(days + 1) 天" : "\(days + 1) days")
-                        .font(Typography.caption)
+                        .font(Typography.footnote)
                         .foregroundColor(.secondary)
                 }
             }
@@ -97,7 +94,7 @@ struct CreateTripSheet: View {
     // MARK: - SPEC: 标签选择（三组）
 
     private var tagSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.sm) {
             // 旅行活动
             SectionCard(
                 title: localization.currentLanguage == .chinese ? "旅行活动" : "Travel Activities",

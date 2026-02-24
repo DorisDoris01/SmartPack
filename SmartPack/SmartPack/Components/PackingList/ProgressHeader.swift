@@ -68,8 +68,9 @@ struct ProgressHeader: View {
                 }
             }
         }
-        .padding(.horizontal, Spacing.cardPadding)
-        .padding(.vertical, Spacing.xs)
+        .padding(.horizontal, Spacing.md)
+        .padding(.top, Spacing.xxs)
+        .padding(.bottom, Spacing.xs)
         .frame(maxWidth: .infinity)
     }
 

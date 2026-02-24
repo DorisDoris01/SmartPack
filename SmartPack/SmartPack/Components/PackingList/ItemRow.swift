@@ -49,7 +49,7 @@ struct ItemRow: View {
                             .frame(width: circleSize, height: circleSize)
 
                         Image(systemName: "checkmark")
-                            .font(.system(size: 11, weight: .bold))
+                            .font(Typography.caption2)
                             .foregroundColor(.white)
                     }
                 }
@@ -57,7 +57,7 @@ struct ItemRow: View {
 
                 // 物品名称
                 Text(item.displayName(language: language))
-                    .font(.system(size: 17))
+                    .font(Typography.body)
                     .foregroundColor(item.isChecked ? Color(.systemGray) : AppColors.text)
                     .strikethrough(item.isChecked, color: Color(.systemGray3))
 

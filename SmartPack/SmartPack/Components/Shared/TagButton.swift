@@ -22,7 +22,7 @@ struct TagButton: View {
             Image(systemName: tag.icon)
                 .font(Typography.title2)
                 .frame(width: buttonSize, height: buttonSize)
-                .background(isSelected ? Color.blue : Color(.systemGray6))
+                .background(isSelected ? AppColors.primary : Color(.systemGray6))
                 .foregroundColor(isSelected ? .white : .primary)
                 .cornerRadius(CornerRadius.lg)
         }

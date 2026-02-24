@@ -75,7 +75,7 @@ struct WelcomeView: View {
                     .foregroundColor(AppColors.primary)
                 
                 Text("SmartPack")
-                    .font(Typography.title1.bold())
+                    .font(Typography.largeTitle)
                 
                 Text(localization.currentLanguage == .chinese
                      ? "基于场景的智能行程助手\n帮你减少出行遗漏"
