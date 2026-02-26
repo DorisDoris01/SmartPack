@@ -13,7 +13,7 @@ struct AddItemRow: View {
     let categoryEnum: ItemCategory
     let existingItemIds: Set<String>
     let accentColor: Color
-    let onAddItem: (String) -> Void
+    let onAddItem: (String) -> Bool
 
     @EnvironmentObject var localization: LocalizationManager
     @FocusState private var isFocused: Bool
@@ -78,6 +78,7 @@ struct AddItemRow: View {
                                 .font(Typography.subheadline)
                                 .foregroundColor(accentColor)
                         }
+                        .buttonStyle(.borderless)
                     }
                 } else {
                     // 未激活态：点击区域 — 类似 Reminders "新提醒事项"
@@ -110,6 +111,7 @@ struct AddItemRow: View {
                                     .background(accentColor.opacity(0.12))
                                     .cornerRadius(CornerRadius.lg)
                             }
+                            .buttonStyle(.borderless)
                         }
                     }
                 }
@@ -123,10 +125,15 @@ struct AddItemRow: View {
         let trimmedName = itemName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return }
 
-        onAddItem(trimmedName)
-        itemName = ""
-        isFocused = false
-        isEditing = false
-        showPresetSuggestions = false
+        let isSuccess = onAddItem(trimmedName)
+
+        if isSuccess {
+            itemName = ""
+            isFocused = false
+            isEditing = false
+            showPresetSuggestions = false
+        } else {
+            HapticFeedback.error()
+        }
     }
 }

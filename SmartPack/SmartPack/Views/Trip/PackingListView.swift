@@ -136,7 +136,7 @@ private extension PackingListView {
                         requestDeleteItem(itemId)
                     },
                     onAddItem: { itemName in
-                        vm.addItem(to: group.category, name: itemName, language: localization.currentLanguage)
+                        return vm.addItem(to: group.category, name: itemName, language: localization.currentLanguage)
                     }
                 )
             }

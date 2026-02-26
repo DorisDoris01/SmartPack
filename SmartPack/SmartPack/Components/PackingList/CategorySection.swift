@@ -18,7 +18,7 @@ struct CategorySection: View {
     let onToggleExpand: () -> Void
     let onToggleItem: (String) -> Void
     let onDeleteItem: (String) -> Void
-    let onAddItem: (String) -> Void
+    let onAddItem: (String) -> Bool
 
     /// 分隔线对齐偏移：leading inset (20) + circleSize (22) + spacing (12)
     private let separatorLeadingInset: CGFloat = 54
@@ -72,7 +72,7 @@ struct CategorySection: View {
                     categoryEnum: categoryEnum,
                     existingItemIds: existingItemIds,
                     accentColor: accentColor,
-                    onAddItem: { itemName in onAddItem(itemName) }
+                    onAddItem: { itemName in return onAddItem(itemName) }
                 )
             }
         } header: {

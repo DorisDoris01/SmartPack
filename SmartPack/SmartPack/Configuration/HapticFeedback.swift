@@ -25,4 +25,10 @@ enum HapticFeedback {
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.warning)
     }
+
+    /// Error (e.g. duplicate item rejected)
+    static func error() {
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.error)
+    }
 }
