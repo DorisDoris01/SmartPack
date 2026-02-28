@@ -81,18 +81,20 @@ struct AddItemRow: View {
                         .buttonStyle(.borderless)
                     }
                 } else {
-                    // 未激活态：点击区域 — 类似 Reminders "新提醒事项"
-                    Button {
-                        isEditing = true
-                    } label: {
-                        Text(localization.currentLanguage == .chinese ? "添加物品" : "Add Item")
-                            .font(Typography.body)
-                            .foregroundColor(Color(.systemGray2))
-                    }
-                    .buttonStyle(.plain)
+                    // 未激活态：纯文本，tap 由 HStack onTapGesture 处理
+                    Text(localization.currentLanguage == .chinese ? "添加物品" : "Add Item")
+                        .font(Typography.body)
+                        .foregroundColor(Color(.systemGray2))
                 }
 
                 Spacer()
+            }
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if !isEditing && itemName.isEmpty {
+                    isEditing = true
+                }
             }
 
             // 预设 Item 建议

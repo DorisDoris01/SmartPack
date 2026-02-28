@@ -63,6 +63,7 @@ struct ItemRow: View {
 
                 Spacer()
             }
+            .frame(minHeight: 44)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
