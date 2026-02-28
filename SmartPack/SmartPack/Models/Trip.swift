@@ -205,6 +205,17 @@ final class Trip {
         return formatter.string(from: createdAt)
     }
 
+    /// U1: 格式化出发日期
+    func formattedStartDate(language: AppLanguage) -> String {
+        guard let startDate else {
+            return language == .chinese ? "未设定出发日期" : "No departure date"
+        }
+        let formatter = DateFormatter()
+        formatter.locale = language == .chinese ? Locale(identifier: "zh_CN") : Locale(identifier: "en_US")
+        formatter.dateFormat = language == .chinese ? "M月d日 出发" : "'Departs' MMM d"
+        return formatter.string(from: startDate)
+    }
+
     // MARK: - Weather Integration
 
     /// 获取天气预报（带缓存优化）

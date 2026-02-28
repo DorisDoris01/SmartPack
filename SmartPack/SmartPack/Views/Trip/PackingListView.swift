@@ -35,8 +35,8 @@ struct PackingListView: View {
     @State private var showResetAlert = false
     @State private var showArchiveAlert = false
     @State private var isHeaderCollapsed = false
-    @State private var showWeatherCard = true
-    @State private var showTripSettings = true
+    @State private var showWeatherCard = false
+    @State private var showTripSettings = false
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -91,25 +91,16 @@ private extension PackingListView {
 
                     contextRow
 
-                    if showWeatherCard && trip.hasWeatherData {
-                        WeatherCard(
-                            forecasts: trip.weatherForecasts,
-                            destination: trip.destination,
-                            startDate: trip.startDate,
-                            endDate: trip.endDate
+                    if (showWeatherCard && trip.hasWeatherData) || (showTripSettings && trip.totalCount > 0) {
+                        CombinedInfoCard(
+                            trip: trip,
+                            showWeather: showWeatherCard && trip.hasWeatherData,
+                            showSettings: showTripSettings && trip.totalCount > 0
                         )
                         .transition(.asymmetric(
                             insertion: .move(edge: .top).combined(with: .opacity),
                             removal: .opacity
                         ))
-                    }
-
-                    if showTripSettings && trip.totalCount > 0 {
-                        TripSettingsCard(trip: trip)
-                            .transition(.asymmetric(
-                                insertion: .move(edge: .top).combined(with: .opacity),
-                                removal: .opacity
-                            ))
                     }
                 }
                 .listRowInsets(EdgeInsets())

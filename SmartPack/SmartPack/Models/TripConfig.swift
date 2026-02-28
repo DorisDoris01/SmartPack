@@ -135,10 +135,6 @@ struct TripConfig {
     
     /// 生成清单名称
     func generateListName(language: AppLanguage) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy/MM/dd"
-        let dateStr = dateFormatter.string(from: dateRange?.startDate ?? Date())
-        
         var parts: [String] = []
         
         // 添加目的地（如果有）
@@ -162,6 +158,7 @@ struct TripConfig {
             parts.append(language == .chinese ? "日常出行" : "Daily Travel")
         }
         
-        return "\(parts.joined(separator: " - ")) - \(dateStr)"
+        // U6: 日期已在卡片单独显示，不再拼入标题
+        return parts.joined(separator: " - ")
     }
 }

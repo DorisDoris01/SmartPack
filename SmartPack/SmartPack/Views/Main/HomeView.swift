@@ -18,6 +18,7 @@ struct HomeView: View {
     @State private var showingSettings = false
     @State private var showingItemManagement = false
     @State private var selectedTrip: Trip?
+    @State private var pendingTrip: Trip?
     @State private var tripToDelete: Trip?
     @State private var showingDeleteAlert = false
     @State private var emptyStateAppeared = false
@@ -33,142 +34,150 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                // Active 行程
-                if !activeTrips.isEmpty {
-                    Section {
-                        ForEach(activeTrips) { trip in
-                            NavigationLink(value: trip) {
-                                TripRowView(trip: trip, language: localization.currentLanguage)
-                            }
-                            // PRD: Trip Archive Enhancement - Active trips 横滑操作
-                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                // 删除按钮（红色，需要确认）
-                                Button(role: .destructive) {
-                                    deleteTrip(trip)
-                                } label: {
-                                    Label(
-                                        localization.currentLanguage == .chinese ? "删除" : "Delete",
-                                        systemImage: "trash"
-                                    )
-                                }
+            // L1: 空状态移出 List，条件切换视图实现垂直居中
+            Group {
+            if trips.isEmpty {
+                VStack(spacing: Spacing.lg) {
+                    // Halo: two concentric circles + suitcase icon
+                    ZStack {
+                        Circle()
+                            .stroke(AppColors.primary.opacity(0.06), lineWidth: 1)
+                            .frame(width: 120, height: 120)
+                        Circle()
+                            .stroke(AppColors.primary.opacity(0.12), lineWidth: 1)
+                            .frame(width: 88, height: 88)
+                        Image(systemName: "suitcase")
+                            .font(.system(size: 42, weight: .medium, design: .rounded))
+                            .foregroundColor(AppColors.primary)
+                    }
 
-                                // 归档按钮
-                                Button {
-                                    archiveTrip(trip)
-                                } label: {
-                                    Label(
-                                        localization.currentLanguage == .chinese ? "归档" : "Archive",
-                                        systemImage: "archivebox"
-                                    )
-                                }
-                                .tint(AppColors.archiveAccent)
-                            }
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets(
-                                top: Spacing.xs,
-                                leading: Spacing.md,
-                                bottom: Spacing.xs,
-                                trailing: Spacing.md
-                            ))
-                        }
+                    Text(localization.currentLanguage == .chinese ? "还没有行程" : "No trips yet")
+                        .font(Typography.title1)
+                        .foregroundColor(AppColors.textSecondary)
+
+                    Text(localization.currentLanguage == .chinese
+                         ? "点击右上角 + 开始你的第一次行程"
+                         : "Tap + to start your first trip")
+                        .font(Typography.subheadline)
+                        .tracking(Typography.Tracking.wide)
+                        .foregroundColor(AppColors.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, Spacing.xl)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(AppColors.background)
+                .opacity(emptyStateAppeared ? 1 : 0)
+                .offset(y: emptyStateAppeared ? 0 : 12)
+                .onAppear {
+                    withAnimation(PremiumAnimation.entrance) {
+                        emptyStateAppeared = true
                     }
                 }
-
-                // Archived 行程
-                if !archivedTrips.isEmpty {
-                    Section {
-                        ForEach(archivedTrips) { trip in
-                            NavigationLink(value: trip) {
-                                TripRowView(trip: trip, language: localization.currentLanguage, isArchived: true)
-                            }
-                            // PRD: Trip Archive Enhancement - Archived trips 横滑操作
-                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                // 删除按钮（红色，需要确认）
-                                Button(role: .destructive) {
-                                    deleteTrip(trip)
-                                } label: {
-                                    Label(
-                                        localization.currentLanguage == .chinese ? "删除" : "Delete",
-                                        systemImage: "trash"
-                                    )
+            } else {
+                List {
+                    // Active 行程
+                    if !activeTrips.isEmpty {
+                        Section {
+                            ForEach(activeTrips) { trip in
+                                // U4: ZStack 隐藏系统 chevron
+                                ZStack {
+                                    NavigationLink(value: trip) { EmptyView() }
+                                        .opacity(0)
+                                    TripRowView(trip: trip, language: localization.currentLanguage)
                                 }
+                                // PRD: Trip Archive Enhancement - Active trips 横滑操作
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    // 删除按钮（红色，需要确认）
+                                    // 不使用 role: .destructive — 它会在确认前自动移除行
+                                    Button {
+                                        deleteTrip(trip)
+                                    } label: {
+                                        Label(
+                                            localization.currentLanguage == .chinese ? "删除" : "Delete",
+                                            systemImage: "trash"
+                                        )
+                                    }
+                                    .tint(.red)
 
-                                // 取消归档按钮
-                                Button {
-                                    unarchiveTrip(trip)
-                                } label: {
-                                    Label(
-                                        localization.currentLanguage == .chinese ? "取消归档" : "Unarchive",
-                                        systemImage: "arrow.uturn.backward"
-                                    )
+                                    // 归档按钮
+                                    Button {
+                                        archiveTrip(trip)
+                                    } label: {
+                                        Label(
+                                            localization.currentLanguage == .chinese ? "归档" : "Archive",
+                                            systemImage: "archivebox"
+                                        )
+                                    }
+                                    .tint(AppColors.archiveAccent)
                                 }
-                                .tint(AppColors.archiveAccent)
-                            }
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets(
-                                top: Spacing.xs,
-                                leading: Spacing.md,
-                                bottom: Spacing.xs,
-                                trailing: Spacing.md
-                            ))
-                        }
-                    } header: {
-                        Text(localization.currentLanguage == .chinese ? "已归档" : "Archived")
-                            .sectionHeaderStyle()
-                            .padding(.leading, Spacing.xxs)
-                    }
-                }
-
-                // 空状态
-                if trips.isEmpty {
-                    Section {
-                        VStack(spacing: Spacing.lg) {
-                            // Halo: two concentric circles + suitcase icon
-                            ZStack {
-                                Circle()
-                                    .stroke(AppColors.primary.opacity(0.06), lineWidth: 1)
-                                    .frame(width: 120, height: 120)
-                                Circle()
-                                    .stroke(AppColors.primary.opacity(0.12), lineWidth: 1)
-                                    .frame(width: 88, height: 88)
-                                Image(systemName: "suitcase")
-                                    .font(.system(size: 42, weight: .medium, design: .rounded))
-                                    .foregroundColor(AppColors.primary)
-                            }
-
-                            Text(localization.currentLanguage == .chinese ? "还没有行程" : "No trips yet")
-                                .font(Typography.title1)
-                                .foregroundColor(AppColors.textSecondary)
-
-                            Text(localization.currentLanguage == .chinese
-                                 ? "点击右上角 + 开始你的第一次行程"
-                                 : "Tap + to start your first trip")
-                                .font(Typography.subheadline)
-                                .tracking(Typography.Tracking.wide)
-                                .foregroundColor(AppColors.textSecondary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, Spacing.xl)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, Spacing.xxxl)
-                        .opacity(emptyStateAppeared ? 1 : 0)
-                        .offset(y: emptyStateAppeared ? 0 : 12)
-                        .onAppear {
-                            withAnimation(PremiumAnimation.entrance) {
-                                emptyStateAppeared = true
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
+                                .listRowInsets(EdgeInsets(
+                                    top: 6,
+                                    leading: Spacing.md,
+                                    bottom: 6,
+                                    trailing: Spacing.md
+                                ))
                             }
                         }
                     }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
+
+                    // Archived 行程
+                    if !archivedTrips.isEmpty {
+                        Section {
+                            ForEach(archivedTrips) { trip in
+                                // U4: ZStack 隐藏系统 chevron
+                                ZStack {
+                                    NavigationLink(value: trip) { EmptyView() }
+                                        .opacity(0)
+                                    TripRowView(trip: trip, language: localization.currentLanguage, isArchived: true)
+                                }
+                                // PRD: Trip Archive Enhancement - Archived trips 横滑操作
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    // 删除按钮（红色，需要确认）
+                                    // 不使用 role: .destructive — 它会在确认前自动移除行
+                                    Button {
+                                        deleteTrip(trip)
+                                    } label: {
+                                        Label(
+                                            localization.currentLanguage == .chinese ? "删除" : "Delete",
+                                            systemImage: "trash"
+                                        )
+                                    }
+                                    .tint(.red)
+
+                                    // 取消归档按钮
+                                    Button {
+                                        unarchiveTrip(trip)
+                                    } label: {
+                                        Label(
+                                            localization.currentLanguage == .chinese ? "取消归档" : "Unarchive",
+                                            systemImage: "arrow.uturn.backward"
+                                        )
+                                    }
+                                    .tint(AppColors.archiveAccent)
+                                }
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
+                                .listRowInsets(EdgeInsets(
+                                    top: 6,
+                                    leading: Spacing.md,
+                                    bottom: 6,
+                                    trailing: Spacing.md
+                                ))
+                            }
+                        } header: {
+                            Text(localization.currentLanguage == .chinese ? "已归档" : "Archived")
+                                .sectionHeaderStyle()
+                                .padding(.leading, Spacing.xxs)
+                        }
+                    }
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .background(AppColors.background)
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            .background(AppColors.background)
+            } // Group
             .navigationTitle(localization.currentLanguage == .chinese ? "我的行程" : "My Trips")
             .navigationDestination(for: Trip.self) { trip in
                 PackingListView(trip: trip, isNewlyCreated: false)
@@ -188,7 +197,7 @@ struct HomeView: View {
                             showingItemManagement = true
                         } label: {
                             Label(
-                                localization.currentLanguage == .chinese ? "Item 管理" : "Item Management",
+                                localization.currentLanguage == .chinese ? "物品管理" : "Item Management",
                                 systemImage: "checklist"
                             )
                         }
@@ -206,13 +215,16 @@ struct HomeView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showingCreateTrip) {
+            // T4: onDismiss 回调替代硬编码延迟，避免导航竞态
+            .sheet(isPresented: $showingCreateTrip, onDismiss: {
+                if let trip = pendingTrip {
+                    selectedTrip = trip
+                    pendingTrip = nil
+                }
+            }) {
                 CreateTripSheet(modelContext: modelContext) { trip in
+                    pendingTrip = trip
                     showingCreateTrip = false
-                    // 延迟导航到新创建的行程
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        selectedTrip = trip
-                    }
                 }
                 .environmentObject(localization)
             }
@@ -259,20 +271,22 @@ struct HomeView: View {
         showingDeleteAlert = true
     }
 
-    // SPEC v1.5 F-4.3: 确认删除
+    // U3: 确认删除 — withAnimation 避免归档区跳动
     private func deleteTripConfirmed(_ trip: Trip) {
-        modelContext.delete(trip)
-        try? modelContext.save()
+        withAnimation(.easeInOut(duration: 0.3)) {
+            modelContext.delete(trip)
+            try? modelContext.save()
+        }
         tripToDelete = nil
     }
 
-    // PRD: Trip Archive Enhancement - 归档操作（无需确认）
+    // U8: 归档操作 — 移除 withAnimation，使用 SwiftUI 默认 List 过渡
     private func archiveTrip(_ trip: Trip) {
         trip.archive()
         try? modelContext.save()
     }
 
-    // PRD: Trip Archive Enhancement - 取消归档操作（无需确认）
+    // U8: 取消归档操作 — 移除 withAnimation，使用 SwiftUI 默认 List 过渡
     private func unarchiveTrip(_ trip: Trip) {
         trip.unarchive()
         try? modelContext.save()

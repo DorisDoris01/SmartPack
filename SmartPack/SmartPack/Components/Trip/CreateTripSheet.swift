@@ -33,7 +33,7 @@ struct CreateTripSheet: View {
                 }
                 .padding()
             }
-            .background(Color(.systemGroupedBackground))
+            .background(AppColors.background)
             .navigationTitle(localization.currentLanguage == .chinese ? "新建行程" : "New Trip")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
