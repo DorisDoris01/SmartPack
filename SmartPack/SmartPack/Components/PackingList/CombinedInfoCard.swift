@@ -164,21 +164,6 @@ private struct CompactWeatherDay: View {
     }
 
     private var temperatureColor: Color {
-        guard let highTemp = forecast.highTemp, let lowTemp = forecast.lowTemp else {
-            return .secondary
-        }
-        let avgTemp = (highTemp + lowTemp) / 2
-        switch avgTemp {
-        case ..<5:
-            return Color(red: 0.2, green: 0.6, blue: 0.95)
-        case 5..<15:
-            return Color(red: 0.3, green: 0.7, blue: 0.85)
-        case 15..<25:
-            return Color(red: 0.3, green: 0.75, blue: 0.4)
-        case 25..<30:
-            return Color(red: 0.95, green: 0.6, blue: 0.2)
-        default:
-            return Color(red: 0.95, green: 0.3, blue: 0.3)
-        }
+        AppColors.primary
     }
 }
