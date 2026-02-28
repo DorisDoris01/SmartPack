@@ -97,22 +97,50 @@ struct CombinedInfoCard: View {
         }
     }
 
-    private func formatDateRange(start: Date, end: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = localization.currentLanguage == .chinese ? "yyyy/MM/dd" : "MMM d, yyyy"
+    // MARK: - Cached DateFormatters
 
-        let startStr = formatter.string(from: start)
+    private static let dateFormatterCN: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy/MM/dd"
+        return f
+    }()
+
+    private static let dateFormatterEN: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d, yyyy"
+        return f
+    }()
+
+    private static let shortDateFormatterCN: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MM/dd"
+        return f
+    }()
+
+    private static let shortDateFormatterEN: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d"
+        return f
+    }()
+
+    private func formatDateRange(start: Date, end: Date) -> String {
+        let isChinese = localization.currentLanguage == .chinese
+        let fullFormatter = isChinese ? Self.dateFormatterCN : Self.dateFormatterEN
+        let startStr = fullFormatter.string(from: start)
 
         if Calendar.current.isDate(start, inSameDayAs: end) {
             return startStr
         }
 
         let calendar = Calendar.current
+        let endFormatter: DateFormatter
         if calendar.component(.year, from: start) == calendar.component(.year, from: end) {
-            formatter.dateFormat = localization.currentLanguage == .chinese ? "MM/dd" : "MMM d"
+            endFormatter = isChinese ? Self.shortDateFormatterCN : Self.shortDateFormatterEN
+        } else {
+            endFormatter = fullFormatter
         }
 
-        let endStr = formatter.string(from: end)
+        let endStr = endFormatter.string(from: end)
         return "\(startStr) - \(endStr)"
     }
 }
@@ -156,11 +184,15 @@ private struct CompactWeatherDay: View {
         .frame(width: 56)
     }
 
+    private static let dayFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "M/d"
+        return f
+    }()
+
     // Always M/d format — no "Today" or weekday names
     private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "M/d"
-        return formatter.string(from: date)
+        Self.dayFormatter.string(from: date)
     }
 
     private var temperatureColor: Color {

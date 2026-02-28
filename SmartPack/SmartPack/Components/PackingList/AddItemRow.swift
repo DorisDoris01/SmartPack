@@ -46,14 +46,13 @@ struct AddItemRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
-            HStack(spacing: Spacing.sm) {
-                // 空心圆图标 — 与 ItemRow 的未选中状态一致
-                Circle()
-                    .stroke(Color(.systemGray3), lineWidth: 1.5)
-                    .frame(width: circleSize, height: circleSize)
+            if isEditing || !itemName.isEmpty {
+                // 编辑态：TextField + 添加按钮，无额外手势
+                HStack(spacing: Spacing.sm) {
+                    Circle()
+                        .stroke(Color(.systemGray3), lineWidth: 1.5)
+                        .frame(width: circleSize, height: circleSize)
 
-                if isEditing || !itemName.isEmpty {
-                    // 激活态：TextField
                     TextField(
                         localization.currentLanguage == .chinese ? "添加物品..." : "Add item...",
                         text: $itemName
@@ -80,21 +79,30 @@ struct AddItemRow: View {
                         }
                         .buttonStyle(.borderless)
                     }
-                } else {
-                    // 未激活态：纯文本，tap 由 HStack onTapGesture 处理
-                    Text(localization.currentLanguage == .chinese ? "添加物品" : "Add Item")
-                        .font(Typography.body)
-                        .foregroundColor(Color(.systemGray2))
-                }
 
-                Spacer()
-            }
-            .frame(minHeight: 44)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                if !isEditing && itemName.isEmpty {
-                    isEditing = true
+                    Spacer()
                 }
+                .frame(minHeight: 44)
+            } else {
+                // 未激活态：整行 Button，全宽可点击
+                Button {
+                    isEditing = true
+                } label: {
+                    HStack(spacing: Spacing.sm) {
+                        Circle()
+                            .stroke(Color(.systemGray3), lineWidth: 1.5)
+                            .frame(width: circleSize, height: circleSize)
+
+                        Text(localization.currentLanguage == .chinese ? "添加物品" : "Add Item")
+                            .font(Typography.body)
+                            .foregroundColor(Color(.systemGray2))
+
+                        Spacer()
+                    }
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
 
             // 预设 Item 建议
