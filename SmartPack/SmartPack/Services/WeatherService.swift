@@ -17,12 +17,7 @@ class WeatherService {
 
     private init() {}
     
-    /// 查询天气预报
-    /// - Parameters:
-    ///   - city: 城市名称
-    ///   - startDate: 开始日期
-    ///   - endDate: 结束日期
-    /// - Returns: 天气预报数组
+    /// 查询天气预报（城市名称 → 地理编码 → 天气）
     func fetchWeatherForecast(
         city: String,
         startDate: Date,
@@ -30,15 +25,25 @@ class WeatherService {
     ) async throws -> [WeatherForecast] {
         print("🌤️ 获取天气: 城市=\(city), 从 \(startDate) 到 \(endDate)")
 
-        // 步骤 1: 地理编码 - 将城市名称转换为经纬度
         guard let (latitude, longitude) = try? await geocodeCity(city) else {
             print("⚠️ 无法找到城市: \(city)，返回不可用数据")
             return generateUnavailableForecasts(startDate: startDate, endDate: endDate)
         }
 
         print("🌤️ 城市坐标: \(latitude), \(longitude)")
+        return try await fetchWeatherForecast(
+            latitude: latitude, longitude: longitude,
+            startDate: startDate, endDate: endDate
+        )
+    }
 
-        // 步骤 2: 获取天气预报
+    /// 查询天气预报（直接使用坐标，跳过地理编码）
+    func fetchWeatherForecast(
+        latitude: Double,
+        longitude: Double,
+        startDate: Date,
+        endDate: Date
+    ) async throws -> [WeatherForecast] {
         let dateFormatter = ISO8601DateFormatter()
         dateFormatter.formatOptions = [.withFullDate]
 
@@ -47,7 +52,6 @@ class WeatherService {
 
         print("🌤️ 请求日期范围: \(startDateStr) 到 \(endDateStr)")
 
-        // 构建请求 URL
         let urlString = "\(forecastURL)?latitude=\(latitude)&longitude=\(longitude)&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weathercode&timezone=auto&start_date=\(startDateStr)&end_date=\(endDateStr)"
 
         print("🌤️ API URL: \(urlString)")
@@ -56,12 +60,10 @@ class WeatherService {
             throw WeatherError.invalidURL
         }
 
-        // 发送请求
         let (data, response): (Data, URLResponse)
         do {
             (data, response) = try await URLSession.shared.data(from: url)
         } catch {
-            // 网络错误，返回不可用数据
             print("⚠️ 网络错误: \(error.localizedDescription)，返回不可用数据")
             return generateUnavailableForecasts(startDate: startDate, endDate: endDate)
         }
@@ -76,7 +78,6 @@ class WeatherService {
             return generateUnavailableForecasts(startDate: startDate, endDate: endDate)
         }
 
-        // 解析响应
         let decoder = JSONDecoder()
         let weatherResponse: OpenMeteoResponse
         do {
@@ -86,7 +87,6 @@ class WeatherService {
             return generateUnavailableForecasts(startDate: startDate, endDate: endDate)
         }
 
-        // 转换为 WeatherForecast 数组
         return convertToForecasts(
             response: weatherResponse,
             startDate: startDate,

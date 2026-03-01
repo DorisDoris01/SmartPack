@@ -119,6 +119,8 @@ struct TripConfig {
     var gender: Gender = .male
     var dateRange: TripDateRange? = nil  // SPEC: 出行时间（日期选择器）
     var destination: String = ""          // SPEC: 目的地（城市）
+    var destinationLatitude: Double? = nil
+    var destinationLongitude: Double? = nil
     var selectedActivityTags: Set<String> = []   // SPEC: 旅行活动
     var selectedOccasionTags: Set<String> = []    // SPEC: 特定场合
     var selectedConfigTags: Set<String> = []      // SPEC: 出行配置
