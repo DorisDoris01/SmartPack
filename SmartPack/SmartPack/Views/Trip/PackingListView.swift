@@ -348,6 +348,9 @@ private extension PackingListView {
             vm = PackingListViewModel(trip: trip, language: localization.currentLanguage)
         }
 
+        // F1 fix: 预热天气缓存，避免在 View body 中变更 @Transient 状态
+        trip.warmWeatherCache()
+
         vm?.startLiveActivityIfNeeded()
     }
 

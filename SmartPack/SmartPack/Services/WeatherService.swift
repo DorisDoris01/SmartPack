@@ -194,7 +194,7 @@ class WeatherService {
             let precipProb = daily.precipitationProbability[index]
             let weathercode = daily.weathercode[index]
 
-            let (condition, conditionDesc) = weatherCodeToCondition(weathercode)
+            let (condition, conditionDescCN, conditionDescEN) = weatherCodeToCondition(weathercode)
 
             print("🌤️ ✅ 添加日期 \(dateStr): \(lowTemp)°C - \(highTemp)°C")
             let forecast = WeatherForecast(
@@ -202,7 +202,8 @@ class WeatherService {
                 highTemp: highTemp,
                 lowTemp: lowTemp,
                 condition: condition,
-                conditionDescription: conditionDesc,
+                conditionDescription: conditionDescCN,
+                conditionDescriptionEn: conditionDescEN,
                 precipitationChance: precipProb / 100.0,
                 icon: weatherCodeToIcon(weathercode)
             )
@@ -240,35 +241,35 @@ class WeatherService {
         return allForecasts
     }
 
-    /// 将 WMO 天气代码转换为条件和描述
-    private func weatherCodeToCondition(_ code: Int) -> (String, String) {
+    /// 将 WMO 天气代码转换为条件和双语描述 (condition, CN, EN)
+    private func weatherCodeToCondition(_ code: Int) -> (String, String, String) {
         switch code {
         case 0:
-            return ("clear", "晴天")
+            return ("clear", "晴天", "Clear")
         case 1, 2, 3:
-            return ("cloudy", "多云")
+            return ("cloudy", "多云", "Cloudy")
         case 45, 48:
-            return ("fog", "雾")
+            return ("fog", "雾", "Fog")
         case 51, 53, 55:
-            return ("drizzle", "毛毛雨")
+            return ("drizzle", "毛毛雨", "Drizzle")
         case 61, 63, 65:
-            return ("rain", "雨")
+            return ("rain", "雨", "Rain")
         case 66, 67:
-            return ("rain", "冻雨")
+            return ("rain", "冻雨", "Freezing Rain")
         case 71, 73, 75:
-            return ("snow", "雪")
+            return ("snow", "雪", "Snow")
         case 77:
-            return ("snow", "雪粒")
+            return ("snow", "雪粒", "Snow Grains")
         case 80, 81, 82:
-            return ("shower", "阵雨")
+            return ("shower", "阵雨", "Showers")
         case 85, 86:
-            return ("snow", "阵雪")
+            return ("snow", "阵雪", "Snow Showers")
         case 95:
-            return ("thunderstorm", "雷暴")
+            return ("thunderstorm", "雷暴", "Thunderstorm")
         case 96, 99:
-            return ("thunderstorm", "雷暴伴冰雹")
+            return ("thunderstorm", "雷暴伴冰雹", "Thunderstorm with Hail")
         default:
-            return ("unknown", "未知")
+            return ("unknown", "未知", "Unknown")
         }
     }
 

@@ -16,6 +16,7 @@ struct CelebrationOverlay: View {
 
     @State private var confettiPieces: [ConfettiPiece] = []
     @State private var showContent = false
+    @State private var hasDismissed = false
 
     var body: some View {
         ZStack {
@@ -76,6 +77,9 @@ struct CelebrationOverlay: View {
     }
 
     private func dismissAndComplete() {
+        guard !hasDismissed else { return }
+        hasDismissed = true
+
         withAnimation(.easeOut(duration: 0.3)) {
             isPresented = false
         }

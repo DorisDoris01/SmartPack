@@ -13,7 +13,7 @@ import SwiftUI
 struct ItemManagementView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var localization: LocalizationManager
-    @StateObject private var customItemManager = CustomItemManager.shared
+    @State private var customItemManager = CustomItemManager.shared
     
     @State private var expandedTags: Set<String> = []
     /// 使用 item 驱动 sheet，避免 isPresented + 可选内容 的竞态导致空白
@@ -210,7 +210,7 @@ struct AddCustomItemSheet: View {
     
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var localization: LocalizationManager
-    @StateObject private var customItemManager = CustomItemManager.shared
+    @State private var customItemManager = CustomItemManager.shared
     
     @State private var itemName = ""
     @State private var showingError = false

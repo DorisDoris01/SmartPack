@@ -441,12 +441,10 @@ class PresetData {
             }
         }
         
-        // 5. 按分类排序
+        // 5. 按分类排序（F3 fix: 直接使用 TripItem.sortOrder，而非 rawValue 匹配）
         tripItems.sort { item1, item2 in
-            let cat1 = ItemCategory(rawValue: item1.category.lowercased()) ?? .other
-            let cat2 = ItemCategory(rawValue: item2.category.lowercased()) ?? .other
-            if cat1.sortOrder != cat2.sortOrder {
-                return cat1.sortOrder < cat2.sortOrder
+            if item1.sortOrder != item2.sortOrder {
+                return item1.sortOrder < item2.sortOrder
             }
             return item1.name < item2.name
         }

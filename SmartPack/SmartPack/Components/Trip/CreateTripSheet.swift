@@ -21,6 +21,7 @@ struct CreateTripSheet: View {
     @State private var startDate = Date()
     @State private var endDate = Calendar.current.date(byAdding: .day, value: 3, to: Date()) ?? Date()
     @State private var isGenerating = false
+    @State private var weatherTask: Task<Void, Never>?
 
     var body: some View {
         NavigationStack {
@@ -45,6 +46,9 @@ struct CreateTripSheet: View {
                             .font(Typography.body.weight(.medium))
                     }
                 }
+            }
+            .onDisappear {
+                weatherTask?.cancel()
             }
         }
     }
@@ -219,38 +223,46 @@ struct CreateTripSheet: View {
         // SPEC: 设置日期范围
         tripConfig.dateRange = TripDateRange(startDate: startDate, endDate: endDate)
 
-        var items = PresetData.shared.generatePackingList(
+        // F7 fix: 在 async 边界前快照所有值，避免跨 async 的可变捕获
+        let snapshotItems = PresetData.shared.generatePackingList(
             tagIds: tripConfig.allSelectedTags,
             gender: tripConfig.gender
         )
-
         let name = tripConfig.generateListName(language: localization.currentLanguage)
+        let gender = tripConfig.gender
+        let selectedTags = Array(tripConfig.allSelectedTags)
+        let destination = tripConfig.destination
+        let dateRangeStart = tripConfig.dateRange?.startDate
+        let dateRangeEnd = tripConfig.dateRange?.endDate
 
         // 计算 duration（兼容旧模型，根据天数映射）
         let duration: TripDuration
         if let dateRange = tripConfig.dateRange {
             duration = dateRange.toTripDuration()
         } else {
-            duration = .medium // 默认值
+            duration = .medium
         }
 
-        // SPEC: Weather Integration v1.0 - 查询天气并调整物品
-        Task {
+        // F7 fix: 存储 Task 句柄，以便 onDisappear 时取消
+        weatherTask = Task {
             await MainActor.run { isGenerating = true }
+            var items = snapshotItems
             var weatherForecasts: [WeatherForecast] = []
 
-            print("🚀 开始创建行程: 目的地=\(tripConfig.destination), 开始日期=\(startDate), 结束日期=\(endDate)")
+            print("🚀 开始创建行程: 目的地=\(destination), 开始日期=\(startDate), 结束日期=\(endDate)")
 
             // 如果有目的地和日期范围，查询天气
-            if !tripConfig.destination.isEmpty,
-               let dateRange = tripConfig.dateRange {
+            if !destination.isEmpty, let rangeStart = dateRangeStart, let rangeEnd = dateRangeEnd {
                 print("🚀 准备查询天气...")
                 do {
                     weatherForecasts = try await WeatherService.shared.fetchWeatherForecast(
-                        city: tripConfig.destination,
-                        startDate: dateRange.startDate,
-                        endDate: dateRange.endDate
+                        city: destination,
+                        startDate: rangeStart,
+                        endDate: rangeEnd
                     )
+                    // F7 fix: 天气返回后检查是否已被取消
+                    guard !Task.isCancelled else { return }
+
                     print("🚀 天气查询成功，获得 \(weatherForecasts.count) 天预报")
 
                     // 根据天气调整物品
@@ -259,22 +271,26 @@ struct CreateTripSheet: View {
                         forecasts: weatherForecasts
                     )
                 } catch {
+                    guard !Task.isCancelled else { return }
                     // 天气查询失败不影响创建行程，使用空数组
                     print("Weather fetch failed: \(error.localizedDescription)")
                 }
             }
 
+            // F7 fix: 插入前最终检查取消状态，防止幽灵行程
+            guard !Task.isCancelled else { return }
+
             // 在主线程创建 Trip
             await MainActor.run {
                 let trip = Trip(
                     name: name,
-                    gender: tripConfig.gender,
+                    gender: gender,
                     duration: duration,
-                    selectedTags: Array(tripConfig.allSelectedTags),
+                    selectedTags: selectedTags,
                     items: items,
-                    destination: tripConfig.destination,
-                    startDate: tripConfig.dateRange?.startDate,
-                    endDate: tripConfig.dateRange?.endDate,
+                    destination: destination,
+                    startDate: dateRangeStart,
+                    endDate: dateRangeEnd,
                     weatherForecasts: weatherForecasts
                 )
 

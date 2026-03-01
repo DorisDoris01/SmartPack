@@ -10,19 +10,20 @@
 //
 
 import Foundation
-import Combine
+import Observation
 
-/// 自定义 Item 管理器
-class CustomItemManager: ObservableObject {
+/// 自定义 Item 管理器（F8 fix: 迁移到 @Observable，统一观察系统）
+@Observable
+class CustomItemManager {
     static let shared = CustomItemManager()
-    
+
     /// 自定义 Item 存储
     /// Key: 标签 ID (如 "tag_formal")
     /// Value: 用户新增的 Item 名称数组
-    @Published private(set) var customItems: [String: [String]] = [:]
-    
+    private(set) var customItems: [String: [String]] = [:]
+
     /// SPEC v1.5: 已删除的预设 Item ID 集合
-    @Published private(set) var deletedPresetItemIds: Set<String> = []
+    private(set) var deletedPresetItemIds: Set<String> = []
     
     private let userDefaultsKey = "customItems"
     private let deletedPresetItemsKey = "deletedPresetItemIds"

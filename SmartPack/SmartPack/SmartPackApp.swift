@@ -35,6 +35,9 @@ struct SmartPackApp: App {
                         .interactiveDismissDisabled(true)
                 }
         }
+        // F2: Schema 由 SchemaVersions.swift 管理。当前 V1 使用轻量级初始化。
+        // 新增字段时，创建 SchemaV2 并切换为:
+        //   try ModelContainer(for: SchemaV2.self, migrationPlan: SmartPackMigrationPlan.self)
         .modelContainer(for: [Trip.self, TripItem.self])
     }
 }

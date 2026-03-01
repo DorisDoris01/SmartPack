@@ -218,16 +218,14 @@ final class Trip {
 
     // MARK: - Weather Integration
 
-    /// 获取天气预报（带缓存优化）
+    /// 获取天气预报（纯计算属性，不在 getter 中写入 @Transient 缓存）
     var weatherForecasts: [WeatherForecast] {
         get {
             if let cached = cachedWeather {
                 return cached
             }
             guard let data = weatherData else { return [] }
-            let decoded = (try? JSONDecoder().decode([WeatherForecast].self, from: data)) ?? []
-            cachedWeather = decoded
-            return decoded
+            return (try? JSONDecoder().decode([WeatherForecast].self, from: data)) ?? []
         }
         set {
             weatherData = try? JSONEncoder().encode(newValue)
@@ -235,8 +233,14 @@ final class Trip {
         }
     }
 
+    /// 预热天气缓存（在 onAppear 等非 body 上下文中调用，避免 getter 中变更状态）
+    func warmWeatherCache() {
+        guard cachedWeather == nil, let data = weatherData else { return }
+        cachedWeather = (try? JSONDecoder().decode([WeatherForecast].self, from: data)) ?? []
+    }
+
     /// 是否有天气数据
     var hasWeatherData: Bool {
-        !weatherForecasts.isEmpty
+        weatherData != nil
     }
 }

@@ -15,7 +15,8 @@ struct WeatherForecast: Codable, Identifiable {
     let highTemp: Double?     // 最高温度（摄氏度），nil 表示数据不可用
     let lowTemp: Double?      // 最低温度（摄氏度），nil 表示数据不可用
     let condition: String     // 天气状况（如 "clear", "rain", "cloudy", "unavailable"）
-    let conditionDescription: String  // 天气描述（如 "晴天", "小雨", "数据不可用"）
+    let conditionDescription: String  // 天气描述（中文，如 "晴天", "小雨"）
+    let conditionDescriptionEn: String // F11 fix: 天气描述（英文，如 "Clear", "Light Rain"）
     let precipitationChance: Double?  // 降水概率（0-1），nil 表示数据不可用
     let icon: String          // 天气图标名称
 
@@ -26,6 +27,7 @@ struct WeatherForecast: Codable, Identifiable {
         lowTemp: Double?,
         condition: String,
         conditionDescription: String,
+        conditionDescriptionEn: String = "",
         precipitationChance: Double?,
         icon: String
     ) {
@@ -35,6 +37,7 @@ struct WeatherForecast: Codable, Identifiable {
         self.lowTemp = lowTemp
         self.condition = condition
         self.conditionDescription = conditionDescription
+        self.conditionDescriptionEn = conditionDescriptionEn.isEmpty ? conditionDescription : conditionDescriptionEn
         self.precipitationChance = precipitationChance
         self.icon = icon
     }
@@ -45,26 +48,26 @@ struct WeatherForecast: Codable, Identifiable {
     }
 
     /// 创建一个"数据不可用"的天气预报
-    static func unavailable(for date: Date, language: AppLanguage = .chinese) -> WeatherForecast {
-        let description = language == .chinese ? "数据不可用" : "Not Available"
+    static func unavailable(for date: Date) -> WeatherForecast {
         return WeatherForecast(
             date: date,
             highTemp: nil,
             lowTemp: nil,
             condition: "unavailable",
-            conditionDescription: description,
+            conditionDescription: "数据不可用",
+            conditionDescriptionEn: "Not Available",
             precipitationChance: nil,
             icon: "questionmark.circle"
         )
     }
-    
-    /// 根据天气状况返回本地化描述
+
+    /// 根据天气状况返回本地化描述（F11 fix: 实际切换语言）
     func displayCondition(language: AppLanguage) -> String {
         switch language {
         case .chinese:
             return conditionDescription
         case .english:
-            return conditionDescription
+            return conditionDescriptionEn
         }
     }
     
