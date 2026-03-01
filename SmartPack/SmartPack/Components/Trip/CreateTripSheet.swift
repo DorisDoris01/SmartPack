@@ -70,13 +70,19 @@ struct CreateTripSheet: View {
                     Text(localization.currentLanguage == .chinese ? "返回日期" : "End Date")
                         .font(Typography.body)
                 }
-
-                if endDate >= startDate {
-                    let days = Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 0
-                    Text(localization.currentLanguage == .chinese ? "共 \(days + 1) 天" : "\(days + 1) days")
-                        .font(Typography.footnote)
-                        .foregroundColor(.secondary)
+                .onChange(of: startDate) { oldStart, newStart in
+                    let gap = Calendar.current.dateComponents([.day], from: oldStart, to: endDate).day ?? 3
+                    if newStart >= endDate {
+                        endDate = Calendar.current.date(
+                            byAdding: .day, value: max(gap, 1), to: newStart
+                        ) ?? newStart
+                    }
                 }
+
+                let days = Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 0
+                Text(localization.currentLanguage == .chinese ? "共 \(days + 1) 天" : "\(days + 1) days")
+                    .font(Typography.footnote)
+                    .foregroundColor(.secondary)
             }
         }
     }
@@ -88,11 +94,13 @@ struct CreateTripSheet: View {
             title: localization.currentLanguage == .chinese ? "目的地" : "Destination",
             icon: "mappin.circle"
         ) {
-            TextField(
-                localization.currentLanguage == .chinese ? "输入城市名称" : "Enter city name",
-                text: $tripConfig.destination
+            CitySearchField(
+                destination: $tripConfig.destination,
+                latitude: $tripConfig.destinationLatitude,
+                longitude: $tripConfig.destinationLongitude
             )
         }
+        .zIndex(1)
     }
 
     // MARK: - SPEC: 标签选择（三组）
@@ -232,6 +240,8 @@ struct CreateTripSheet: View {
         let gender = tripConfig.gender
         let selectedTags = Array(tripConfig.allSelectedTags)
         let destination = tripConfig.destination
+        let destinationLat = tripConfig.destinationLatitude
+        let destinationLon = tripConfig.destinationLongitude
         let dateRangeStart = tripConfig.dateRange?.startDate
         let dateRangeEnd = tripConfig.dateRange?.endDate
 
@@ -255,11 +265,17 @@ struct CreateTripSheet: View {
             if !destination.isEmpty, let rangeStart = dateRangeStart, let rangeEnd = dateRangeEnd {
                 print("🚀 准备查询天气...")
                 do {
-                    weatherForecasts = try await WeatherService.shared.fetchWeatherForecast(
-                        city: destination,
-                        startDate: rangeStart,
-                        endDate: rangeEnd
-                    )
+                    if let lat = destinationLat, let lon = destinationLon {
+                        weatherForecasts = try await WeatherService.shared.fetchWeatherForecast(
+                            latitude: lat, longitude: lon,
+                            startDate: rangeStart, endDate: rangeEnd
+                        )
+                    } else {
+                        weatherForecasts = try await WeatherService.shared.fetchWeatherForecast(
+                            city: destination,
+                            startDate: rangeStart, endDate: rangeEnd
+                        )
+                    }
                     // F7 fix: 天气返回后检查是否已被取消
                     guard !Task.isCancelled else { return }
 
