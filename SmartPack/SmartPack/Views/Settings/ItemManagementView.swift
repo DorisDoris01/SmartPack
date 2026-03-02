@@ -18,6 +18,8 @@ struct ItemManagementView: View {
     @State private var expandedTags: Set<String> = []
     /// 使用 item 驱动 sheet，避免 isPresented + 可选内容 的竞态导致空白
     @State private var selectedTagForAdd: Tag?
+    /// U1: 删除约束提示（每个标签至少保留 1 个 Item）
+    @State private var showingDeleteConstraintAlert = false
     
     var body: some View {
         List {
@@ -45,6 +47,16 @@ struct ItemManagementView: View {
         .sheet(item: $selectedTagForAdd) { tag in
             AddCustomItemSheet(tag: tag)
                 .environmentObject(localization)
+        }
+        .alert(
+            localization.currentLanguage == .chinese ? "无法删除" : "Cannot Delete",
+            isPresented: $showingDeleteConstraintAlert
+        ) {
+            Button(localization.currentLanguage == .chinese ? "确定" : "OK") { }
+        } message: {
+            Text(localization.currentLanguage == .chinese
+                 ? "每个标签至少需要保留一个物品。"
+                 : "Each tag must have at least one item.")
         }
     }
     
@@ -128,7 +140,7 @@ struct ItemManagementView: View {
                 .foregroundColor(.secondary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 2)
-                .background(Color(.systemGray5))
+                .background(AppColors.secondaryBackground)
                 .cornerRadius(4)
         }
         .padding(.leading, 36)
@@ -161,19 +173,18 @@ struct ItemManagementView: View {
             Text(itemName)
                 .font(Typography.body)
                 .foregroundColor(.primary)
-            
+
             Spacer()
-            
-            // 删除按钮
+        }
+        .padding(.leading, 36)
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button {
                 deleteCustomItem(itemName: itemName, tagId: tagId, presetCount: presetCount, customCount: customCount)
             } label: {
-                Image(systemName: "minus.circle.fill")
-                    .foregroundColor(.red)
+                Label(localization.currentLanguage == .chinese ? "删除" : "Delete", systemImage: "trash")
             }
-            .buttonStyle(.plain)
+            .tint(.red)
         }
-        .padding(.leading, 36)
     }
     
     // MARK: - 删除自定义 Item
@@ -182,7 +193,7 @@ struct ItemManagementView: View {
         // SPEC v1.5: 获取所有预设 Item ID（用于检查约束）
         let allPresetItemIds = PresetData.shared.allTags[tagId]?.itemIds ?? []
         if !customItemManager.canDeleteItem(tagId: tagId, presetItemIds: allPresetItemIds, customItemCount: customCount) {
-            // 提示用户不能删除最后一个
+            showingDeleteConstraintAlert = true
             return
         }
         
@@ -195,7 +206,7 @@ struct ItemManagementView: View {
         // SPEC v1.5 F-2.2: 检查是否至少保留 1 个 Item
         let allPresetItemIds = PresetData.shared.allTags[tagId]?.itemIds ?? []
         if !customItemManager.canDeleteItem(tagId: tagId, presetItemIds: allPresetItemIds, customItemCount: customCount) {
-            // 提示用户不能删除最后一个
+            showingDeleteConstraintAlert = true
             return
         }
         
@@ -215,6 +226,7 @@ struct AddCustomItemSheet: View {
     @State private var itemName = ""
     @State private var showingError = false
     @State private var errorMessage = ""
+    @FocusState private var isNameFieldFocused: Bool
     
     var body: some View {
         NavigationStack {
@@ -224,6 +236,12 @@ struct AddCustomItemSheet: View {
                         localization.currentLanguage == .chinese ? "输入物品名称" : "Enter item name",
                         text: $itemName
                     )
+                    .focused($isNameFieldFocused)
+                    .submitLabel(.done)
+                    .onSubmit {
+                        guard !itemName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+                        addItem()
+                    }
                 }
                 
                 Section {
@@ -234,12 +252,20 @@ struct AddCustomItemSheet: View {
                         .foregroundColor(.secondary)
                 }
             }
+            .onAppear { isNameFieldFocused = true }
             .navigationTitle(localization.currentLanguage == .chinese ? "添加物品" : "Add Item")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
-                        dismiss()
+                        if isNameFieldFocused {
+                            isNameFieldFocused = false
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                dismiss()
+                            }
+                        } else {
+                            dismiss()
+                        }
                     } label: {
                         Text(localization.currentLanguage == .chinese ? "取消" : "Cancel")
                             .font(Typography.body)
@@ -249,7 +275,14 @@ struct AddCustomItemSheet: View {
 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        addItem()
+                        if isNameFieldFocused {
+                            isNameFieldFocused = false
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                addItem()
+                            }
+                        } else {
+                            addItem()
+                        }
                     } label: {
                         Text(localization.currentLanguage == .chinese ? "添加" : "Add")
                             .font(Typography.body)

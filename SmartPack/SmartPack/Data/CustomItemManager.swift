@@ -24,11 +24,13 @@ class CustomItemManager {
 
     /// SPEC v1.5: 已删除的预设 Item ID 集合
     private(set) var deletedPresetItemIds: Set<String> = []
-    
+
     private let userDefaultsKey = "customItems"
     private let deletedPresetItemsKey = "deletedPresetItemIds"
-    
-    private init() {
+    private let defaults: UserDefaults
+
+    init(userDefaults: UserDefaults = .standard) {
+        self.defaults = userDefaults
         loadCustomItems()
         loadDeletedPresetItems()
     }
@@ -116,7 +118,7 @@ class CustomItemManager {
     // MARK: - 持久化
     
     private func loadCustomItems() {
-        guard let data = UserDefaults.standard.data(forKey: userDefaultsKey),
+        guard let data = defaults.data(forKey: userDefaultsKey),
               let decoded = try? JSONDecoder().decode([String: [String]].self, from: data) else {
             customItems = [:]
             return
@@ -126,12 +128,12 @@ class CustomItemManager {
     
     private func saveCustomItems() {
         guard let data = try? JSONEncoder().encode(customItems) else { return }
-        UserDefaults.standard.set(data, forKey: userDefaultsKey)
+        defaults.set(data, forKey: userDefaultsKey)
     }
     
     // SPEC v1.5: 加载已删除的预设 Item
     private func loadDeletedPresetItems() {
-        if let data = UserDefaults.standard.data(forKey: deletedPresetItemsKey),
+        if let data = defaults.data(forKey: deletedPresetItemsKey),
            let decoded = try? JSONDecoder().decode(Set<String>.self, from: data) {
             deletedPresetItemIds = decoded
         } else {
@@ -142,7 +144,7 @@ class CustomItemManager {
     // SPEC v1.5: 保存已删除的预设 Item
     private func saveDeletedPresetItems() {
         if let data = try? JSONEncoder().encode(deletedPresetItemIds) {
-            UserDefaults.standard.set(data, forKey: deletedPresetItemsKey)
+            defaults.set(data, forKey: deletedPresetItemsKey)
         }
     }
 }
