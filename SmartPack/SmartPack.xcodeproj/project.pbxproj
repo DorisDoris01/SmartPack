@@ -14,6 +14,7 @@
 		7B3436C92F3639C000D50327 /* smartpackExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7B3436B32F3639BD00D50327 /* smartpackExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7BB973D82F371B1200F76B8E /* PackingActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BB973D52F371B1200F76B8E /* PackingActivityWidget.swift */; };
 		7BB973D92F371B1200F76B8E /* PackingActivityWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BB973D62F371B1200F76B8E /* PackingActivityWidgetBundle.swift */; };
+		91FF533CA3204521E79D2548 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D266E97BCBDF5B2AD1C5B3FA /* Foundation.framework */; };
 		A10000120000000000000012 /* Trip.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000120000000000000012 /* Trip.swift */; };
 /* End PBXBuildFile section */
 
@@ -24,6 +25,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 7B3436B22F3639BD00D50327;
 			remoteInfo = smartpackExtension;
+		};
+		8AA2981CE196793C70B90FEB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A8000001000000000000002E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A6000001000000000000002A;
+			remoteInfo = SmartPack;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -51,6 +59,7 @@
 		7B5CE9902F3646A100773FEC /* Info-Extension.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-Extension.plist"; sourceTree = "<group>"; };
 		7BB973D52F371B1200F76B8E /* PackingActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackingActivityWidget.swift; sourceTree = "<group>"; };
 		7BB973D62F371B1200F76B8E /* PackingActivityWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackingActivityWidgetBundle.swift; sourceTree = "<group>"; };
+		99D4FBF10D2AA38339FAADA1 /* SmartPackTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SmartPackTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000010000000000000001 /* SmartPackApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartPackApp.swift; sourceTree = "<group>"; };
 		A20000020000000000000002 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		A20000030000000000000003 /* Tag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tag.swift; sourceTree = "<group>"; };
@@ -60,10 +69,11 @@
 		A2000011000000000000000B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A20000120000000000000012 /* Trip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Trip.swift; sourceTree = "<group>"; };
 		A3000001000000000000000C /* SmartPack.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmartPack.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D266E97BCBDF5B2AD1C5B3FA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		7B3F3E712F363D0A00103BFC /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		7B3F3E712F363D0A00103BFC /* Exceptions for "SmartPack" folder in "SmartPack" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				"Info-Extension.plist",
@@ -73,7 +83,7 @@
 			);
 			target = A6000001000000000000002A /* SmartPack */;
 		};
-		7B9EA6C72F371E3D00BFF36A /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		7B9EA6C72F371E3D00BFF36A /* Exceptions for "SmartPack" folder in "smartpackExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Activity/PackingActivityAttributes.swift,
@@ -83,10 +93,41 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		7B3436B92F3639BD00D50327 /* SmartPack */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (7B3F3E712F363D0A00103BFC /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 7B9EA6C72F371E3D00BFF36A /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SmartPack; sourceTree = "<group>"; };
+		7B3436B92F3639BD00D50327 /* SmartPack */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				7B3F3E712F363D0A00103BFC /* Exceptions for "SmartPack" folder in "SmartPack" target */,
+				7B9EA6C72F371E3D00BFF36A /* Exceptions for "SmartPack" folder in "smartpackExtension" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = SmartPack;
+			sourceTree = "<group>";
+		};
+		C460B41C9FBCC6CC41663DFD /* SmartPackTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = SmartPackTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		78CC46CB6479F58EF21D1D79 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				91FF533CA3204521E79D2548 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7B3436B02F3639BD00D50327 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -113,6 +154,7 @@
 				7B3436B42F3639BD00D50329 /* ActivityKit.framework */,
 				7B3436B52F3639BD00D50327 /* WidgetKit.framework */,
 				7B3436B72F3639BD00D50327 /* SwiftUI.framework */,
+				B90D3774676F0F2DDB0DDB7C /* iOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -134,6 +176,7 @@
 				7B3436B42F3639BD00D50327 /* Frameworks */,
 				A5000003000000000000001A /* Products */,
 				7BB973D72F371B1200F76B8E /* WidgetExtension */,
+				C460B41C9FBCC6CC41663DFD /* SmartPackTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -157,6 +200,7 @@
 			children = (
 				A3000001000000000000000C /* SmartPack.app */,
 				7B3436B32F3639BD00D50327 /* smartpackExtension.appex */,
+				99D4FBF10D2AA38339FAADA1 /* SmartPackTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -196,6 +240,14 @@
 			path = Localization;
 			sourceTree = "<group>";
 		};
+		B90D3774676F0F2DDB0DDB7C /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				D266E97BCBDF5B2AD1C5B3FA /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -212,8 +264,6 @@
 			dependencies = (
 			);
 			name = smartpackExtension;
-			packageProductDependencies = (
-			);
 			productName = smartpackExtension;
 			productReference = 7B3436B32F3639BD00D50327 /* smartpackExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -240,6 +290,27 @@
 			productReference = A3000001000000000000000C /* SmartPack.app */;
 			productType = "com.apple.product-type.application";
 		};
+		AD1ACAE614899656A4BC7627 /* SmartPackTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0B188A18BB3AC410903B1BAB /* Build configuration list for PBXNativeTarget "SmartPackTests" */;
+			buildPhases = (
+				162AE6ADDF12CE5A09E75954 /* Sources */,
+				78CC46CB6479F58EF21D1D79 /* Frameworks */,
+				BB59225316DE850E4558E7DA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				025A5A32AFE3A5C3D55FB8B5 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				C460B41C9FBCC6CC41663DFD /* SmartPackTests */,
+			);
+			name = SmartPackTests;
+			productName = SmartPackTests;
+			productReference = 99D4FBF10D2AA38339FAADA1 /* SmartPackTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -255,6 +326,10 @@
 					};
 					A6000001000000000000002A = {
 						CreatedOnToolsVersion = 15.0;
+					};
+					AD1ACAE614899656A4BC7627 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = A6000001000000000000002A;
 					};
 				};
 			};
@@ -273,6 +348,7 @@
 			targets = (
 				A6000001000000000000002A /* SmartPack */,
 				7B3436B22F3639BD00D50327 /* smartpackExtension */,
+				AD1ACAE614899656A4BC7627 /* SmartPackTests */,
 			);
 		};
 /* End PBXProject section */
@@ -292,9 +368,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BB59225316DE850E4558E7DA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		162AE6ADDF12CE5A09E75954 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7B3436AF2F3639BD00D50327 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -316,6 +406,12 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		025A5A32AFE3A5C3D55FB8B5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = SmartPack;
+			target = A6000001000000000000002A /* SmartPack */;
+			targetProxy = 8AA2981CE196793C70B90FEB /* PBXContainerItemProxy */;
+		};
 		7B3436C82F3639C000D50327 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 7B3436B22F3639BD00D50327 /* smartpackExtension */;
@@ -324,6 +420,28 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		32C1A13ABAA0A1BD8D19048D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CXHX3RBB8K;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.smartpack.app.doris.SmartPackTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SmartPack.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SmartPack";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		7B3436CB2F3639C000D50327 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -581,9 +699,39 @@
 			};
 			name = Release;
 		};
+		EAEA8981F1826A34AF8E7711 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = CXHX3RBB8K;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.smartpack.app.doris.SmartPackTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SmartPack.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SmartPack";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0B188A18BB3AC410903B1BAB /* Build configuration list for PBXNativeTarget "SmartPackTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				32C1A13ABAA0A1BD8D19048D /* Release */,
+				EAEA8981F1826A34AF8E7711 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		7B3436CE2F3639C000D50327 /* Build configuration list for PBXNativeTarget "smartpackExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
