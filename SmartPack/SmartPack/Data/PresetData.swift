@@ -175,7 +175,7 @@ class PresetData {
         Item(id: "cfg_intl_007", name: "洗发水", nameEn: "Shampoo", category: .toiletries, genderSpecific: nil),
         Item(id: "cfg_intl_008", name: "沐浴露", nameEn: "Body Wash", category: .toiletries, genderSpecific: nil),
 
-        // ========== SPEC 4.4: 出行配置 - 带娃 ==========
+        // ========== SPEC 4.4: 出行配置 - 带宝宝 ==========
         Item(id: "cfg_kids_001", name: "尿布", nameEn: "Diapers", category: .other, genderSpecific: nil),
         Item(id: "cfg_kids_002", name: "奶瓶/奶粉", nameEn: "Bottle/Formula", category: .other, genderSpecific: nil),
         Item(id: "cfg_kids_003", name: "湿巾", nameEn: "Wet Wipes", category: .other, genderSpecific: nil),
@@ -349,8 +349,8 @@ class PresetData {
         ),
         Tag(
             id: "with_kids",
-            name: "带娃",
-            nameEn: "With Kids",
+            name: "带宝宝",
+            nameEn: "With Baby",
             group: .config,
             icon: "figure.child",
             itemIds: ["cfg_kids_001", "cfg_kids_002", "cfg_kids_003", "cfg_kids_004", "cfg_kids_005", "cfg_kids_006"]
