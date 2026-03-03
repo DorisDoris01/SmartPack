@@ -74,7 +74,7 @@ struct ItemRow: View {
                 onDelete()
             } label: {
                 Label(
-                    localization.currentLanguage == .chinese ? "删除" : "Delete",
+                    localization.string(for: .delete),
                     systemImage: "trash"
                 )
             }
@@ -84,7 +84,7 @@ struct ItemRow: View {
                 onDelete()
             } label: {
                 Label(
-                    localization.currentLanguage == .chinese ? "删除" : "Delete",
+                    localization.string(for: .delete),
                     systemImage: "trash"
                 )
             }
@@ -92,7 +92,7 @@ struct ItemRow: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(item.displayName(language: language))
         .accessibilityHint(item.isChecked
-            ? (localization.currentLanguage == .chinese ? "已勾选，双击取消" : "Checked, double tap to uncheck")
-            : (localization.currentLanguage == .chinese ? "未勾选，双击勾选" : "Unchecked, double tap to check"))
+            ? localization.string(for: .checkedHint)
+            : localization.string(for: .uncheckedHint))
     }
 }

@@ -77,9 +77,7 @@ struct WelcomeView: View {
                 Text("SmartPack")
                     .font(Typography.largeTitle)
                 
-                Text(localization.currentLanguage == .chinese
-                     ? "基于场景的智能行程助手\n帮你减少出行遗漏"
-                     : "Smart trip packing assistant\nNever forget essentials again")
+                Text(localization.string(for: .welcomeSubtitle))
                     .font(Typography.subheadline)
                     .foregroundColor(AppColors.textSecondary)
                     .multilineTextAlignment(.center)
@@ -89,9 +87,7 @@ struct WelcomeView: View {
             
             // 性别选择
             VStack(spacing: Spacing.sm) {
-                Text(localization.currentLanguage == .chinese
-                     ? "选择你的性别"
-                     : "Select your gender")
+                Text(localization.string(for: .selectYourGender))
                     .font(Typography.headline)
                 
                 HStack(spacing: Spacing.md) {
@@ -116,7 +112,7 @@ struct WelcomeView: View {
                     saveAndDismiss(gender: gender)
                 }
             } label: {
-                Text(localization.currentLanguage == .chinese ? "开始使用" : "Get Started")
+                Text(localization.string(for: .getStarted))
                     .font(Typography.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -154,7 +150,7 @@ struct WelcomeView: View {
         // 同步更新 LocalizationManager 中的性别（这样 UI 会立即更新）
         localization.userGender = gender
         // 标记已完成欢迎页
-        UserDefaults.standard.set(true, forKey: "has_completed_onboarding")
+        localization.hasCompletedOnboarding = true
         
         dismissCard()
     }

@@ -18,11 +18,9 @@ struct SettingsView: View {
             Section {
                 genderRow
             } header: {
-                Text(localization.currentLanguage == .chinese ? "性别" : "Gender")
+                Text(localization.string(for: .gender))
             } footer: {
-                Text(localization.currentLanguage == .chinese
-                     ? "修改后将影响后续新建清单的物品过滤"
-                     : "Changes will affect items in future lists")
+                Text(localization.string(for: .genderFooter))
                     .font(Typography.caption)
             }
             
@@ -30,25 +28,25 @@ struct SettingsView: View {
             Section {
                 languageRow
             } header: {
-                Text(localization.currentLanguage == .chinese ? "语言" : "Language")
+                Text(localization.string(for: .language))
             }
-            
+
             // 关于
             Section {
                 aboutRow
             } header: {
-                Text(localization.currentLanguage == .chinese ? "关于" : "About")
+                Text(localization.string(for: .about))
             }
         }
         .listStyle(.insetGrouped)
-        .navigationTitle(localization.currentLanguage == .chinese ? "设置" : "Settings")
+        .navigationTitle(localization.string(for: .settings))
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     dismiss()
                 } label: {
-                    Text(localization.currentLanguage == .chinese ? "完成" : "Done")
+                    Text(localization.string(for: .done))
                         .font(Typography.body)
                         .fontWeight(.medium)
                 }
@@ -64,11 +62,11 @@ struct SettingsView: View {
                 .foregroundColor(AppColors.primary)
                 .frame(width: 24)
             
-            Text(localization.currentLanguage == .chinese ? "性别" : "Gender")
+            Text(localization.string(for: .gender))
                 .font(Typography.body)
 
             Spacer()
-            
+
             Picker("", selection: Binding(
                 get: { localization.userGender },
                 set: { localization.userGender = $0 }
@@ -89,7 +87,7 @@ struct SettingsView: View {
                 .foregroundColor(AppColors.primary)
                 .frame(width: 24)
             
-            Text(localization.currentLanguage == .chinese ? "语言" : "Language")
+            Text(localization.string(for: .language))
                 .font(Typography.body)
 
             Spacer()
@@ -125,9 +123,7 @@ struct SettingsView: View {
                     .foregroundColor(AppColors.textSecondary)
             }
             
-            Text(localization.currentLanguage == .chinese
-                 ? "基于场景的智能打包清单助手"
-                 : "Smart packing list assistant based on scenarios")
+            Text(localization.string(for: .appDescription))
                 .font(Typography.caption)
                 .foregroundColor(AppColors.textSecondary)
         }

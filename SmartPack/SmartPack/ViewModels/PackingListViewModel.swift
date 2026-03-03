@@ -16,6 +16,7 @@ import Observation
 /// - toggle 操作不重建分组（依赖 @Model 的 @Observable 精确追踪 isChecked）
 /// - 只在结构性变化（增、删、重置、语言切换）时才 rebuild 分组
 /// - existingItemIds 增量维护，不在渲染周期中临时计算
+@MainActor
 @Observable
 final class PackingListViewModel {
 
@@ -42,6 +43,8 @@ final class PackingListViewModel {
 
     init(trip: Trip, language: AppLanguage) {
         self.trip = trip
+        // F10: Safety net — recalculate counters in case of drift from direct mutations
+        trip.recalculateCounts()
         rebuildGroups(language: language)
         existingItemIds = Set(trip.items.map { $0.id })
         expandedCategories = Set(groupedItems.map { $0.category })
@@ -106,8 +109,8 @@ final class PackingListViewModel {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { return false }
 
-        // 去重：基于名称
-        let existingNames = Set(trip.items.map { $0.name.lowercased() })
+        // F16: 去重：同时检查中英文名称，避免英文模式下绕过去重
+        let existingNames = Set(trip.items.flatMap { [$0.name.lowercased(), $0.nameEn.lowercased()] })
         guard !existingNames.contains(trimmedName.lowercased()) else { return false }
 
         // 解析分类枚举

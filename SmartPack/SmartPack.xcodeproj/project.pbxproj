@@ -73,7 +73,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		7B3F3E712F363D0A00103BFC /* Exceptions for "SmartPack" folder in "SmartPack" target */ = {
+		7B3F3E712F363D0A00103BFC /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				"Info-Extension.plist",
@@ -83,7 +83,7 @@
 			);
 			target = A6000001000000000000002A /* SmartPack */;
 		};
-		7B9EA6C72F371E3D00BFF36A /* Exceptions for "SmartPack" folder in "smartpackExtension" target */ = {
+		7B9EA6C72F371E3D00BFF36A /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Activity/PackingActivityAttributes.swift,
@@ -93,30 +93,8 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		7B3436B92F3639BD00D50327 /* SmartPack */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				7B3F3E712F363D0A00103BFC /* Exceptions for "SmartPack" folder in "SmartPack" target */,
-				7B9EA6C72F371E3D00BFF36A /* Exceptions for "SmartPack" folder in "smartpackExtension" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = SmartPack;
-			sourceTree = "<group>";
-		};
-		C460B41C9FBCC6CC41663DFD /* SmartPackTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = SmartPackTests;
-			sourceTree = "<group>";
-		};
+		7B3436B92F3639BD00D50327 /* SmartPack */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (7B3F3E712F363D0A00103BFC /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 7B9EA6C72F371E3D00BFF36A /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SmartPack; sourceTree = "<group>"; };
+		C460B41C9FBCC6CC41663DFD /* SmartPackTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = SmartPackTests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */

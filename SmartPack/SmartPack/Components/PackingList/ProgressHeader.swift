@@ -2,16 +2,15 @@
 //  ProgressHeader.swift
 //  SmartPack
 //
-//  打包清单组件 - 进度条（常规 / 浮动两种密度）
+//  打包清单组件 - 进度条
 //
 
 import SwiftUI
 
-/// 进度条 — 常规模式：厚条+计数叠加；浮动模式：纯细条
+/// 进度条 — 厚条+计数叠加
 struct ProgressHeader: View {
     let trip: Trip
     let language: AppLanguage
-    var isFloating: Bool = false
 
     @State private var animatedProgress: Double = 0
 
@@ -27,13 +26,7 @@ struct ProgressHeader: View {
     }
 
     var body: some View {
-        Group {
-            if isFloating {
-                floatingBar
-            } else {
-                normalBar
-            }
-        }
+        normalBar
         .onAppear {
             withAnimation(PremiumAnimation.standard) {
                 animatedProgress = trip.progress
@@ -74,22 +67,7 @@ struct ProgressHeader: View {
         .frame(maxWidth: .infinity)
     }
 
-    // MARK: - 浮动模式：4pt 细条，无文字
-
-    @ViewBuilder
-    private var floatingBar: some View {
-        progressCapsule(height: 4, showCount: false)
-            .padding(.horizontal, Spacing.md)
-            .padding(.vertical, Spacing.xs)
-            .background(
-                .ultraThinMaterial,
-                in: RoundedRectangle(cornerRadius: CornerRadius.lg, style: .continuous)
-            )
-            .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
-            .shadow(color: Color.black.opacity(0.03), radius: 2, x: 0, y: 1)
-    }
-
-    // MARK: - 共享：进度胶囊条
+    // MARK: - 进度胶囊条
 
     @ViewBuilder
     private func progressCapsule(height: CGFloat, showCount: Bool) -> some View {

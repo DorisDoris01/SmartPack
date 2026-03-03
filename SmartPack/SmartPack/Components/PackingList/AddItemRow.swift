@@ -54,7 +54,7 @@ struct AddItemRow: View {
                         .frame(width: circleSize, height: circleSize)
 
                     TextField(
-                        localization.currentLanguage == .chinese ? "添加物品..." : "Add item...",
+                        localization.string(for: .addItemPlaceholder),
                         text: $itemName
                     )
                     .font(Typography.body)
@@ -73,7 +73,7 @@ struct AddItemRow: View {
                         Button {
                             addItem()
                         } label: {
-                            Text(localization.currentLanguage == .chinese ? "添加" : "Add")
+                            Text(localization.string(for: .add))
                                 .font(Typography.subheadline)
                                 .foregroundColor(accentColor)
                         }
@@ -93,7 +93,7 @@ struct AddItemRow: View {
                             .stroke(Color(.systemGray3), lineWidth: 1.5)
                             .frame(width: circleSize, height: circleSize)
 
-                        Text(localization.currentLanguage == .chinese ? "添加物品" : "Add Item")
+                        Text(localization.string(for: .addItem))
                             .font(Typography.body)
                             .foregroundColor(Color(.systemGray2))
 

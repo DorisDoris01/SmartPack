@@ -3,21 +3,12 @@
 //  SmartPack
 //
 //  行程物品页 - 原生 List(.insetGrouped) 布局
-//  环形进度 + 原生分类 Section + 毛玻璃浮动条
+//  进度条 + 原生分类 Section
 //
 
 import SwiftUI
 import SwiftData
 import Foundation
-
-// MARK: - PreferenceKey for header scroll detection
-
-private struct HeaderBoundsKey: PreferenceKey {
-    static var defaultValue: CGFloat = .infinity
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
-    }
-}
 
 // MARK: - PackingListView
 
@@ -34,7 +25,6 @@ struct PackingListView: View {
     // MARK: 纯 UI 状态
     @State private var showResetAlert = false
     @State private var showArchiveAlert = false
-    @State private var isHeaderCollapsed = false
     @State private var showWeatherCard = false
     @State private var showTripSettings = false
 
@@ -44,7 +34,6 @@ struct PackingListView: View {
                 mainContent(vm: vm)
             }
 
-            compactProgressOverlay
             celebrationOverlay
         }
         .navigationTitle(trip.name)
@@ -82,13 +71,6 @@ private extension PackingListView {
                         trip: trip,
                         language: localization.currentLanguage
                     )
-                    .background(
-                        GeometryReader { proxy in
-                            Color.clear
-                                .preference(key: HeaderBoundsKey.self, value: proxy.frame(in: .global).maxY)
-                        }
-                    )
-
                     contextRow
 
                     if (showWeatherCard && trip.hasWeatherData) || (showTripSettings && trip.totalCount > 0) {
@@ -136,15 +118,6 @@ private extension PackingListView {
         .contentMargins(.top, Spacing.xxs, for: .scrollContent)
         .scrollContentBackground(.hidden)
         .background(AppColors.background.ignoresSafeArea())
-        .onPreferenceChange(HeaderBoundsKey.self) { maxY in
-            // 当 ProgressHeader 底部滚动到导航栏下方时，显示浮动进度条
-            let collapsed = maxY < 100
-            if isHeaderCollapsed != collapsed {
-                withAnimation(PremiumAnimation.snappy) {
-                    isHeaderCollapsed = collapsed
-                }
-            }
-        }
     }
 
     // 上下文行：天气 + 设置胶囊按钮
@@ -161,7 +134,7 @@ private extension PackingListView {
                     HStack(spacing: Spacing.xxs) {
                         Image(systemName: "cloud.sun.fill")
                             .font(Typography.caption)
-                        Text(localization.currentLanguage == .chinese ? "天气" : "Weather")
+                        Text(localization.string(for: .weather))
                             .font(Typography.caption)
                     }
                     .foregroundColor(showWeatherCard ? .white : AppColors.primary)
@@ -183,7 +156,7 @@ private extension PackingListView {
                     HStack(spacing: Spacing.xxs) {
                         Image(systemName: "gearshape.fill")
                             .font(Typography.caption)
-                        Text(localization.currentLanguage == .chinese ? "设置" : "Settings")
+                        Text(localization.string(for: .settings))
                             .font(Typography.caption)
                     }
                     .foregroundColor(showTripSettings ? .white : AppColors.secondary)
@@ -203,23 +176,6 @@ private extension PackingListView {
 // MARK: - 覆盖层
 
 private extension PackingListView {
-
-    @ViewBuilder
-    var compactProgressOverlay: some View {
-        if isHeaderCollapsed {
-            ProgressHeader(
-                trip: trip,
-                language: localization.currentLanguage,
-                isFloating: true
-            )
-            .padding(.top, 8)
-            .transition(.asymmetric(
-                insertion: .move(edge: .top).combined(with: .opacity),
-                removal: .move(edge: .top).combined(with: .opacity)
-            ))
-            .zIndex(1000)
-        }
-    }
 
     @ViewBuilder
     var celebrationOverlay: some View {
@@ -248,7 +204,7 @@ private extension PackingListView {
                 Button {
                     dismiss()
                 } label: {
-                    Text(localization.currentLanguage == .chinese ? "完成" : "Done")
+                    Text(localization.string(for: .done))
                         .font(Typography.body)
                         .fontWeight(.medium)
                 }
@@ -261,7 +217,7 @@ private extension PackingListView {
                     showResetAlert = true
                 } label: {
                     Label(
-                        localization.currentLanguage == .chinese ? "重置行程" : "Reset Trip",
+                        localization.string(for: .resetTrip),
                         systemImage: "arrow.counterclockwise"
                     )
                 }
@@ -271,7 +227,7 @@ private extension PackingListView {
                         showArchiveAlert = true
                     } label: {
                         Label(
-                            localization.currentLanguage == .chinese ? "归档行程" : "Archive Trip",
+                            localization.string(for: .archiveTrip),
                             systemImage: "archivebox"
                         )
                     }
@@ -282,7 +238,7 @@ private extension PackingListView {
                         vm?.unarchiveTrip()
                     } label: {
                         Label(
-                            localization.currentLanguage == .chinese ? "取消归档" : "Unarchive",
+                            localization.string(for: .unarchive),
                             systemImage: "arrow.uturn.backward"
                         )
                     }
@@ -301,40 +257,36 @@ private extension PackingListView {
 private extension PackingListView {
 
     var resetAlertTitle: String {
-        localization.currentLanguage == .chinese ? "重置行程" : "Reset Trip"
+        localization.string(for: .resetTrip)
     }
 
     @ViewBuilder
     var resetAlertActions: some View {
-        Button(localization.currentLanguage == .chinese ? "取消" : "Cancel", role: .cancel) {}
-        Button(localization.currentLanguage == .chinese ? "确认重置" : "Reset", role: .destructive) {
+        Button(localization.string(for: .cancel), role: .cancel) {}
+        Button(localization.string(for: .confirmReset), role: .destructive) {
             vm?.resetAll(language: localization.currentLanguage)
         }
     }
 
     var resetAlertMessage: some View {
-        Text(localization.currentLanguage == .chinese
-             ? "将清空所有已勾选的物品，确认继续？"
-             : "This will uncheck all items. Continue?")
+        Text(localization.string(for: .resetTripMessage))
     }
 
     var archiveAlertTitle: String {
-        localization.currentLanguage == .chinese ? "归档行程" : "Archive Trip"
+        localization.string(for: .archiveTrip)
     }
 
     @ViewBuilder
     var archiveAlertActions: some View {
-        Button(localization.currentLanguage == .chinese ? "暂不归档" : "Not Now", role: .cancel) {}
-        Button(localization.currentLanguage == .chinese ? "归档" : "Archive") {
+        Button(localization.string(for: .notNow), role: .cancel) {}
+        Button(localization.string(for: .archive)) {
             vm?.archiveTrip()
             dismiss()
         }
     }
 
     var archiveAlertMessage: some View {
-        Text(localization.currentLanguage == .chinese
-             ? "归档后的行程将在列表底部显示，方便下次复用。"
-             : "Archived trips will be shown at the bottom of the list for easy reuse.")
+        Text(localization.string(for: .archiveTripMessage))
     }
 
 }

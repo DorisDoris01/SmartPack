@@ -18,7 +18,7 @@ struct SearchBar: View {
                 .foregroundColor(.secondary)
 
             TextField(
-                localization.currentLanguage == .chinese ? "搜索物品" : "Search items",
+                localization.string(for: .searchItems),
                 text: $text
             )
 

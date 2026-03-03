@@ -31,14 +31,14 @@ struct ItemManagementView: View {
                 }
             }
         }
-        .navigationTitle(localization.currentLanguage == .chinese ? "Item 管理" : "Item Management")
+        .navigationTitle(localization.string(for: .itemManagementTitle))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     dismiss()
                 } label: {
-                    Text(localization.currentLanguage == .chinese ? "完成" : "Done")
+                    Text(localization.string(for: .done))
                         .font(Typography.body)
                         .fontWeight(.medium)
                 }
@@ -49,14 +49,12 @@ struct ItemManagementView: View {
                 .environmentObject(localization)
         }
         .alert(
-            localization.currentLanguage == .chinese ? "无法删除" : "Cannot Delete",
+            localization.string(for: .cannotDelete),
             isPresented: $showingDeleteConstraintAlert
         ) {
-            Button(localization.currentLanguage == .chinese ? "确定" : "OK") { }
+            Button(localization.string(for: .ok)) { }
         } message: {
-            Text(localization.currentLanguage == .chinese
-                 ? "每个标签至少需要保留一个物品。"
-                 : "Each tag must have at least one item.")
+            Text(localization.string(for: .deleteConstraintMessage))
         }
     }
     
@@ -98,7 +96,7 @@ struct ItemManagementView: View {
                 HStack {
                     Image(systemName: "plus.circle.fill")
                         .foregroundColor(AppColors.primary)
-                    Text(localization.currentLanguage == .chinese ? "添加物品" : "Add Item")
+                    Text(localization.string(for: .addItem))
                         .font(Typography.body)
                         .foregroundColor(AppColors.primary)
                 }
@@ -135,7 +133,7 @@ struct ItemManagementView: View {
             
             Spacer()
             
-            Text(localization.currentLanguage == .chinese ? "预设" : "Preset")
+            Text(localization.string(for: .preset))
                 .font(Typography.caption2)
                 .foregroundColor(.secondary)
                 .padding(.horizontal, 8)
@@ -151,7 +149,7 @@ struct ItemManagementView: View {
                 Button {
                     customItemManager.restorePresetItem(item.id)
                 } label: {
-                    Label(localization.currentLanguage == .chinese ? "恢复" : "Restore", systemImage: "arrow.uturn.backward")
+                    Label(localization.string(for: .restore), systemImage: "arrow.uturn.backward")
                 }
                 .tint(AppColors.primary)
             } else {
@@ -159,7 +157,7 @@ struct ItemManagementView: View {
                 Button {
                     deletePresetItem(itemId: item.id, tagId: tagId, allPresetCount: allPresetCount, customCount: customCount)
                 } label: {
-                    Label(localization.currentLanguage == .chinese ? "删除" : "Delete", systemImage: "trash")
+                    Label(localization.string(for: .delete), systemImage: "trash")
                 }
                 .tint(.red)
             }
@@ -181,7 +179,7 @@ struct ItemManagementView: View {
             Button {
                 deleteCustomItem(itemName: itemName, tagId: tagId, presetCount: presetCount, customCount: customCount)
             } label: {
-                Label(localization.currentLanguage == .chinese ? "删除" : "Delete", systemImage: "trash")
+                Label(localization.string(for: .delete), systemImage: "trash")
             }
             .tint(.red)
         }
@@ -231,9 +229,9 @@ struct AddCustomItemSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text(localization.currentLanguage == .chinese ? "物品名称" : "Item Name")) {
+                Section(header: Text(localization.string(for: .itemName))) {
                     TextField(
-                        localization.currentLanguage == .chinese ? "输入物品名称" : "Enter item name",
+                        localization.string(for: .enterItemName),
                         text: $itemName
                     )
                     .focused($isNameFieldFocused)
@@ -245,15 +243,15 @@ struct AddCustomItemSheet: View {
                 }
                 
                 Section {
-                    Text(localization.currentLanguage == .chinese
-                         ? "新增的物品会在选择「\(tag.name)」标签时自动加入行程清单。"
-                         : "The new item will be automatically added to the packing list when \"\(tag.nameEn)\" tag is selected.")
+                    Text(localization.text(
+                         chinese: "新增的物品会在选择「\(tag.name)」标签时自动加入行程清单。",
+                         english: "The new item will be automatically added to the packing list when \"\(tag.nameEn)\" tag is selected."))
                         .font(Typography.caption)
                         .foregroundColor(.secondary)
                 }
             }
             .onAppear { isNameFieldFocused = true }
-            .navigationTitle(localization.currentLanguage == .chinese ? "添加物品" : "Add Item")
+            .navigationTitle(localization.string(for: .addItem))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -267,7 +265,7 @@ struct AddCustomItemSheet: View {
                             dismiss()
                         }
                     } label: {
-                        Text(localization.currentLanguage == .chinese ? "取消" : "Cancel")
+                        Text(localization.string(for: .cancel))
                             .font(Typography.body)
                             .fontWeight(.medium)
                     }
@@ -284,15 +282,15 @@ struct AddCustomItemSheet: View {
                             addItem()
                         }
                     } label: {
-                        Text(localization.currentLanguage == .chinese ? "添加" : "Add")
+                        Text(localization.string(for: .add))
                             .font(Typography.body)
                             .fontWeight(.medium)
                     }
                     .disabled(itemName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
-            .alert(localization.currentLanguage == .chinese ? "错误" : "Error", isPresented: $showingError) {
-                Button(localization.currentLanguage == .chinese ? "确定" : "OK") { }
+            .alert(localization.string(for: .error), isPresented: $showingError) {
+                Button(localization.string(for: .ok)) { }
             } message: {
                 Text(errorMessage)
             }
@@ -304,9 +302,7 @@ struct AddCustomItemSheet: View {
         if success {
             dismiss()
         } else {
-            errorMessage = localization.currentLanguage == .chinese
-                ? "物品名称已存在或为空"
-                : "Item name already exists or is empty"
+            errorMessage = localization.string(for: .itemExistsOrEmpty)
             showingError = true
         }
     }

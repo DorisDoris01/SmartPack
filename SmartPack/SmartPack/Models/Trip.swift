@@ -146,7 +146,7 @@ final class Trip {
     func toggleItem(_ itemId: String) {
         guard let item = items.first(where: { $0.id == itemId }) else { return }
         item.isChecked.toggle()
-        checkedItemCount += item.isChecked ? 1 : -1
+        checkedItemCount = max(0, checkedItemCount + (item.isChecked ? 1 : -1))
     }
 
     /// 重置所有勾选状态
@@ -171,10 +171,10 @@ final class Trip {
         guard let index = items.firstIndex(where: { $0.id == itemId }) else { return }
         let item = items[index]
         if item.isChecked {
-            checkedItemCount -= 1
+            checkedItemCount = max(0, checkedItemCount - 1)
         }
         items.remove(at: index)
-        totalItemCount -= 1
+        totalItemCount = max(0, totalItemCount - 1)
     }
 
     /// 重新同步计数器（用于数据修复或迁移后校验）

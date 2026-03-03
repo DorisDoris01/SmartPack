@@ -51,13 +51,11 @@ struct HomeView: View {
                             .foregroundColor(AppColors.primary)
                     }
 
-                    Text(localization.currentLanguage == .chinese ? "还没有行程" : "No trips yet")
+                    Text(localization.string(for: .noTripsYet))
                         .font(Typography.title1)
                         .foregroundColor(AppColors.textSecondary)
 
-                    Text(localization.currentLanguage == .chinese
-                         ? "点击右上角 + 开始你的第一次行程"
-                         : "Tap + to start your first trip")
+                    Text(localization.string(for: .noTripsHint))
                         .font(Typography.subheadline)
                         .tracking(Typography.Tracking.wide)
                         .foregroundColor(AppColors.textSecondary)
@@ -93,7 +91,7 @@ struct HomeView: View {
                                         deleteTrip(trip)
                                     } label: {
                                         Label(
-                                            localization.currentLanguage == .chinese ? "删除" : "Delete",
+                                            localization.string(for: .delete),
                                             systemImage: "trash"
                                         )
                                     }
@@ -104,7 +102,7 @@ struct HomeView: View {
                                         archiveTrip(trip)
                                     } label: {
                                         Label(
-                                            localization.currentLanguage == .chinese ? "归档" : "Archive",
+                                            localization.string(for: .archive),
                                             systemImage: "archivebox"
                                         )
                                     }
@@ -140,7 +138,7 @@ struct HomeView: View {
                                         deleteTrip(trip)
                                     } label: {
                                         Label(
-                                            localization.currentLanguage == .chinese ? "删除" : "Delete",
+                                            localization.string(for: .delete),
                                             systemImage: "trash"
                                         )
                                     }
@@ -151,7 +149,7 @@ struct HomeView: View {
                                         unarchiveTrip(trip)
                                     } label: {
                                         Label(
-                                            localization.currentLanguage == .chinese ? "取消归档" : "Unarchive",
+                                            localization.string(for: .unarchive),
                                             systemImage: "arrow.uturn.backward"
                                         )
                                     }
@@ -167,7 +165,7 @@ struct HomeView: View {
                                 ))
                             }
                         } header: {
-                            Text(localization.currentLanguage == .chinese ? "已归档" : "Archived")
+                            Text(localization.string(for: .archived))
                                 .sectionHeaderStyle()
                                 .padding(.leading, Spacing.xxs)
                         }
@@ -178,9 +176,11 @@ struct HomeView: View {
                 .background(AppColors.background)
             }
             } // Group
-            .navigationTitle(localization.currentLanguage == .chinese ? "我的行程" : "My Trips")
+            .navigationTitle(localization.string(for: .myTrips))
             .navigationDestination(for: Trip.self) { trip in
+                // F17: .id() forces view recreation per trip, preventing stale @State ViewModel
                 PackingListView(trip: trip, isNewlyCreated: false)
+                    .id(trip.id)
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -197,7 +197,7 @@ struct HomeView: View {
                             showingItemManagement = true
                         } label: {
                             Label(
-                                localization.currentLanguage == .chinese ? "物品管理" : "Item Management",
+                                localization.string(for: .itemManagement),
                                 systemImage: "checklist"
                             )
                         }
@@ -206,7 +206,7 @@ struct HomeView: View {
                             showingSettings = true
                         } label: {
                             Label(
-                                localization.currentLanguage == .chinese ? "设置" : "Settings",
+                                localization.string(for: .settings),
                                 systemImage: "gearshape"
                             )
                         }
@@ -242,24 +242,23 @@ struct HomeView: View {
             }
             .navigationDestination(item: $selectedTrip) { trip in
                 PackingListView(trip: trip, isNewlyCreated: true)
+                    .id(trip.id)
             }
             // SPEC v1.5 F-4.2: 删除确认对话框
             .alert(
-                localization.currentLanguage == .chinese ? "删除行程" : "Delete Trip",
+                localization.string(for: .deleteTrip),
                 isPresented: $showingDeleteAlert
             ) {
-                Button(localization.currentLanguage == .chinese ? "取消" : "Cancel", role: .cancel) {
+                Button(localization.string(for: .cancel), role: .cancel) {
                     tripToDelete = nil
                 }
-                Button(localization.currentLanguage == .chinese ? "删除" : "Delete", role: .destructive) {
+                Button(localization.string(for: .delete), role: .destructive) {
                     if let trip = tripToDelete {
                         deleteTripConfirmed(trip)
                     }
                 }
             } message: {
-                Text(localization.currentLanguage == .chinese
-                     ? "删除后无法恢复，确认删除？"
-                     : "This action cannot be undone. Are you sure?")
+                Text(localization.string(for: .deleteTripMessage))
             }
             .tint(AppColors.primary)
         }

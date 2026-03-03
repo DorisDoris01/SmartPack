@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartPack — Issue Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root {
+  --bg: #0c0e12;
+  --surface: #13161c;
+  --surface-2: #1a1e26;
+  --surface-3: #222730;
+  --border: #2a2f3a;
+  --border-subtle: #1e2230;
+  --text: #e8eaf0;
+  --text-2: #9ba1b0;
+  --text-3: #636980;
+  --accent: #34d399;
+  --accent-dim: rgba(52,211,153,0.12);
+  --accent-glow: rgba(52,211,153,0.25);
+  --critical: #f43f5e;
+  --critical-dim: rgba(244,63,94,0.12);
+  --high: #f97316;
+  --high-dim: rgba(249,115,22,0.12);
+  --medium: #eab308;
+  --medium-dim: rgba(234,179,8,0.10);
+  --low: #6366f1;
+  --low-dim: rgba(99,102,241,0.12);
+  --fixed: #34d399;
+  --fixed-dim: rgba(52,211,153,0.10);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --font: 'Outfit', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+html { font-size: 15px; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle grid background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(rgba(52,211,153,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(52,211,153,0.015) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 2rem 2.5rem 4rem; }
+
+/* ============ HEADER ============ */
+.header { margin-bottom: 2.5rem; }
+.header-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.header .subtitle {
+  font-size: 0.85rem;
+  color: var(--text-3);
+  margin-top: 0.3rem;
+  font-family: var(--mono);
+  font-weight: 400;
+}
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  background: var(--accent-dim);
+  border: 1px solid rgba(52,211,153,0.2);
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  font-family: var(--mono);
+}
+.header-badge .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* ============ STAT CARDS ============ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.4rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.stat-card:hover {
+  border-color: var(--border);
+  transform: translateY(-1px);
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.stat-card.total::before { background: linear-gradient(90deg, var(--accent), transparent); }
+.stat-card.fixed::before { background: linear-gradient(90deg, var(--fixed), transparent); }
+.stat-card.pending::before { background: linear-gradient(90deg, var(--high), transparent); }
+.stat-card.critical::before { background: linear-gradient(90deg, var(--critical), transparent); }
+.stat-card.high-card::before { background: linear-gradient(90deg, var(--high), transparent); }
+.stat-card.medium-card::before { background: linear-gradient(90deg, var(--medium), transparent); }
+.stat-card .stat-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  margin-bottom: 0.5rem;
+}
+.stat-card .stat-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-family: var(--mono);
+}
+.stat-card.total .stat-value { color: var(--text); }
+.stat-card.fixed .stat-value { color: var(--accent); }
+.stat-card.pending .stat-value { color: var(--high); }
+.stat-card.critical .stat-value { color: var(--critical); }
+.stat-card.high-card .stat-value { color: var(--high); }
+.stat-card.medium-card .stat-value { color: var(--medium); }
+.stat-card .stat-sub {
+  font-size: 0.72rem;
+  color: var(--text-3);
+  margin-top: 0.4rem;
+  font-family: var(--mono);
+}
+
+/* ============ TWO-COL LAYOUT ============ */
+.dashboard-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 900px) { .dashboard-row { grid-template-columns: 1fr; } }
+
+/* ============ PANELS ============ */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+.panel-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.panel-title .icon { font-size: 0.9rem; }
+
+/* ============ SEVERITY DONUT ============ */
+.donut-container {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+.donut-wrap { position: relative; width: 160px; height: 160px; flex-shrink: 0; }
+.donut-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  text-align: center;
+}
+.donut-center .num { font-size: 1.8rem; font-weight: 800; font-family: var(--mono); letter-spacing: -0.04em; }
+.donut-center .lbl { font-size: 0.65rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; }
+.donut-legend { display: flex; flex-direction: column; gap: 0.7rem; flex: 1; }
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+}
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.legend-count { margin-left: auto; font-family: var(--mono); font-weight: 600; font-size: 0.82rem; color: var(--text-2); }
+
+/* ============ CATEGORY BARS ============ */
+.cat-bars { display: flex; flex-direction: column; gap: 1rem; }
+.cat-bar-item {}
+.cat-bar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
+.cat-bar-label { font-size: 0.82rem; font-weight: 500; }
+.cat-bar-count { font-size: 0.75rem; font-family: var(--mono); color: var(--text-3); }
+.cat-bar-track {
+  width: 100%;
+  height: 8px;
+  background: var(--surface-3);
+  border-radius: 100px;
+  overflow: hidden;
+  display: flex;
+}
+.cat-bar-fill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 1s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* ============ PHASE ROADMAP ============ */
+.roadmap { margin-bottom: 1.5rem; }
+.phase-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.phase-card {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.4rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1.2rem;
+  transition: border-color 0.2s;
+  cursor: default;
+}
+.phase-card:hover { border-color: var(--border); }
+.phase-num {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.phase-num.p1 { background: var(--critical-dim); color: var(--critical); }
+.phase-num.p2 { background: var(--medium-dim); color: var(--medium); }
+.phase-num.p3 { background: var(--low-dim); color: var(--low); }
+.phase-num.p4 { background: rgba(100,116,139,0.12); color: #94a3b8; }
+.phase-info h3 { font-size: 0.92rem; font-weight: 600; letter-spacing: -0.01em; }
+.phase-info .phase-desc { font-size: 0.75rem; color: var(--text-3); margin-top: 0.15rem; }
+.phase-progress { display: flex; align-items: center; gap: 0.7rem; }
+.phase-bar-track {
+  width: 100px; height: 6px;
+  background: var(--surface-3);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.phase-bar-fill { height: 100%; border-radius: 100px; background: var(--accent); transition: width 1s ease; }
+.phase-frac { font-family: var(--mono); font-size: 0.78rem; color: var(--text-2); white-space: nowrap; }
+
+/* ============ ISSUE TABLE ============ */
+.issues-section { margin-top: 0rem; }
+.issues-toolbar {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.search-box {
+  flex: 1;
+  min-width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 1rem;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-box::placeholder { color: var(--text-3); }
+.search-box:focus { border-color: var(--accent); }
+
+.filter-group { display: flex; gap: 0.35rem; }
+.filter-btn {
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 100px;
+  background: transparent;
+  color: var(--text-3);
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.filter-btn:hover { border-color: var(--border); color: var(--text-2); }
+.filter-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.filter-btn.active-critical { border-color: var(--critical); color: var(--critical); background: var(--critical-dim); }
+.filter-btn.active-high { border-color: var(--high); color: var(--high); background: var(--high-dim); }
+.filter-btn.active-medium { border-color: var(--medium); color: var(--medium); background: var(--medium-dim); }
+.filter-btn.active-low { border-color: var(--low); color: var(--low); background: var(--low-dim); }
+.filter-btn.active-fixed { border-color: var(--fixed); color: var(--fixed); background: var(--fixed-dim); }
+
+.issue-count-label {
+  font-size: 0.75rem;
+  color: var(--text-3);
+  font-family: var(--mono);
+  margin-left: auto;
+}
+
+.issues-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.issue-row {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.issue-row:hover { border-color: var(--border); }
+.issue-row.expanded { border-color: var(--accent); }
+.issue-row.is-fixed { opacity: 0.6; }
+.issue-row.is-fixed:hover { opacity: 0.85; }
+
+.issue-header {
+  display: grid;
+  grid-template-columns: 56px 80px 1fr auto auto;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.85rem 1.2rem;
+  cursor: pointer;
+  user-select: none;
+}
+@media (max-width: 700px) {
+  .issue-header { grid-template-columns: 50px 70px 1fr auto; }
+  .issue-header .issue-file { display: none; }
+}
+
+.issue-id {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+.severity-badge {
+  padding: 0.2rem 0.55rem;
+  border-radius: 100px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+  white-space: nowrap;
+}
+.severity-badge.critical { background: var(--critical-dim); color: var(--critical); }
+.severity-badge.high { background: var(--high-dim); color: var(--high); }
+.severity-badge.medium { background: var(--medium-dim); color: var(--medium); }
+.severity-badge.low { background: var(--low-dim); color: var(--low); }
+.severity-badge.fixed { background: var(--fixed-dim); color: var(--fixed); }
+
+.issue-title { font-size: 0.85rem; font-weight: 500; line-height: 1.35; }
+.issue-title .fixed-tag {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.45rem;
+  background: var(--fixed-dim);
+  color: var(--accent);
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 4px;
+  vertical-align: middle;
+  letter-spacing: 0.03em;
+}
+.issue-file {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-3);
+  text-align: right;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.issue-chevron {
+  width: 20px;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 0.7rem;
+  transition: transform 0.2s;
+}
+.issue-row.expanded .issue-chevron { transform: rotate(90deg); }
+
+.issue-detail {
+  display: none;
+  padding: 0 1.2rem 1.2rem;
+  border-top: 1px solid var(--border-subtle);
+}
+.issue-row.expanded .issue-detail { display: block; }
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+@media (max-width: 700px) { .detail-grid { grid-template-columns: 1fr; } }
+
+.detail-block {}
+.detail-block h4 {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.detail-block p {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+.detail-block code {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  background: var(--surface-3);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  color: var(--accent);
+}
+.detail-meta {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.8rem;
+  flex-wrap: wrap;
+}
+.detail-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 100px;
+  background: var(--surface-3);
+  font-size: 0.7rem;
+  color: var(--text-2);
+  font-family: var(--mono);
+}
+
+/* ============ EMPTY STATE ============ */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-3);
+  font-size: 0.9rem;
+}
+
+/* ============ ANIMATIONS ============ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-in { animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+.d1 { animation-delay: 0.05s; } .d2 { animation-delay: 0.1s; } .d3 { animation-delay: 0.15s; }
+.d4 { animation-delay: 0.2s; } .d5 { animation-delay: 0.25s; } .d6 { animation-delay: 0.3s; }
+.d7 { animation-delay: 0.35s; } .d8 { animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<div class="header animate-in d1">
+  <div class="header-row">
+    <div>
+      <h1>SmartPack Issue Tracker</h1>
+      <div class="subtitle">pending-issues-guide.md &mdash; updated 2026-03-03</div>
+    </div>
+    <div class="header-badge"><span class="dot"></span>19 / 68 resolved</div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-grid animate-in d2" id="statsGrid"></div>
+
+<!-- TWO COL: DONUT + CATEGORY -->
+<div class="dashboard-row animate-in d3">
+  <div class="panel">
+    <div class="panel-title"><span class="icon">&#9679;</span> Severity Breakdown (Pending)</div>
+    <div class="donut-container">
+      <div class="donut-wrap"><canvas id="donutCanvas" width="160" height="160"></canvas>
+        <div class="donut-center"><div class="num">50</div><div class="lbl">Pending</div></div>
+      </div>
+      <div class="donut-legend" id="donutLegend"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-title"><span class="icon">&#9632;</span> By Category</div>
+    <div class="cat-bars" id="catBars"></div>
+  </div>
+</div>
+
+<!-- PHASE ROADMAP -->
+<div class="roadmap animate-in d4">
+  <div class="panel">
+    <div class="panel-title"><span class="icon">&#9654;</span> Fix Roadmap</div>
+    <div class="phase-list" id="phaseList"></div>
+  </div>
+</div>
+
+<!-- ISSUES TABLE -->
+<div class="issues-section animate-in d5">
+  <div class="panel" style="padding-bottom:0.5rem;">
+    <div class="panel-title"><span class="icon">&#9776;</span> All Issues</div>
+    <div class="issues-toolbar">
+      <input class="search-box" id="searchBox" placeholder="Search issues by ID, title, file..." />
+      <div class="filter-group" id="severityFilters"></div>
+      <div class="filter-group" id="statusFilters"></div>
+      <span class="issue-count-label" id="issueCount"></span>
+    </div>
+    <div class="issues-list" id="issuesList"></div>
+    <div style="height:1rem;"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ============ DATA ============
+
+const ISSUES = [
+  // CRITICAL
+  { id:'F5', severity:'critical', status:'fixed', title:'Zero Test Coverage', file:'SmartPackTests/', source:'Code Bugs', phase:1,
+    technical:'The project had no XCTest target. No unit tests, integration tests, or UI tests existed for any component.',
+    plain:'There was no automated way to check if something breaks when you change code. Every bug was only caught by manual testing.',
+    fix:'Added SmartPackTests target with 6 test files: TripTests, TripDateRangeTests, WeatherForecastTests, PresetDataTests, CustomItemManagerTests, TestModelContainer. All tests pass.' },
+
+  // HIGH
+  { id:'F6', severity:'high', status:'pending', title:'PackingActivityManager.endActivity() Race Condition', file:'Activity/PackingActivityManager.swift:90-102', source:'Code Bugs', phase:1,
+    technical:'endActivity() launches a Task to call activity.end(...) then immediately sets currentActivity = nil. If startActivity is called in between, a new activity starts while the old one hasn\'t ended. No synchronization on currentActivity.',
+    plain:'When the app ends a Live Activity, it doesn\'t wait for the old one to shut down before allowing a new one. This causes ghost Live Activities stuck on the lock screen.',
+    fix:'Make PackingActivityManager an actor or add @MainActor isolation.' },
+  { id:'F9', severity:'high', status:'fixed', title:'UIScreen.main.bounds Deprecated + Wrong on iPad', file:'Components/PackingList/CelebrationOverlay.swift:71,108,115', source:'Code Bugs', phase:1,
+    technical:'UIScreen.main.bounds was deprecated in iOS 16. On iPad with Split View/Slide Over/Stage Manager, it returns full physical screen size, not the app window size.',
+    plain:'The confetti animation uses the whole screen size instead of the app window. On iPad split-screen, confetti flies to wrong positions.',
+    fix:'Replaced all UIScreen.main.bounds with GeometryReader. Confetti x-positions stored as fractions (0...1), resolved to actual view bounds.' },
+  { id:'F10', severity:'high', status:'fixed', title:'checkedItemCount / totalItemCount Can Drift Out of Sync', file:'Models/Trip.swift:146-178', source:'Code Bugs', phase:1,
+    technical:'Counters maintained incrementally could go stale if TripItem.isChecked is mutated directly. No max(0,...) bounds — counters could go negative.',
+    plain:'The "X out of Y items packed" tally could get wrong if any code changes items directly. You might see "5 out of 3 items packed."',
+    fix:'Added max(0,...) bounds to toggleItem() and removeItem(). Added recalculateCounts() safety net in PackingListViewModel.init().' },
+  { id:'F12', severity:'high', status:'fixed', title:'PackingListViewModel Missing @MainActor', file:'ViewModels/PackingListViewModel.swift', source:'Code Bugs', phase:1,
+    technical:'@Observable class without @MainActor holds and mutates a SwiftData @Model (main-actor-isolated). No compiler enforcement. Will fail under Swift 6 strict concurrency.',
+    plain:'The ViewModel isn\'t marked "must run on main thread." Works by coincidence now but could crash from background callers and won\'t compile under future Swift.',
+    fix:'Added @MainActor to the class declaration.' },
+  { id:'F13', severity:'high', status:'fixed', title:'hasCompletedOnboarding Setter Doesn\'t Trigger @Published', file:'Localization/LocalizationManager.swift:80-83', source:'Code Bugs', phase:1,
+    technical:'Computed property backed by UserDefaults, not @Published. Setting it doesn\'t fire objectWillChange. WelcomeView wrote directly to UserDefaults, bypassing the property.',
+    plain:'The onboarding flag was coded so that screens watching it wouldn\'t notice when it changed. The welcome screen also bypassed it entirely.',
+    fix:'Converted to @Published with didSet sync. Updated WelcomeView to write through the property.' },
+  { id:'A1', severity:'high', status:'pending', title:'HomeView Animations Don\'t Respect prefers-reduced-motion', file:'Components/Trip/TripRowView.swift, Views/Main/HomeView.swift', source:'HomeView UX', phase:1,
+    technical:'Ring progress animation and empty-state entrance never check @Environment(\\.accessibilityReduceMotion). Users with Reduce Motion still see all animations.',
+    plain:'People who turn on "Reduce Motion" for motion sickness still see all animations on the home screen. This is an accessibility failure.',
+    fix:'Add @Environment(\\.accessibilityReduceMotion) and wrap animations conditionally.' },
+  { id:'PA1', severity:'high', status:'pending', title:'PackingListView Animations Don\'t Respect prefers-reduced-motion', file:'ProgressHeader, ItemRow, CategorySection, CelebrationOverlay', source:'PackingListView UX', phase:1,
+    technical:'Four animation sites — progress bar, checkbox bounce, category expand, celebration overlay — all ignore accessibilityReduceMotion. WCAG 2.1 SC 2.3.3 violation.',
+    plain:'Same as A1 for the packing list screen. Progress bar, checkboxes, categories, and confetti all animate regardless of Reduce Motion.',
+    fix:'Add @Environment(\\.accessibilityReduceMotion) to each component and conditionally disable.' },
+  { id:'PA2', severity:'high', status:'pending', title:'Progress Bar Text Has Insufficient Contrast', file:'Components/PackingList/ProgressHeader.swift', source:'PackingListView UX', phase:1,
+    technical:'11pt white/teal text overlaid on progress fill. At ~50% progress, contrast ratio drops below WCAG AA 4.5:1 minimum.',
+    plain:'The progress percentage text becomes unreadable at ~50% because it sits where the colored bar meets the empty space.',
+    fix:'Move text outside/above the bar, or add a solid background pill behind it.' },
+  { id:'PM1', severity:'high', status:'fixed', title:'CelebrationOverlay Auto-Dismiss Race Condition', file:'Components/PackingList/CelebrationOverlay.swift', source:'PackingListView UX', phase:1,
+    technical:'dismissAndComplete() fired by both 2.5s asyncAfter timer and user tap. If user taps first, onComplete() executes twice — double dismiss corrupts navigation stack.',
+    plain:'The celebration screen can be closed twice — once by tapping, once by the auto-timer — which messes up the navigation.',
+    fix:'Add @State private var hasDismissed = false guard. Verify F4 fix coverage.' },
+
+  // MEDIUM
+  { id:'F14', severity:'medium', status:'pending', title:'try? modelContext.save() Silently Swallows Errors', file:'Views/Main/HomeView.swift:278,286,292', source:'Code Bugs', phase:4,
+    technical:'All modelContext.save() calls use try?, discarding errors. If saving fails (disk full, corruption), user sees UI update but data never persists.',
+    plain:'The app ignores save errors. If your phone storage is full, changes look saved but vanish on next launch.',
+    fix:'Log errors with do/catch, or rely on SwiftData auto-save.' },
+  { id:'F15', severity:'medium', status:'pending', title:'TripRowView.appeared State Resets on List Re-render', file:'Components/Trip/TripRowView.swift:16,48,77-81', source:'Code Bugs', phase:4,
+    technical:'@State appeared = false controls ring animation. List re-renders may destroy/recreate the view, replaying the animation from zero.',
+    plain:'The circular progress rings replay their fill animation from scratch whenever the home screen refreshes.',
+    fix:'Use .animation(.spring, value: trip.progress) on the trim modifier directly.' },
+  { id:'F16', severity:'medium', status:'fixed', title:'addItem Deduplication Only Checks Chinese Name', file:'ViewModels/PackingListViewModel.swift:109-111', source:'Code Bugs', phase:2,
+    technical:'Duplicate check uses $0.name.lowercased() — only Chinese field. English-mode users typing English names bypass the check.',
+    plain:'Duplicate detection only works in Chinese mode. English users can add the same item twice.',
+    fix:'Changed dedup from map { $0.name } to flatMap { [$0.name, $0.nameEn] }, checking both CN and EN names.' },
+  { id:'F17', severity:'medium', status:'fixed', title:'PackingListView.vm May Hold a Stale ViewModel', file:'Views/Trip/PackingListView.swift:32,346-349', source:'Code Bugs', phase:2,
+    technical:'ViewModel is @State with lazy init guard. NavigationStack caching may reuse the view with a different trip, keeping the old VM.',
+    plain:'Opening Trip A, going back, then opening Trip B might still show Trip A\'s data.',
+    fix:'Added .id(trip.id) on both PackingListView navigation destinations in HomeView.swift.' },
+  { id:'F18', severity:'medium', status:'fixed', title:'Deprecated Files Still Compiled', file:'MainTabView.swift, MyListsView.swift', source:'Code Bugs', phase:2,
+    technical:'Both files marked [DEPRECATED] but still in the target. MyListsView has delete-without-confirmation and missing save().',
+    plain:'Two old files are still being compiled. One has buggy deletion code that could cause problems.',
+    fix:'Remove from Xcode project target.' },
+  { id:'F19', severity:'medium', status:'pending', title:'WelcomeView.dismissCard() Non-Cancellable asyncAfter', file:'Views/Main/WelcomeView.swift:142-149', source:'Code Bugs', phase:2,
+    technical:'asyncAfter(deadline: .now() + 0.3) fires unconditionally. Rapid swiping queues multiple dismissCard() calls.',
+    plain:'Swiping welcome cards quickly stacks up timers that can skip cards or glitch.',
+    fix:'Add @State isDismissing = false guard flag.' },
+  { id:'F20', severity:'medium', status:'pending', title:'ItemRow Checkbox Animation Pile-up on Rapid Tapping', file:'Components/PackingList/ItemRow.swift:25-33', source:'Code Bugs', phase:2,
+    technical:'Each tap schedules checkboxScale bounce via asyncAfter(0.15). Rapid tapping queues overlapping callbacks producing erratic scaling.',
+    plain:'Quickly tapping a checkbox makes the bounce animation jitter instead of playing smoothly.',
+    fix:'Replace asyncAfter with .animation(.spring, value: isChecked).' },
+  { id:'F21', severity:'medium', status:'pending', title:'Preset Suggestion Chips Show Already-Existing Items', file:'Components/PackingList/AddItemRow.swift:113-115', source:'Code Bugs', phase:2,
+    technical:'Chip filter uses existingItemIds (by ID), but addItem() deduplicates by name. Mismatch shows chips that fail silently when tapped.',
+    plain:'Quick-add buttons sometimes show items you already have. Tapping them triggers an error vibration.',
+    fix:'Filter suggestions by both ID and name.' },
+  { id:'F22', severity:'medium', status:'pending', title:'Trip.id Shadows SwiftData PersistentIdentifier', file:'Models/Trip.swift:66', source:'Code Bugs', phase:3,
+    technical:'Explicit var id: UUID creates two identity systems — SwiftUI uses Identifiable.id while SwiftData uses PersistentIdentifier.',
+    plain:'Every trip has two different "name tags" that could get out of sync during data migration.',
+    fix:'Annotate with @Attribute(.unique) or remove explicit id.' },
+  { id:'F23', severity:'medium', status:'pending', title:'Duplicate Toggle Methods Across Two Views', file:'CreateTripSheet.swift:192-214, TripConfigView.swift:141-155', source:'Code Bugs', phase:3,
+    technical:'toggleActivityTag, toggleOccasionTag, toggleConfigTag copy-pasted identically across both files.',
+    plain:'Tag selection code is written twice. Bug fixes must be applied in two places.',
+    fix:'Extract toggle methods into TripConfig model.' },
+  { id:'F24', severity:'medium', status:'fixed', title:'Inconsistent Localization Approach', file:'LocalizationManager.swift + 10 views', source:'Code Bugs', phase:3,
+    technical:'Two patterns coexist: inline ternary and LocalizedKey enum, used inconsistently across 30+ files.',
+    plain:'Translations are handled two different ways. Adding a third language would require updating hundreds of scattered checks.',
+    fix:'Consolidate on one approach or migrate to .strings/.xcstrings.' },
+  { id:'F25', severity:'medium', status:'pending', title:'HomeView Has Two Conflicting Navigation Destinations', file:'Views/Main/HomeView.swift:182-183,243', source:'Code Bugs', phase:2,
+    technical:'Both .navigationDestination(for: Trip.self) and .navigationDestination(item: $selectedTrip) registered. NavigationStack confused by two destinations.',
+    plain:'The home screen has two doors to the same room. Sometimes both try to open at once, causing blank screens.',
+    fix:'Remove one navigation mechanism.' },
+  { id:'F26', severity:'medium', status:'pending', title:'deleteCustomItem Uses Stale Count', file:'Views/Settings/ItemManagementView.swift:181-190', source:'Code Bugs', phase:2,
+    technical:'customCount computed at render time and passed as parameter. Rapid deletions use stale count, potentially bypassing "at least 1 item" constraint.',
+    plain:'Rapid deletes can bypass the "keep at least one item" safety check.',
+    fix:'Compute count inside deleteCustomItem at call time.' },
+  { id:'A3', severity:'medium', status:'pending', title:'NavigationLink Missing Merged Accessibility Label', file:'Views/Main/HomeView.swift', source:'HomeView UX', phase:3,
+    technical:'NavigationLink wrapping TripRowView has no merged .accessibilityLabel. VoiceOver reads each element separately.',
+    plain:'Screen readers read trip cards as disconnected pieces instead of one smooth sentence.',
+    fix:'Add .accessibilityElement(children: .combine) with merged label.' },
+  { id:'T3', severity:'medium', status:'pending', title:'Toolbar Touch Target Spacing Insufficient', file:'Views/Main/HomeView.swift (toolbar)', source:'HomeView UX', phase:3,
+    technical:'Toolbar buttons may fall below Apple HIG 44x44pt minimum on smaller devices.',
+    plain:'Settings and add buttons are too small and close together, easy to mis-tap.',
+    fix:'Add .frame(minWidth: 44, minHeight: 44) and .contentShape(Rectangle()).' },
+  { id:'C2', severity:'medium', status:'pending', title:'Empty State Title Contrast Below WCAG AA', file:'Views/Main/HomeView.swift (empty state)', source:'HomeView UX', phase:2,
+    technical:'Title color ~3.5:1 contrast. WCAG AA requires 4.5:1 for normal text at current size.',
+    plain:'The "No trips yet" text is too faint for people with low vision.',
+    fix:'Use AppColors.text or darken to 4.5:1 ratio.' },
+  { id:'M1', severity:'medium', status:'pending', title:'Individual Row Entrance Animations Cause Visual Chaos', file:'Components/Trip/TripRowView.swift', source:'HomeView UX', phase:3,
+    technical:'Each TripRowView has its own .onAppear entrance animation. 5+ rows animate simultaneously creating noisy cascade.',
+    plain:'Opening the app with many trips shows chaotic simultaneous bouncing animations.',
+    fix:'Stagger animations with increasing delay or animate ring only once.' },
+  { id:'PC1', severity:'medium', status:'pending', title:'Progress Bar Text Shadow Hack Breaks in Dark Mode', file:'Components/PackingList/ProgressHeader.swift', source:'PackingListView UX', phase:3,
+    technical:'.shadow(color: AppColors.background.opacity(0.8)) produces dark halo in dark mode, reducing readability.',
+    plain:'The progress text shadow makes text harder to read in dark mode instead of easier.',
+    fix:'Remove shadow, use solid pill background or position text outside bar.' },
+  { id:'PT3', severity:'medium', status:'pending', title:'Capsule Touch Targets Below 44pt Minimum', file:'Views/Trip/PackingListView.swift', source:'PackingListView UX', phase:3,
+    technical:'Weather/Settings capsules ~28pt height. Apple HIG requires 44pt minimum.',
+    plain:'The Weather and Settings buttons are too small to comfortably tap.',
+    fix:'Add .frame(minHeight: 44) and .contentShape(Capsule()).' },
+  { id:'PX1', severity:'medium', status:'pending', title:'Capsule Width Inconsistent Across Languages', file:'Views/Trip/PackingListView.swift', source:'PackingListView UX', phase:3,
+    technical:'"天气" (2 chars) vs "Weather" (7 chars) — English capsule roughly double width.',
+    plain:'The Weather button is much wider in English than Chinese, making layout lopsided.',
+    fix:'Use fixed minimum width or icon-only mode.' },
+  { id:'PX4', severity:'medium', status:'pending', title:'TripSettingsCard Date Format Width Jumps', file:'Components/PackingList/CombinedInfoCard.swift', source:'PackingListView UX', phase:4,
+    technical:'Date formats have significantly different widths across languages, causing layout shifts.',
+    plain:'The date display width jumps when switching languages, making the card feel unstable.',
+    fix:'Use fixed-width frame or monospacedDigit() font modifier.' },
+  { id:'PL1', severity:'medium', status:'fixed', title:'Floating Progress Bar Obscures Content', file:'Views/Trip/PackingListView.swift', source:'PackingListView UX', phase:4,
+    technical:'Floating bar via ZStack overlay has no offset for safe area or content, overlapping first item row.',
+    plain:'The sticky progress bar at the top can cover the first items in the list.',
+    fix:'Removed entire floating bar mechanism (HeaderBoundsKey, isHeaderCollapsed, GeometryReader scroll tracking, compactProgressOverlay, isFloating/floatingBar). Bar never worked reliably as sticky.' },
+  { id:'PA3', severity:'medium', status:'pending', title:'No VoiceOver Focus Management on Celebration', file:'Components/PackingList/CelebrationOverlay.swift', source:'PackingListView UX', phase:4,
+    technical:'No .accessibilityAddTraits(.isModal) or AccessibilityFocusState. Screen reader users can\'t perceive celebration.',
+    plain:'Blind users have no idea the celebration screen appeared and can\'t dismiss it.',
+    fix:'Add .accessibilityAddTraits(.isModal) and accessibility label/action.' },
+  { id:'PP2', severity:'medium', status:'pending', title:'50 Confetti Particles May Cause Frame Drops', file:'Components/PackingList/CelebrationOverlay.swift', source:'PackingListView UX', phase:4,
+    technical:'50 ConfettiParticle views with independent animations. May drop frames on older devices. Also uses deprecated UIScreen.main.bounds.',
+    plain:'The confetti animation creates 50 pieces moving at once, which may stutter on older iPhones.',
+    fix:'Reduce to 20-25 particles, use GeometryReader, consider Canvas.' },
+  { id:'U3', severity:'medium', status:'pending', title:'No Expand/Collapse Animation on DisclosureGroups', file:'Views/Settings/ItemManagementView.swift:75-80', source:'ItemManagement UX', phase:2,
+    technical:'DisclosureGroup binding sets expandedTags without withAnimation. Section snaps open/closed.',
+    plain:'Expanding/collapsing categories snaps instantly instead of sliding smoothly.',
+    fix:'Wrap in withAnimation(.easeInOut(duration: 0.2)).' },
+
+  // LOW
+  { id:'F27', severity:'low', status:'pending', title:'PresetData Singleton Not Thread-Safe', file:'Data/PresetData.swift:14-15,21-27', source:'Code Bugs', phase:4,
+    technical:'lazy var without synchronization on shared singleton.',
+    plain:'The preset data loader could glitch if loaded simultaneously from two threads.',
+    fix:'Add @MainActor or nonisolated(unsafe) let.' },
+  { id:'F28', severity:'low', status:'pending', title:'WeatherService Missing Sendable Conformance', file:'Services/WeatherService.swift:12', source:'Code Bugs', phase:4,
+    technical:'Singleton in async contexts without Sendable. Swift 6 will flag this.',
+    plain:'The weather service doesn\'t declare itself thread-safe. Future Swift will error.',
+    fix:'Add Sendable or make it an actor.' },
+  { id:'F29', severity:'low', status:'pending', title:'HapticFeedback Generators Not Pre-Prepared', file:'Configuration/HapticFeedback.swift:12-14', source:'Code Bugs', phase:4,
+    technical:'New UIImpactFeedbackGenerator created each call without prepare(). Adds latency.',
+    plain:'Each vibration creates a new motor controller, adding tiny delay.',
+    fix:'Use static pre-prepared generator instances.' },
+  { id:'F30', severity:'low', status:'pending', title:'TripConfigView May Be Dead Code', file:'Views/Trip/TripConfigView.swift:157-196', source:'Code Bugs', phase:4,
+    technical:'TripConfigView may be unreachable. Uses different navigation pattern from CreateTripSheet.',
+    plain:'A trip configuration screen might not be accessible from anywhere in the app.',
+    fix:'Verify if used; remove or align navigation pattern.' },
+  { id:'F31', severity:'low', status:'pending', title:'TagChip Crashes Without @EnvironmentObject', file:'Components/PackingList/TripSettingsCard.swift', source:'Code Bugs', phase:4,
+    technical:'TagChip uses @EnvironmentObject var localization. Crashes if used outside providing hierarchy.',
+    plain:'A UI chip component crashes if reused in previews or other contexts.',
+    fix:'Pass language as parameter instead of @EnvironmentObject.' },
+  { id:'F32', severity:'low', status:'pending', title:'Custom Item Dedup Key Inconsistent with Presets', file:'Data/PresetData.swift:426', source:'Code Bugs', phase:4,
+    technical:'Custom items use "name|name" key; presets use "nameCN|nameEN". Won\'t detect cross-type duplicates.',
+    plain:'Custom and preset items use different ID formats, so the app won\'t catch duplicates between them.',
+    fix:'Normalize dedup key format.' },
+  { id:'F33', severity:'low', status:'pending', title:'Item Deletion Has No Undo', file:'Views/Trip/PackingListView.swift:362-364', source:'Code Bugs', phase:4,
+    technical:'Swiping to delete removes immediately with no undo. allowsFullSwipe: false is set.',
+    plain:'Deleted items are gone immediately with no way to undo.',
+    fix:'Add an undo toast/snackbar after deletion.' },
+  { id:'F34', severity:'low', status:'pending', title:'print() Debug Statements in Production', file:'WeatherService, SmartPackApp, PresetData, PackingActivityManager', source:'Code Bugs', phase:4,
+    technical:'Emoji-prefixed debug prints scattered without #if DEBUG guards.',
+    plain:'Debug messages run in production, wasting performance and leaking internal info.',
+    fix:'Wrap in #if DEBUG or use os.Logger.' },
+  { id:'F37', severity:'low', status:'fixed', title:'MyListsView.deleteTrips Missing modelContext.save()', file:'Views/Shared/MyListsView.swift:76-79', source:'Code Bugs', phase:4,
+    technical:'Delete without save in deprecated file.',
+    plain:'Trip deletion might not persist in a deprecated file.',
+    fix:'Remove file (F18) or add save().' },
+  { id:'F38', severity:'low', status:'pending', title:'TripRowView.appeared Ring Animation on Reuse (Dup of F15)', file:'Components/Trip/TripRowView.swift:16,48', source:'Code Bugs', phase:4,
+    technical:'Same issue as F15 — appeared state resets on list re-render.',
+    plain:'Ring animation replays on refresh. Same as F15.',
+    fix:'Fix F15 and this is resolved.' },
+  { id:'P1', severity:'low', status:'pending', title:'Active/Archived Trips Recomputed on Every Render', file:'Views/Main/HomeView.swift', source:'HomeView UX', phase:4,
+    technical:'activeTrips/archivedTrips are computed properties filtering on every render cycle.',
+    plain:'Trip lists are re-sorted every time the screen refreshes, which is wasteful.',
+    fix:'Cache filtered arrays or use @Query with predicates.' },
+  { id:'U7', severity:'low', status:'pending', title:'No List Animation on Item Add/Delete', file:'Views/Settings/ItemManagementView.swift', source:'ItemManagement UX', phase:4,
+    technical:'removeCustomItem/addCustomItem called without withAnimation. Items appear/vanish instantly.',
+    plain:'Items pop in/out without animation. Other screens use smooth sliding.',
+    fix:'Wrap mutations in withAnimation.' },
+  { id:'PL2', severity:'low', status:'pending', title:'Floating Bar Trigger Threshold Hardcoded', file:'Views/Trip/PackingListView.swift', source:'PackingListView UX', phase:4,
+    technical:'maxY < 100 hardcoded. Doesn\'t account for Dynamic Type or device sizes.',
+    plain:'The sticky progress bar trigger point doesn\'t adapt to different devices or text sizes.',
+    fix:'Use GeometryReader for relative threshold.' },
+  { id:'PT4', severity:'low', status:'pending', title:'Checkbox Bounce Uses Hardcoded asyncAfter Delay', file:'Components/PackingList/ItemRow.swift', source:'PackingListView UX', phase:4,
+    technical:'asyncAfter(0.15) not tied to animation curve. Under load, bounce disconnects from tap.',
+    plain:'The checkbox bounce uses a fixed timer that may not match the actual tap on slow phones.',
+    fix:'Replace with .animation(.spring, value: checkboxScale).' },
+  { id:'PP1', severity:'low', status:'pending', title:'categoryIcon Uses String Matching Instead of Enum', file:'Components/PackingList/CategorySection.swift', source:'PackingListView UX', phase:4,
+    technical:'Category icon from string matching in switch. Fragile, runs every render.',
+    plain:'Category icons are chosen by text matching — fragile if names change.',
+    fix:'Add icon property to ItemCategory enum.' },
+  { id:'PM2', severity:'low', status:'pending', title:'Section-Level .animation Scope Too Broad', file:'Components/PackingList/CategorySection.swift', source:'PackingListView UX', phase:4,
+    technical:'.animation(.easeInOut) without value: parameter animates all state changes in section.',
+    plain:'The expand/collapse animation accidentally animates unrelated things like text updates.',
+    fix:'Use .animation(.easeInOut, value: isExpanded).' },
+  { id:'PC2', severity:'low', status:'pending', title:'Percentage Text Overflow at Low Progress', file:'Components/PackingList/CompactProgressBar.swift', source:'PackingListView UX', phase:4,
+    technical:'Text position calculated from bar width. At 1-5%, text may clip or overlap.',
+    plain:'At very low progress, the percentage number might get squished or overlap with other text.',
+    fix:'Set minimum position threshold or hide below 5%.' },
+  { id:'PS2', severity:'low', status:'fixed', title:'UIScreen.main.bounds Deprecated in CelebrationOverlay (Dup of F9)', file:'Components/PackingList/CelebrationOverlay.swift', source:'PackingListView UX', phase:4,
+    technical:'Duplicate of F9.',
+    plain:'Same as F9 — outdated screen measurement for confetti.',
+    fix:'Fixed as part of F9. All UIScreen.main.bounds replaced with GeometryReader.' },
+];
+
+// ============ RENDER ============
+
+const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+const severityColors = { critical:'#f43f5e', high:'#f97316', medium:'#eab308', low:'#6366f1', fixed:'#34d399' };
+
+// Stats
+function renderStats() {
+  const total = ISSUES.length;
+  const fixed = ISSUES.filter(i => i.status === 'fixed').length;
+  const pending = total - fixed;
+  const pendCrit = ISSUES.filter(i => i.status !== 'fixed' && i.severity === 'critical').length;
+  const pendHigh = ISSUES.filter(i => i.status !== 'fixed' && i.severity === 'high').length;
+  const pendMed = ISSUES.filter(i => i.status !== 'fixed' && i.severity === 'medium').length;
+
+  const cards = [
+    { cls: 'total', label: 'Total Issues', value: total, sub: '4 audit sources' },
+    { cls: 'fixed', label: 'Fixed', value: fixed, sub: `${((fixed/total)*100).toFixed(0)}% resolved` },
+    { cls: 'pending', label: 'Pending', value: pending, sub: `${pendCrit} critical, ${pendHigh} high` },
+    { cls: 'critical', label: 'Critical', value: pendCrit, sub: 'Ship-blockers' },
+    { cls: 'high-card', label: 'High', value: pendHigh, sub: 'Accessibility + races' },
+    { cls: 'medium-card', label: 'Medium', value: pendMed, sub: 'Quality + polish' },
+  ];
+  document.getElementById('statsGrid').innerHTML = cards.map(c => `
+    <div class="stat-card ${c.cls}">
+      <div class="stat-label">${c.label}</div>
+      <div class="stat-value">${c.value}</div>
+      <div class="stat-sub">${c.sub}</div>
+    </div>`).join('');
+}
+
+// Donut
+function renderDonut() {
+  const canvas = document.getElementById('donutCanvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = 160 * dpr; canvas.height = 160 * dpr;
+  canvas.style.width = '160px'; canvas.style.height = '160px';
+  ctx.scale(dpr, dpr);
+
+  const pending = ISSUES.filter(i => i.status !== 'fixed');
+  const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+  pending.forEach(i => counts[i.severity]++);
+  const total = pending.length;
+  const slices = [
+    { key: 'critical', label: 'Critical', count: counts.critical, color: severityColors.critical },
+    { key: 'high', label: 'High', count: counts.high, color: severityColors.high },
+    { key: 'medium', label: 'Medium', count: counts.medium, color: severityColors.medium },
+    { key: 'low', label: 'Low', count: counts.low, color: severityColors.low },
+  ];
+
+  const cx = 80, cy = 80, r = 62, lw = 18;
+  let startAngle = -Math.PI / 2;
+  const gap = 0.04;
+
+  slices.forEach(s => {
+    if (s.count === 0) return;
+    const sweep = (s.count / total) * (2 * Math.PI) - gap;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, startAngle + gap/2, startAngle + sweep + gap/2, false);
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = lw;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    startAngle += sweep + gap;
+  });
+
+  document.getElementById('donutLegend').innerHTML = slices.map(s => `
+    <div class="legend-item">
+      <span class="legend-dot" style="background:${s.color}"></span>
+      <span>${s.label}</span>
+      <span class="legend-count">${s.count}</span>
+    </div>`).join('');
+}
+
+// Category bars
+function renderCatBars() {
+  const cats = [
+    { label: 'Code Bugs', color: '#34d399', total: 29, fixed: 13 },
+    { label: 'PackingListView UX', color: '#f97316', total: 22, fixed: 6 },
+    { label: 'HomeView UX', color: '#eab308', total: 13, fixed: 7 },
+    { label: 'ItemManagement UX', color: '#6366f1', total: 9, fixed: 7 },
+  ];
+  document.getElementById('catBars').innerHTML = cats.map(c => {
+    const pct = ((c.fixed / c.total) * 100).toFixed(0);
+    return `
+    <div class="cat-bar-item">
+      <div class="cat-bar-header">
+        <span class="cat-bar-label">${c.label}</span>
+        <span class="cat-bar-count">${c.fixed}/${c.total} fixed (${pct}%)</span>
+      </div>
+      <div class="cat-bar-track">
+        <div class="cat-bar-fill" style="width:${pct}%;background:${c.color}"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Phase roadmap
+function renderPhases() {
+  const phases = [
+    { num: 1, cls: 'p1', title: 'Critical + High', desc: 'Ship-blockers & accessibility failures', total: 9, fixed: 6 },
+    { num: 2, cls: 'p2', title: 'Quick Medium Wins', desc: 'Small-effort fixes with meaningful impact', total: 10, fixed: 3 },
+    { num: 3, cls: 'p3', title: 'Remaining Medium', desc: 'Moderate effort or lower user-impact', total: 8, fixed: 1 },
+    { num: 4, cls: 'p4', title: 'Low Priority Polish', desc: 'Future-proofing, cleanup & hardening', total: 23, fixed: 3 },
+  ];
+  document.getElementById('phaseList').innerHTML = phases.map(p => {
+    const pct = ((p.fixed / p.total) * 100).toFixed(0);
+    return `
+    <div class="phase-card">
+      <div class="phase-num ${p.cls}">${p.num}</div>
+      <div class="phase-info">
+        <h3>${p.title}</h3>
+        <div class="phase-desc">${p.desc}</div>
+      </div>
+      <div class="phase-progress">
+        <div class="phase-bar-track"><div class="phase-bar-fill" style="width:${pct}%"></div></div>
+        <span class="phase-frac">${p.fixed}/${p.total}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Filters
+let activeSeverity = 'all';
+let activeStatus = 'all';
+let searchQuery = '';
+
+function renderFilters() {
+  const sevBtns = [
+    { key:'all', label:'All' },
+    { key:'critical', label:'Critical' },
+    { key:'high', label:'High' },
+    { key:'medium', label:'Medium' },
+    { key:'low', label:'Low' },
+  ];
+  document.getElementById('severityFilters').innerHTML = sevBtns.map(b => {
+    const isActive = activeSeverity === b.key;
+    const cls = isActive ? (b.key === 'all' ? 'active' : `active-${b.key}`) : '';
+    return `<button class="filter-btn ${cls}" data-sev="${b.key}">${b.label}</button>`;
+  }).join('');
+
+  const stBtns = [
+    { key:'all', label:'All Status' },
+    { key:'pending', label:'Pending' },
+    { key:'fixed', label:'Fixed' },
+  ];
+  document.getElementById('statusFilters').innerHTML = stBtns.map(b => {
+    const isActive = activeStatus === b.key;
+    const cls = isActive ? (b.key === 'fixed' ? 'active-fixed' : 'active') : '';
+    return `<button class="filter-btn ${cls}" data-st="${b.key}">${b.label}</button>`;
+  }).join('');
+
+  document.querySelectorAll('[data-sev]').forEach(btn => {
+    btn.onclick = () => { activeSeverity = btn.dataset.sev; renderFilters(); renderIssues(); };
+  });
+  document.querySelectorAll('[data-st]').forEach(btn => {
+    btn.onclick = () => { activeStatus = btn.dataset.st; renderFilters(); renderIssues(); };
+  });
+}
+
+function renderIssues() {
+  const q = searchQuery.toLowerCase();
+  const filtered = ISSUES.filter(i => {
+    if (activeSeverity !== 'all' && i.severity !== activeSeverity) return false;
+    if (activeStatus !== 'all' && i.status !== activeStatus) return false;
+    if (q && !(
+      i.id.toLowerCase().includes(q) ||
+      i.title.toLowerCase().includes(q) ||
+      i.file.toLowerCase().includes(q) ||
+      i.source.toLowerCase().includes(q)
+    )) return false;
+    return true;
+  }).sort((a, b) => {
+    if (a.status === 'fixed' && b.status !== 'fixed') return 1;
+    if (a.status !== 'fixed' && b.status === 'fixed') return -1;
+    return severityOrder[a.severity] - severityOrder[b.severity];
+  });
+
+  document.getElementById('issueCount').textContent = `${filtered.length} issue${filtered.length !== 1 ? 's' : ''}`;
+
+  if (filtered.length === 0) {
+    document.getElementById('issuesList').innerHTML = '<div class="empty-state">No issues match your filters.</div>';
+    return;
+  }
+
+  document.getElementById('issuesList').innerHTML = filtered.map(i => {
+    const sevCls = i.status === 'fixed' ? 'fixed' : i.severity;
+    const sevLabel = i.status === 'fixed' ? 'Fixed' : i.severity;
+    const fixedTag = i.status === 'fixed' ? '<span class="fixed-tag">FIXED</span>' : '';
+    return `
+    <div class="issue-row ${i.status === 'fixed' ? 'is-fixed' : ''}" data-id="${i.id}">
+      <div class="issue-header" onclick="toggleIssue('${i.id}')">
+        <span class="issue-id">${i.id}</span>
+        <span class="severity-badge ${sevCls}">${sevLabel}</span>
+        <span class="issue-title">${i.title}${fixedTag}</span>
+        <span class="issue-file">${i.file.split('/').pop()}</span>
+        <span class="issue-chevron">&#9654;</span>
+      </div>
+      <div class="issue-detail">
+        <div class="detail-grid">
+          <div class="detail-block">
+            <h4>Technical</h4>
+            <p>${i.technical}</p>
+          </div>
+          <div class="detail-block">
+            <h4>Plain English</h4>
+            <p>${i.plain}</p>
+          </div>
+        </div>
+        <div class="detail-block" style="margin-top:0.8rem;">
+          <h4>${i.status === 'fixed' ? 'Fix Applied' : 'Suggested Fix'}</h4>
+          <p>${i.fix}</p>
+        </div>
+        <div class="detail-meta">
+          <span class="detail-chip">&#128193; ${i.source}</span>
+          <span class="detail-chip">&#128196; ${i.file}</span>
+          <span class="detail-chip">&#9881; Phase ${i.phase}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleIssue(id) {
+  const row = document.querySelector(`.issue-row[data-id="${id}"]`);
+  if (row) row.classList.toggle('expanded');
+}
+
+// Search
+document.getElementById('searchBox').addEventListener('input', (e) => {
+  searchQuery = e.target.value;
+  renderIssues();
+});
+
+// Init
+renderStats();
+renderDonut();
+renderCatBars();
+renderPhases();
+renderFilters();
+renderIssues();
+</script>
+</body>
+</html>

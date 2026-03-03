@@ -22,7 +22,7 @@ struct CitySearchField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             TextField(
-                localization.currentLanguage == .chinese ? "输入城市名称" : "Enter city name",
+                localization.string(for: .enterCityName),
                 text: $destination
             )
             .focused($isFocused)

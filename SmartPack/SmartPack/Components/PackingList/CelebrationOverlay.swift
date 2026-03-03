@@ -19,36 +19,40 @@ struct CelebrationOverlay: View {
     @State private var hasDismissed = false
 
     var body: some View {
-        ZStack {
-            // 半透明背景
-            Color.black.opacity(0.6)
-                .ignoresSafeArea()
-                .onTapGesture {
-                    dismissAndComplete()
+        // F9: Use GeometryReader instead of deprecated UIScreen.main.bounds
+        GeometryReader { geometry in
+            ZStack {
+                // 半透明背景
+                Color.black.opacity(0.6)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        dismissAndComplete()
+                    }
+
+                // 撒花粒子
+                ForEach(confettiPieces) { piece in
+                    ConfettiView(piece: piece, viewSize: geometry.size)
                 }
 
-            // 撒花粒子
-            ForEach(confettiPieces) { piece in
-                ConfettiView(piece: piece)
-            }
+                // 中心祝贺内容
+                if showContent {
+                    VStack(spacing: Spacing.lg) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 80, weight: .regular, design: .rounded))
+                            .foregroundColor(AppColors.success)
 
-            // 中心祝贺内容
-            if showContent {
-                VStack(spacing: Spacing.lg) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 80, weight: .regular, design: .rounded))
-                        .foregroundColor(AppColors.success)
+                        Text("🎉")
+                            .font(.system(size: 60, weight: .regular, design: .rounded))
 
-                    Text("🎉")
-                        .font(.system(size: 60, weight: .regular, design: .rounded))
-
-                    Text(title)
-                        .font(Typography.title1.bold())
-                        .foregroundColor(.white)
+                        Text(title)
+                            .font(Typography.title1.bold())
+                            .foregroundColor(.white)
+                    }
+                    .transition(.scale.combined(with: .opacity))
                 }
-                .transition(.scale.combined(with: .opacity))
             }
         }
+        .ignoresSafeArea()
         .onAppear {
             generateConfetti()
             withAnimation(.spring(response: 0.5)) {
@@ -65,11 +69,12 @@ struct CelebrationOverlay: View {
     private func generateConfetti() {
         let colors: [Color] = [AppColors.error, AppColors.warning, .yellow, AppColors.success, AppColors.primary, .purple, .pink]
 
+        // F9: Store x as fraction (0...1), resolved to actual width in ConfettiView
         for i in 0..<50 {
             let piece = ConfettiPiece(
                 id: i,
                 color: colors.randomElement() ?? .blue,
-                x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
+                xFraction: CGFloat.random(in: 0...1),
                 delay: Double.random(in: 0...0.5)
             )
             confettiPieces.append(piece)
@@ -93,13 +98,15 @@ struct CelebrationOverlay: View {
 struct ConfettiPiece: Identifiable {
     let id: Int
     let color: Color
-    let x: CGFloat
+    /// Horizontal position as fraction of view width (0...1)
+    let xFraction: CGFloat
     let delay: Double
 }
 
 /// 撒花粒子视图
 struct ConfettiView: View {
     let piece: ConfettiPiece
+    let viewSize: CGSize
     @State private var yOffset: CGFloat = -50
     @State private var rotation: Double = 0
     @State private var opacity: Double = 1
@@ -109,14 +116,14 @@ struct ConfettiView: View {
             .fill(piece.color)
             .frame(width: 10, height: 10)
             .rotationEffect(.degrees(rotation))
-            .offset(x: piece.x - UIScreen.main.bounds.width / 2, y: yOffset)
+            .offset(x: piece.xFraction * viewSize.width - viewSize.width / 2, y: yOffset)
             .opacity(opacity)
             .onAppear {
                 withAnimation(
                     .easeIn(duration: 2)
                     .delay(piece.delay)
                 ) {
-                    yOffset = UIScreen.main.bounds.height + 50
+                    yOffset = viewSize.height + 50
                     rotation = Double.random(in: 360...720)
                 }
 

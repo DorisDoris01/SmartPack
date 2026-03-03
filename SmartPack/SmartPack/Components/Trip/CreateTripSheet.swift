@@ -35,7 +35,7 @@ struct CreateTripSheet: View {
                 .padding()
             }
             .background(AppColors.background)
-            .navigationTitle(localization.currentLanguage == .chinese ? "新建行程" : "New Trip")
+            .navigationTitle(localization.string(for: .newTrip))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -57,17 +57,17 @@ struct CreateTripSheet: View {
 
     private var dateRangeSection: some View {
         SectionCard(
-            title: localization.currentLanguage == .chinese ? "出行时间" : "Trip Dates",
+            title: localization.string(for: .tripDates),
             icon: "calendar"
         ) {
             VStack(spacing: Spacing.md) {
                 DatePicker(selection: $startDate, displayedComponents: .date) {
-                    Text(localization.currentLanguage == .chinese ? "出发日期" : "Start Date")
+                    Text(localization.string(for: .startDate))
                         .font(Typography.body)
                 }
 
                 DatePicker(selection: $endDate, in: startDate..., displayedComponents: .date) {
-                    Text(localization.currentLanguage == .chinese ? "返回日期" : "End Date")
+                    Text(localization.string(for: .endDate))
                         .font(Typography.body)
                 }
                 .onChange(of: startDate) { oldStart, newStart in
@@ -80,7 +80,7 @@ struct CreateTripSheet: View {
                 }
 
                 let days = Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 0
-                Text(localization.currentLanguage == .chinese ? "共 \(days + 1) 天" : "\(days + 1) days")
+                Text(localization.text(chinese: "共 \(days + 1) 天", english: "\(days + 1) days"))
                     .font(Typography.footnote)
                     .foregroundColor(.secondary)
             }
@@ -91,7 +91,7 @@ struct CreateTripSheet: View {
 
     private var destinationSection: some View {
         SectionCard(
-            title: localization.currentLanguage == .chinese ? "目的地" : "Destination",
+            title: localization.string(for: .destination),
             icon: "mappin.circle"
         ) {
             CitySearchField(
@@ -109,7 +109,7 @@ struct CreateTripSheet: View {
         VStack(spacing: Spacing.sm) {
             // 旅行活动
             SectionCard(
-                title: localization.currentLanguage == .chinese ? "旅行活动" : "Travel Activities",
+                title: localization.string(for: .travelActivities),
                 icon: "figure.run"
             ) {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: Spacing.sm)], spacing: Spacing.sm) {
@@ -127,7 +127,7 @@ struct CreateTripSheet: View {
 
             // 特定场合
             SectionCard(
-                title: localization.currentLanguage == .chinese ? "特定场合" : "Occasions",
+                title: localization.string(for: .occasions),
                 icon: "building.2"
             ) {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: Spacing.sm)], spacing: Spacing.sm) {
@@ -145,7 +145,7 @@ struct CreateTripSheet: View {
 
             // 出行配置
             SectionCard(
-                title: localization.currentLanguage == .chinese ? "出行配置" : "Travel Config",
+                title: localization.string(for: .travelConfig),
                 icon: "gearshape"
             ) {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: Spacing.sm)], spacing: Spacing.sm) {
@@ -171,7 +171,7 @@ struct CreateTripSheet: View {
                 HStack(spacing: Spacing.xs) {
                     ProgressView()
                         .scaleEffect(0.9)
-                    Text(localization.currentLanguage == .chinese ? "正在生成…" : "Creating list…")
+                    Text(localization.string(for: .creatingList))
                         .font(Typography.subheadline)
                         .foregroundColor(AppColors.textSecondary)
                 }
@@ -183,7 +183,7 @@ struct CreateTripSheet: View {
                 HapticFeedback.light()
                 createAndSaveTrip()
             } label: {
-                Text(localization.currentLanguage == .chinese ? "生成行程" : "Generate Trip")
+                Text(localization.string(for: .generateTrip))
                     .font(Typography.headline)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -195,8 +195,8 @@ struct CreateTripSheet: View {
             .disabled(isGenerating)
         }
         .padding(.top, Spacing.xs)
-        .accessibilityLabel(localization.currentLanguage == .chinese ? "生成行程" : "Generate Trip")
-        .accessibilityHint(isGenerating ? (localization.currentLanguage == .chinese ? "正在创建行程" : "Creating your trip") : "")
+        .accessibilityLabel(localization.string(for: .generateTrip))
+        .accessibilityHint(isGenerating ? localization.string(for: .creatingTrip) : "")
     }
 
     // MARK: - 方法
