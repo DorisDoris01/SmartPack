@@ -45,7 +45,7 @@ struct PackingListView: View {
         .alert(archiveAlertTitle, isPresented: $showArchiveAlert) { archiveAlertActions }
             message: { archiveAlertMessage }
         .onAppear { onViewAppear() }
-        .onDisappear { vm?.stopLiveActivity() }
+        .onDisappear { }
         .onChange(of: localization.currentLanguage) { _, newValue in
             vm?.rebuildGroups(language: newValue)
         }
@@ -303,7 +303,6 @@ private extension PackingListView {
         // F1 fix: 预热天气缓存，避免在 View body 中变更 @Transient 状态
         trip.warmWeatherCache()
 
-        vm?.startLiveActivityIfNeeded()
     }
 
     func toggleCategory(_ category: String, vm: PackingListViewModel) {

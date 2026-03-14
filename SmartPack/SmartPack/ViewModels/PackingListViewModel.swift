@@ -3,7 +3,7 @@
 //  SmartPack
 //
 //  Refactor v2.1: MVVM 架构 — 业务逻辑与副作用集中管理
-//  职责：物品增删改查、分组缓存、Live Activity、完成检测与归档
+//  职责：物品增删改查、分组缓存、完成检测与归档
 //
 
 import Foundation
@@ -37,7 +37,6 @@ final class PackingListViewModel {
     // MARK: - 依赖
 
     private let trip: Trip
-    private let activityManager = PackingActivityManagerCompat.shared
 
     // MARK: - 初始化
 
@@ -54,10 +53,9 @@ final class PackingListViewModel {
 
     /// 切换勾选状态
     ///
-    /// 执行策略：三阶段分离
+    /// 执行策略：两阶段分离
     /// 1. 同步：只做最小数据变更（isChecked + 计数器），让 SwiftUI 立即渲染勾选动画
-    /// 2. 延迟：Live Activity 跨进程通信推到下一个 RunLoop
-    /// 3. 延迟：完成检测 + archive 数据库写入推到下一个 RunLoop
+    /// 2. 延迟：完成检测 + archive 数据库写入推到下一个 RunLoop
     ///
     /// 不调用 rebuildGroups。TripItem 是 @Model（遵循 @Observable），
     /// isChecked 变化会被 SwiftUI 精确追踪，只有对应的 ItemRow 会局部刷新。
@@ -66,27 +64,16 @@ final class PackingListViewModel {
         let wasAllChecked = trip.isAllChecked
         trip.toggleItem(itemId)
 
-        // Phase 2 & 3（延迟）：副作用推到下一个 RunLoop，不阻塞当前帧
-        let checkedCount = trip.checkedCount
-        let totalCount = trip.totalCount
+        // Phase 2（延迟）：副作用推到下一个 RunLoop，不阻塞当前帧
         let isNowAllChecked = trip.isAllChecked
         let isArchived = trip.isArchived
 
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
 
-            // Phase 2：Live Activity 跨进程通信
-            if !isArchived {
-                self.activityManager.updateActivity(
-                    checkedCount: checkedCount,
-                    totalCount: totalCount
-                )
-            }
-
-            // Phase 3：完成检测 → 归档 + 庆祝
+            // 完成检测 → 归档 + 庆祝
             if !wasAllChecked && isNowAllChecked && !isArchived {
                 HapticFeedback.success()
-                self.activityManager.endActivity()
                 self.trip.archive()
                 self.showCelebration = true
             }
@@ -98,7 +85,6 @@ final class PackingListViewModel {
         existingItemIds.remove(itemId)
         trip.removeItem(itemId)
         rebuildGroups(language: language)
-        syncLiveActivity()
     }
 
     /// 添加物品到指定分类（含去重逻辑）
@@ -143,7 +129,6 @@ final class PackingListViewModel {
         existingItemIds.insert(newItem.id)
         trip.addItem(newItem)
         rebuildGroups(language: language)
-        syncLiveActivity()
         return true
     }
 
@@ -151,7 +136,6 @@ final class PackingListViewModel {
     func resetAll(language: AppLanguage) {
         trip.resetAllChecks()
         rebuildGroups(language: language)
-        syncLiveActivity()
     }
 
     // MARK: - 归档操作
@@ -159,7 +143,6 @@ final class PackingListViewModel {
     /// 手动归档（菜单触发）
     func archiveTrip() {
         trip.archive()
-        activityManager.endActivity()
     }
 
     /// 取消归档
@@ -167,38 +150,10 @@ final class PackingListViewModel {
         trip.unarchive()
     }
 
-    // MARK: - Live Activity 生命周期
-
-    /// 页面出现时启动 Live Activity
-    func startLiveActivityIfNeeded() {
-        guard !trip.isArchived && !trip.isAllChecked else { return }
-        activityManager.startActivity(
-            tripName: trip.name,
-            checkedCount: trip.checkedCount,
-            totalCount: trip.totalCount
-        )
-    }
-
-    /// 页面消失时结束 Live Activity
-    func stopLiveActivity() {
-        activityManager.endActivity()
-    }
-
     // MARK: - 分组管理
 
     /// 重建分组缓存（仅在结构性变化时调用）
     func rebuildGroups(language: AppLanguage) {
         groupedItems = PresetData.shared.groupByCategory(trip.items, language: language)
-    }
-
-    // MARK: - Private
-
-    /// 同步 Live Activity 进度（如果行程未归档）
-    private func syncLiveActivity() {
-        guard !trip.isArchived else { return }
-        activityManager.updateActivity(
-            checkedCount: trip.checkedCount,
-            totalCount: trip.totalCount
-        )
     }
 }

@@ -8,24 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		7B15EA002F37149800E9425B /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020000000000000002 /* Item.swift */; };
-		7B3436B42F3639BD00D50328 /* ActivityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B3436B42F3639BD00D50329 /* ActivityKit.framework */; };
-		7B3436B62F3639BD00D50327 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B3436B52F3639BD00D50327 /* WidgetKit.framework */; };
-		7B3436B82F3639BD00D50327 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B3436B72F3639BD00D50327 /* SwiftUI.framework */; };
-		7B3436C92F3639C000D50327 /* smartpackExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7B3436B32F3639BD00D50327 /* smartpackExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		7BB973D82F371B1200F76B8E /* PackingActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BB973D52F371B1200F76B8E /* PackingActivityWidget.swift */; };
-		7BB973D92F371B1200F76B8E /* PackingActivityWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BB973D62F371B1200F76B8E /* PackingActivityWidgetBundle.swift */; };
 		91FF533CA3204521E79D2548 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D266E97BCBDF5B2AD1C5B3FA /* Foundation.framework */; };
 		A10000120000000000000012 /* Trip.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000120000000000000012 /* Trip.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		7B3436C72F3639C000D50327 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A8000001000000000000002E /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7B3436B22F3639BD00D50327;
-			remoteInfo = smartpackExtension;
-		};
 		8AA2981CE196793C70B90FEB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A8000001000000000000002E /* Project object */;
@@ -35,30 +22,9 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		7B3436CA2F3639C000D50327 /* Embed Foundation Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				7B3436C92F3639C000D50327 /* smartpackExtension.appex in Embed Foundation Extensions */,
-			);
-			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
 		7B3436AB2F30D6DB00D50327 /* CustomItemManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomItemManager.swift; sourceTree = "<group>"; };
-		7B3436B32F3639BD00D50327 /* smartpackExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = smartpackExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		7B3436B42F3639BD00D50329 /* ActivityKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ActivityKit.framework; path = System/Library/Frameworks/ActivityKit.framework; sourceTree = SDKROOT; };
-		7B3436B52F3639BD00D50327 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
-		7B3436B72F3639BD00D50327 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		7B3436F82F363A3000D50327 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		7B5CE9902F3646A100773FEC /* Info-Extension.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-Extension.plist"; sourceTree = "<group>"; };
-		7BB973D52F371B1200F76B8E /* PackingActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackingActivityWidget.swift; sourceTree = "<group>"; };
-		7BB973D62F371B1200F76B8E /* PackingActivityWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackingActivityWidgetBundle.swift; sourceTree = "<group>"; };
 		99D4FBF10D2AA38339FAADA1 /* SmartPackTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SmartPackTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000010000000000000001 /* SmartPackApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartPackApp.swift; sourceTree = "<group>"; };
 		A20000020000000000000002 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
@@ -76,24 +42,16 @@
 		7B3F3E712F363D0A00103BFC /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				"Info-Extension.plist",
 				Info.plist,
 				Models/Item.swift,
 				Models/Trip.swift,
 			);
 			target = A6000001000000000000002A /* SmartPack */;
 		};
-		7B9EA6C72F371E3D00BFF36A /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Activity/PackingActivityAttributes.swift,
-			);
-			target = 7B3436B22F3639BD00D50327 /* smartpackExtension */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		7B3436B92F3639BD00D50327 /* SmartPack */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (7B3F3E712F363D0A00103BFC /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 7B9EA6C72F371E3D00BFF36A /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SmartPack; sourceTree = "<group>"; };
+		7B3436B92F3639BD00D50327 /* SmartPack */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (7B3F3E712F363D0A00103BFC /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SmartPack; sourceTree = "<group>"; };
 		C460B41C9FBCC6CC41663DFD /* SmartPackTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = SmartPackTests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -103,16 +61,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				91FF533CA3204521E79D2548 /* Foundation.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		7B3436B02F3639BD00D50327 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7B3436B42F3639BD00D50328 /* ActivityKit.framework in Frameworks */,
-				7B3436B82F3639BD00D50327 /* SwiftUI.framework in Frameworks */,
-				7B3436B62F3639BD00D50327 /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -126,34 +74,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		7B3436B42F3639BD00D50327 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				7B3436B42F3639BD00D50329 /* ActivityKit.framework */,
-				7B3436B52F3639BD00D50327 /* WidgetKit.framework */,
-				7B3436B72F3639BD00D50327 /* SwiftUI.framework */,
-				B90D3774676F0F2DDB0DDB7C /* iOS */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		7BB973D72F371B1200F76B8E /* WidgetExtension */ = {
-			isa = PBXGroup;
-			children = (
-				7BB973D52F371B1200F76B8E /* PackingActivityWidget.swift */,
-				7BB973D62F371B1200F76B8E /* PackingActivityWidgetBundle.swift */,
-			);
-			path = WidgetExtension;
-			sourceTree = "<group>";
-		};
 		A5000001000000000000000E = {
 			isa = PBXGroup;
 			children = (
 				A5000002000000000000000F /* SmartPack */,
 				7B3436B92F3639BD00D50327 /* SmartPack */,
-				7B3436B42F3639BD00D50327 /* Frameworks */,
+				B90D3774676F0F2DDB0DDB7C /* iOS */,
 				A5000003000000000000001A /* Products */,
-				7BB973D72F371B1200F76B8E /* WidgetExtension */,
 				C460B41C9FBCC6CC41663DFD /* SmartPackTests */,
 			);
 			sourceTree = "<group>";
@@ -161,7 +88,6 @@
 		A5000002000000000000000F /* SmartPack */ = {
 			isa = PBXGroup;
 			children = (
-				7B5CE9902F3646A100773FEC /* Info-Extension.plist */,
 				7B3436F82F363A3000D50327 /* Info.plist */,
 				A20000010000000000000001 /* SmartPackApp.swift */,
 				A5000004000000000000001B /* Models */,
@@ -177,7 +103,6 @@
 			isa = PBXGroup;
 			children = (
 				A3000001000000000000000C /* SmartPack.app */,
-				7B3436B32F3639BD00D50327 /* smartpackExtension.appex */,
 				99D4FBF10D2AA38339FAADA1 /* SmartPackTests.xctest */,
 			);
 			name = Products;
@@ -229,23 +154,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		7B3436B22F3639BD00D50327 /* smartpackExtension */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 7B3436CE2F3639C000D50327 /* Build configuration list for PBXNativeTarget "smartpackExtension" */;
-			buildPhases = (
-				7B3436AF2F3639BD00D50327 /* Sources */,
-				7B3436B02F3639BD00D50327 /* Frameworks */,
-				7B3436B12F3639BD00D50327 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = smartpackExtension;
-			productName = smartpackExtension;
-			productReference = 7B3436B32F3639BD00D50327 /* smartpackExtension.appex */;
-			productType = "com.apple.product-type.app-extension";
-		};
 		A6000001000000000000002A /* SmartPack */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A7000001000000000000002D /* Build configuration list for PBXNativeTarget "SmartPack" */;
@@ -253,12 +161,10 @@
 				A6000002000000000000002B /* Sources */,
 				A4000001000000000000000D /* Frameworks */,
 				A6000003000000000000002C /* Resources */,
-				7B3436CA2F3639C000D50327 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				7B3436C82F3639C000D50327 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				7B3436B92F3639BD00D50327 /* SmartPack */,
@@ -299,9 +205,6 @@
 				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
-					7B3436B22F3639BD00D50327 = {
-						CreatedOnToolsVersion = 26.2;
-					};
 					A6000001000000000000002A = {
 						CreatedOnToolsVersion = 15.0;
 					};
@@ -318,6 +221,7 @@
 			knownRegions = (
 				en,
 				"zh-Hans",
+				Base,
 			);
 			mainGroup = A5000001000000000000000E;
 			productRefGroup = A5000003000000000000001A /* Products */;
@@ -325,20 +229,12 @@
 			projectRoot = "";
 			targets = (
 				A6000001000000000000002A /* SmartPack */,
-				7B3436B22F3639BD00D50327 /* smartpackExtension */,
 				AD1ACAE614899656A4BC7627 /* SmartPackTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		7B3436B12F3639BD00D50327 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		A6000003000000000000002C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -363,15 +259,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7B3436AF2F3639BD00D50327 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7BB973D82F371B1200F76B8E /* PackingActivityWidget.swift in Sources */,
-				7BB973D92F371B1200F76B8E /* PackingActivityWidgetBundle.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		A6000002000000000000002B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -390,11 +277,6 @@
 			target = A6000001000000000000002A /* SmartPack */;
 			targetProxy = 8AA2981CE196793C70B90FEB /* PBXContainerItemProxy */;
 		};
-		7B3436C82F3639C000D50327 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 7B3436B22F3639BD00D50327 /* smartpackExtension */;
-			targetProxy = 7B3436C72F3639C000D50327 /* PBXContainerItemProxy */;
-		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -405,11 +287,11 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = CXHX3RBB8K;
+				DEVELOPMENT_TEAM = KL5XAKR7X7;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.smartpack.app.doris.SmartPackTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.smartpack.app.v1.SmartPackTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -417,74 +299,6 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SmartPack.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SmartPack";
 				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
-		7B3436CB2F3639C000D50327 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = CXHX3RBB8K;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "SmartPack/Info-Extension.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = SmartPackWidgetExtension;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.smartpack.app.doris.smartpackExtension;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SKIP_INSTALL = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		7B3436CC2F3639C000D50327 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = CXHX3RBB8K;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "SmartPack/Info-Extension.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = SmartPackWidgetExtension;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.smartpack.app.doris.smartpackExtension;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SKIP_INSTALL = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -621,7 +435,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = CXHX3RBB8K;
+				DEVELOPMENT_TEAM = KL5XAKR7X7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SmartPack/Info.plist;
@@ -637,7 +451,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.smartpack.app.doris;
+				PRODUCT_BUNDLE_IDENTIFIER = com.smartpack.app.v1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -653,7 +467,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = CXHX3RBB8K;
+				DEVELOPMENT_TEAM = KL5XAKR7X7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SmartPack/Info.plist;
@@ -669,7 +483,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.smartpack.app.doris;
+				PRODUCT_BUNDLE_IDENTIFIER = com.smartpack.app.v1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -684,11 +498,11 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = CXHX3RBB8K;
+				DEVELOPMENT_TEAM = KL5XAKR7X7;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.smartpack.app.doris.SmartPackTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.smartpack.app.v1.SmartPackTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -706,15 +520,6 @@
 			buildConfigurations = (
 				32C1A13ABAA0A1BD8D19048D /* Release */,
 				EAEA8981F1826A34AF8E7711 /* Debug */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		7B3436CE2F3639C000D50327 /* Build configuration list for PBXNativeTarget "smartpackExtension" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				7B3436CB2F3639C000D50327 /* Debug */,
-				7B3436CC2F3639C000D50327 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

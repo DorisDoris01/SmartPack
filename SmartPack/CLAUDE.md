@@ -16,7 +16,7 @@ xcodebuild -scheme SmartPack -destination 'platform=iOS Simulator,name=iPhone 16
 xcodebuild -scheme SmartPack -destination 'platform=iOS Simulator,name=iPhone 16' test
 ```
 
-Targets: `SmartPack` (app), `smartpackExtension` (widget), `SmartPackTests` (unit tests).
+Targets: `SmartPack` (app), `SmartPackTests` (unit tests).
 
 ## Architecture
 
@@ -35,9 +35,7 @@ SmartPack/
 ├── Data/            PresetData.swift (packing item presets), CustomItemManager.swift (@Observable)
 ├── DesignSystem/    AppColors, Typography, Spacing, CornerRadius, ViewModifiers
 ├── Localization/    LocalizationManager.swift (ObservableObject, @EnvironmentObject)
-├── Configuration/   AppConfig.swift, HapticFeedback.swift
-├── Activity/        PackingActivityManager.swift (Live Activity)
-└── Widgets/         Widget extension sources
+└── Configuration/   AppConfig.swift, HapticFeedback.swift
 ```
 
 **Data flow:** `HomeView` → NavigationStack → `PackingListView` + `PackingListViewModel` → `Trip` (@Model).
