@@ -74,7 +74,7 @@ struct WelcomeView: View {
                     .font(.system(size: 60, weight: .regular, design: .rounded))
                     .foregroundColor(AppColors.primary)
                 
-                Text("SmartPack")
+                Text("SmartPackie")
                     .font(Typography.largeTitle)
                 
                 Text(localization.string(for: .welcomeSubtitle))
