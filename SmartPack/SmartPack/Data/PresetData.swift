@@ -59,7 +59,7 @@ class PresetData {
         Item(id: "female_007", name: "卫生巾/棉条", nameEn: "Sanitary Pads/Tampons", category: .toiletries, genderSpecific: .female),
         Item(id: "female_008", name: "内衣", nameEn: "Bra", category: .clothing, genderSpecific: .female),
         Item(id: "female_009", name: "裙子", nameEn: "Dress", category: .clothing, genderSpecific: .female),
-        Item(id: "female_010", name: "首饰/配饰", nameEn: " Jewelry/Accessories", category: .clothing, genderSpecific: .female),
+        Item(id: "female_010", name: "首饰/配饰", nameEn: "Jewelry/Accessories", category: .clothing, genderSpecific: .female),
 
         // ========== SPEC 4.2: 旅行活动 - 跑步 ==========
         Item(id: "act_run_001", name: "跑鞋", nameEn: "Running Shoe", category: .sports, genderSpecific: nil),
@@ -130,7 +130,7 @@ class PresetData {
         Item(id: "act_ski_001", name: "雪服", nameEn: "Ski Suit", category: .sports, genderSpecific: nil),
         Item(id: "act_ski_002", name: "雪镜", nameEn: "Ski Goggles", category: .sports, genderSpecific: nil),
         Item(id: "act_ski_003", name: "护脸", nameEn: "Face Mask", category: .sports, genderSpecific: nil),
-        Item(id: "act_ski_004", name: "速干衣裤", nameEn: " Quick-Dry Clothing", category: .sports, genderSpecific: nil),
+        Item(id: "act_ski_004", name: "速干衣裤", nameEn: "Quick-Dry Clothing", category: .sports, genderSpecific: nil),
         Item(id: "act_ski_005", name: "护具", nameEn: "Protective Gear", category: .sports, genderSpecific: nil),
         Item(id: "act_ski_006", name: "暖宝宝", nameEn: "Warmers", category: .other, genderSpecific: nil),
         Item(id: "act_ski_007", name: "滑雪袜", nameEn: "Ski Socks", category: .clothing, genderSpecific: nil),
