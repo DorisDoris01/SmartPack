@@ -182,7 +182,7 @@ class LocalizationManager: ObservableObject {
     private let strings: [AppLanguage: [LocalizedKey: String]] = [
         .chinese: [
             // 通用
-            .appName: "SmartPackie",
+            .appName: "HeyPackie",
             .confirm: "确定",
             .cancel: "取消",
             .done: "完成",
@@ -266,7 +266,7 @@ class LocalizationManager: ObservableObject {
         ],
         .english: [
             // 通用
-            .appName: "SmartPackie",
+            .appName: "HeyPackie",
             .confirm: "Confirm",
             .cancel: "Cancel",
             .done: "Done",

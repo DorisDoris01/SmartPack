@@ -113,7 +113,7 @@ struct SettingsView: View {
                     .foregroundColor(AppColors.primary)
                     .frame(width: 24)
                 
-                Text("SmartPackie")
+                Text("HeyPackie")
                     .font(Typography.headline)
                 
                 Spacer()
