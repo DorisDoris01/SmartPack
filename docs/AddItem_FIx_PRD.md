@@ -36,12 +36,12 @@ if !itemName.isEmpty {
     }
     .buttonStyle(.borderless) // 👈 必须添加此修饰符
 }
-
+```
 
 ### 2. 修改“预设建议”按钮
 定位到 ForEach(filteredPresetItems) { item in ... } 循环内的 Button，追加相同的修饰符：
 
-Swift
+```Swift
 // 修改目标结构：
 ForEach(filteredPresetItems) { item in
     Button {
@@ -53,7 +53,7 @@ ForEach(filteredPresetItems) { item in
     }
     .buttonStyle(.borderless) // 👈 必须添加此修饰符
 }
-
+```
 
 ## 三、 验证标准 (Acceptance Criteria)
 AddItemRow.swift 编译通过，无语法错误。

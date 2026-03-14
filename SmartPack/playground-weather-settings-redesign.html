@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather + Settings Unfold Redesign — Playground</title>
+<style>
+  :root {
+    --ui-bg: #1a1a2e;
+    --ui-surface: #232340;
+    --ui-border: #2e2e4a;
+    --ui-text: #e0e0f0;
+    --ui-muted: #8888aa;
+    --ui-accent: #0E7490;
+    --ui-accent-light: #22D3EE;
+    /* App colors */
+    --app-bg: #F0F4F5;
+    --app-card: #F8FAFB;
+    --app-primary: #0E7490;
+    --app-secondary: #4B6072;
+    --app-text: #0C1E24;
+    --app-muted: #446070;
+    --app-muted2: #7A95AA;
+    --app-border: rgba(0,0,0,0.06);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif;
+    background: var(--ui-bg); color: var(--ui-text);
+    display: flex; height: 100vh; overflow: hidden;
+  }
+
+  /* === CONTROLS PANEL === */
+  .controls {
+    width: 320px; min-width: 320px; background: var(--ui-surface);
+    border-right: 1px solid var(--ui-border);
+    overflow-y: auto; padding: 20px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .controls h1 { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+  .controls h2 {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--ui-muted); margin-bottom: 8px;
+  }
+  .control-group { display: flex; flex-direction: column; gap: 6px; }
+
+  /* Option cards */
+  .option-grid { display: flex; flex-direction: column; gap: 6px; }
+  .option-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 10px;
+    border: 2px solid var(--ui-border); cursor: pointer;
+    transition: all 0.15s;
+  }
+  .option-card:hover { border-color: var(--ui-accent); }
+  .option-card.active { border-color: var(--ui-accent-light); background: rgba(14,116,144,0.12); }
+  .option-card .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    border: 2px solid var(--ui-muted); flex-shrink: 0;
+  }
+  .option-card.active .dot { background: var(--ui-accent-light); border-color: var(--ui-accent-light); }
+  .option-card .info { flex: 1; }
+  .option-card .name { font-size: 13px; font-weight: 600; }
+  .option-card .desc { font-size: 11px; color: var(--ui-muted); margin-top: 2px; }
+
+  /* Toggles & sliders */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 0;
+  }
+  .toggle-row label { font-size: 13px; }
+  .toggle-row select, .toggle-row input[type="range"] {
+    background: var(--ui-bg); border: 1px solid var(--ui-border);
+    color: var(--ui-text); border-radius: 6px; padding: 4px 8px; font-size: 12px;
+  }
+  input[type="range"] { width: 100px; accent-color: var(--ui-accent-light); }
+  .range-val { font-size: 11px; color: var(--ui-accent-light); font-weight: 600; min-width: 20px; text-align: right; }
+
+  .pill-toggles { display: flex; gap: 6px; }
+  .pill-toggle {
+    padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    border: 1.5px solid var(--ui-border); cursor: pointer; transition: all 0.15s;
+    background: transparent; color: var(--ui-muted);
+  }
+  .pill-toggle.active { border-color: var(--ui-accent-light); color: var(--ui-accent-light); background: rgba(14,116,144,0.15); }
+
+  /* === PREVIEW PANEL === */
+  .preview-area {
+    flex: 1; display: flex; flex-direction: column; overflow: hidden;
+  }
+  .preview-header {
+    padding: 12px 20px; border-bottom: 1px solid var(--ui-border);
+    font-size: 12px; color: var(--ui-muted); font-weight: 600;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .preview-scroll {
+    flex: 1; overflow-y: auto; display: flex; justify-content: center;
+    padding: 24px;
+  }
+
+  /* Phone frame */
+  .phone {
+    width: 390px; min-height: 600px; background: var(--app-bg);
+    border-radius: 40px; padding: 50px 16px 30px;
+    box-shadow: 0 0 0 3px #333, 0 20px 60px rgba(0,0,0,0.5);
+    position: relative; overflow: hidden;
+  }
+  .phone::before {
+    content: ''; position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 28px; background: #222; border-radius: 14px;
+  }
+
+  /* Nav bar */
+  .nav-bar {
+    text-align: center; font-size: 16px; font-weight: 600; color: var(--app-text);
+    padding-bottom: 10px; border-bottom: 0.5px solid rgba(0,0,0,0.06);
+    margin-bottom: 10px;
+  }
+
+  /* Progress mock */
+  .progress-bar {
+    height: 22px; border-radius: 11px; background: rgba(75,96,114,0.10);
+    position: relative; overflow: hidden; margin-bottom: 10px;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 11px; background: var(--app-primary); width: 45%;
+  }
+  .progress-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    font-size: 11px; font-weight: 700; color: var(--app-primary);
+  }
+
+  /* Pill buttons */
+  .pill-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    border: none; cursor: default; font-family: inherit;
+  }
+  .pill svg { width: 14px; height: 14px; }
+  .pill.weather-on { background: var(--app-primary); color: white; }
+  .pill.weather-on svg { fill: white; }
+  .pill.weather-off { background: rgba(14,116,144,0.12); color: var(--app-primary); }
+  .pill.weather-off svg { fill: var(--app-primary); }
+  .pill.settings-on { background: var(--app-secondary); color: white; }
+  .pill.settings-on svg { fill: white; }
+  .pill.settings-off { background: rgba(75,96,114,0.12); color: var(--app-secondary); }
+  .pill.settings-off svg { fill: var(--app-secondary); }
+
+  /* SVG icon helper */
+  .sf { display: inline-flex; align-items: center; justify-content: center; }
+  .sf svg { fill: currentColor; }
+
+  /* Category mock */
+  .cat-mock {
+    background: white; border-radius: 12px; padding: 12px 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: 6px;
+  }
+  .cat-header {
+    display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: var(--app-text);
+  }
+  .cat-icon {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cat-icon svg { width: 14px; height: 14px; }
+  .cat-count { font-size: 12px; color: var(--app-muted2); font-weight: 500; margin-left: auto; }
+  .cat-chevron { font-size: 12px; color: #C4C4C6; margin-left: 4px; }
+
+  /* === OPTION-SPECIFIC STYLES === */
+
+  /* Option A: Inline Row */
+  .weather-inline {
+    display: flex; align-items: center;
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(16px);
+    border-radius: 14px; border: 0.5px solid var(--app-border);
+    padding: 10px 6px; margin-bottom: 8px;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .weather-inline::-webkit-scrollbar { display: none; }
+  .wi-day {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    min-width: 56px; width: 56px; flex-shrink: 0; padding: 4px 2px;
+  }
+  .wi-day .label { font-size: 10px; font-weight: 600; color: var(--app-muted2); letter-spacing: 0.2px; }
+  .wi-day .icon { font-size: 0; line-height: 1; }
+  .wi-day .icon svg { width: 20px; height: 20px; }
+  .wi-day .temp { font-size: 14px; font-weight: 700; color: var(--app-text); }
+  .wi-day .temp-lo { font-size: 11px; font-weight: 600; color: var(--app-muted2); }
+
+  .settings-chips {
+    display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+    padding: 10px 14px; margin-bottom: 8px;
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(16px);
+    border-radius: 14px; border: 0.5px solid var(--app-border);
+  }
+  .sc {
+    font-size: 11px; font-weight: 600; padding: 4px 8px;
+    background: rgba(75,96,114,0.06); border-radius: 6px; color: var(--app-muted);
+    display: inline-flex; align-items: center; gap: 3px;
+  }
+  .sc svg { width: 10px; height: 10px; fill: var(--app-muted2); }
+
+  /* Option B: Accordion (expands under pill) */
+  .accordion-weather {
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(16px);
+    border-radius: 0 0 14px 14px; border: 0.5px solid var(--app-border); border-top: none;
+    margin-top: -6px; padding: 8px 6px 10px;
+    display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  .accordion-weather::-webkit-scrollbar { display: none; }
+  .accordion-settings {
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(16px);
+    border-radius: 0 0 14px 14px; border: 0.5px solid var(--app-border); border-top: none;
+    margin-top: -6px; padding: 8px 14px 10px;
+    display: flex; flex-wrap: wrap; gap: 4px;
+  }
+  .pill-row-accordion { display: flex; gap: 8px; margin-bottom: 0; }
+  .pill-row-accordion .pill.weather-on { border-radius: 20px 20px 4px 4px; }
+  .pill-row-accordion .pill.settings-on { border-radius: 20px 20px 4px 4px; }
+  .accordion-gap { margin-bottom: 10px; }
+
+  /* Option C: Combined Card */
+  .combined-card {
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(16px);
+    border-radius: 14px; border: 0.5px solid var(--app-border);
+    margin-bottom: 8px; overflow: hidden;
+  }
+  .cc-weather {
+    display: flex; padding: 10px 6px;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .cc-weather::-webkit-scrollbar { display: none; }
+  .cc-divider { height: 0.5px; background: rgba(0,0,0,0.06); margin: 0 14px; }
+  .cc-settings {
+    display: flex; flex-wrap: wrap; gap: 4px; padding: 10px 14px;
+  }
+
+  /* Option D: Popover Card */
+  .popover-anchor { position: relative; }
+  .popover-card {
+    position: absolute; top: calc(100% + 6px); left: 0; z-index: 10;
+    background: white; border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(0,0,0,0.06);
+    min-width: 300px; overflow: hidden;
+  }
+  .popover-card .pc-weather {
+    display: flex; padding: 12px 8px;
+    overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  .popover-card .pc-weather::-webkit-scrollbar { display: none; }
+  .popover-card .pc-settings {
+    display: flex; flex-wrap: wrap; gap: 4px; padding: 10px 14px;
+    border-top: 0.5px solid rgba(0,0,0,0.06);
+  }
+
+  /* === PROMPT OUTPUT === */
+  .prompt-area {
+    border-top: 1px solid var(--ui-border); padding: 16px 20px;
+    background: var(--ui-surface);
+  }
+  .prompt-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--ui-muted); margin-bottom: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .copy-btn {
+    padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;
+    background: var(--ui-accent); color: white; border: none; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { background: var(--ui-accent-light); }
+  .prompt-text {
+    font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px;
+    line-height: 1.7; color: var(--ui-text); white-space: pre-wrap;
+    max-height: 120px; overflow-y: auto;
+  }
+</style>
+</head>
+<body>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <h1>Weather + Settings Unfold</h1>
+
+  <div class="control-group">
+    <h2>Layout Option</h2>
+    <div class="option-grid" id="optionGrid">
+      <div class="option-card" data-option="A" onclick="selectOption('A')">
+        <div class="dot"></div>
+        <div class="info">
+          <div class="name">A. Separate Rows</div>
+          <div class="desc">Weather row + settings row, independent cards</div>
+        </div>
+      </div>
+      <div class="option-card" data-option="B" onclick="selectOption('B')">
+        <div class="dot"></div>
+        <div class="info">
+          <div class="name">B. Accordion</div>
+          <div class="desc">Content expands directly under its pill</div>
+        </div>
+      </div>
+      <div class="option-card active" data-option="C" onclick="selectOption('C')">
+        <div class="dot"></div>
+        <div class="info">
+          <div class="name">C. Combined Card</div>
+          <div class="desc">Weather + settings merged in one card</div>
+        </div>
+      </div>
+      <div class="option-card" data-option="D" onclick="selectOption('D')">
+        <div class="dot"></div>
+        <div class="info">
+          <div class="name">D. Popover</div>
+          <div class="desc">Floating card below pills, overlays content</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <h2>Active Panels</h2>
+    <div class="pill-toggles">
+      <div class="pill-toggle active" id="tog-weather" onclick="togglePanel('weather')">Weather</div>
+      <div class="pill-toggle active" id="tog-settings" onclick="togglePanel('settings')">Settings</div>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <h2>Language</h2>
+    <div class="pill-toggles">
+      <div class="pill-toggle active" id="tog-cn" onclick="setLang('cn')">CN</div>
+      <div class="pill-toggle" id="tog-en" onclick="setLang('en')">EN</div>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <h2>Data</h2>
+    <div class="toggle-row">
+      <label>Total forecast days</label>
+      <input type="range" id="dayCount" min="5" max="9" value="7" oninput="updateAll()">
+      <span class="range-val" id="dayCountVal">7</span>
+    </div>
+    <div style="font-size:11px;color:var(--ui-muted);margin-top:-2px;">5 visible, swipe for rest</div>
+  </div>
+
+  <div class="control-group">
+    <h2>Presets</h2>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+      <button class="pill-toggle" onclick="applyPreset('minimal')">Minimal</button>
+      <button class="pill-toggle" onclick="applyPreset('full')">Full Info</button>
+      <button class="pill-toggle" onclick="applyPreset('weather-only')">Weather Only</button>
+      <button class="pill-toggle" onclick="applyPreset('settings-only')">Settings Only</button>
+    </div>
+  </div>
+</div>
+
+<!-- PREVIEW + PROMPT -->
+<div class="preview-area">
+  <div class="preview-header">
+    <span>LIVE PREVIEW</span>
+    <span id="heightLabel" style="color:var(--ui-accent-light)"></span>
+  </div>
+  <div class="preview-scroll">
+    <div class="phone" id="phone"></div>
+  </div>
+  <div class="prompt-area">
+    <div class="prompt-label">
+      PROMPT OUTPUT
+      <button class="copy-btn" onclick="copyPrompt()">Copy</button>
+    </div>
+    <div class="prompt-text" id="promptOutput"></div>
+  </div>
+</div>
+
+<script>
+// === SVG ICONS (SF Symbol approximations) ===
+const icons = {
+  cloudSun: `<svg viewBox="0 0 24 24"><path d="M12.5 3a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0112.5 3zm5.3 2.2a.75.75 0 010 1.06l-1.06 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zM20 11.75a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5a.75.75 0 01.75.75zM8 12a4.5 4.5 0 014.28-4.49 5.01 5.01 0 00-1.53 2.24A3.5 3.5 0 007 13.5 3.5 3.5 0 0010.5 17h6a2.5 2.5 0 00.74-4.89A4.49 4.49 0 0012.5 7.5 4.5 4.5 0 008 12z"/></svg>`,
+  gear: `<svg viewBox="0 0 24 24"><path d="M12 15.5A3.5 3.5 0 1015.5 12 3.5 3.5 0 0012 15.5zm7.43-2.53l1.68.95a.75.75 0 01.27 1.02l-1.5 2.6a.75.75 0 01-1.02.27l-1.68-.97a7.03 7.03 0 01-1.68.97v1.94a.75.75 0 01-.75.75h-3a.75.75 0 01-.75-.75v-1.94a7.03 7.03 0 01-1.68-.97l-1.68.97a.75.75 0 01-1.02-.27l-1.5-2.6a.75.75 0 01.27-1.02l1.68-.95a7.04 7.04 0 010-1.94l-1.68-.95a.75.75 0 01-.27-1.02l1.5-2.6a.75.75 0 011.02-.27l1.68.97a7.03 7.03 0 011.68-.97V4.25a.75.75 0 01.75-.75h3a.75.75 0 01.75.75v1.94a7.03 7.03 0 011.68.97l1.68-.97a.75.75 0 011.02.27l1.5 2.6a.75.75 0 01-.27 1.02l-1.68.95a7.04 7.04 0 010 1.94z"/></svg>`,
+  sunMax: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3m0 14v3M4.22 4.22l2.12 2.12m11.32 11.32l2.12 2.12M2 12h3m14 0h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>`,
+  cloudRain: `<svg viewBox="0 0 24 24"><path d="M6.5 18a4.5 4.5 0 01-.42-8.98A6 6 0 0118 10.5 3.5 3.5 0 0117.5 17H17m-9 3l1-3m4 4l1-3m4 4l1-3"/></svg>`,
+  cloud: `<svg viewBox="0 0 24 24"><path d="M6.5 19a4.5 4.5 0 01-.42-8.98A6 6 0 0118 11.5 3.5 3.5 0 0117.5 18H6.5z"/></svg>`,
+  cloudBolt: `<svg viewBox="0 0 24 24"><path d="M6.5 17a4.5 4.5 0 01-.42-8.98A6 6 0 0118 9.5 3.5 3.5 0 0117.5 16H17m-5-3l-2 4h4l-2 4"/></svg>`,
+  calendar: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M3 9h18M8 2v4m8-4v4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>`,
+  wallet: `<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="15" rx="3" fill="currentColor"/><circle cx="17" cy="12.5" r="1.5" fill="white"/></svg>`,
+  tshirt: `<svg viewBox="0 0 24 24"><path d="M8 2l-5 5 3 2v12h12V9l3-2-5-5c0 1.66-1.34 3-3 3S8 3.66 8 2z"/></svg>`,
+  chevron: `<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
+  figure: `<svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><path d="M12 10v4m-3 6l3-4 3 4M7 13l5-3 5 3" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>`,
+  mountain: `<svg viewBox="0 0 24 24"><path d="M3 20l6-12 4 6 3-4 5 10H3z"/></svg>`,
+  sparkles: `<svg viewBox="0 0 24 24"><path d="M12 2l1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5L12 2zm6 11l.9 3.1L22 17l-3.1.9L18 21l-.9-3.1L14 17l3.1-.9L18 13z"/></svg>`,
+  airplane: `<svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0011.5 2 1.5 1.5 0 0010 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>`,
+};
+
+const weatherIcons = [icons.sunMax, icons.cloud, icons.cloudRain, icons.sunMax, icons.cloud, icons.cloudBolt, icons.sunMax, icons.cloud, icons.cloudRain];
+const weatherHighs = [22, 18, 15, 20, 19, 16, 23, 21, 17];
+const weatherLows  = [12, 8, 7, 10, 9, 6, 13, 11, 7];
+
+const dayLabels = ['3/15', '3/16', '3/17', '3/18', '3/19', '3/20', '3/21', '3/22', '3/23'];
+
+const tagsCN = [
+  { icon: icons.figure, name: '运动' },
+  { icon: icons.mountain, name: '攀岩' },
+  { icon: icons.sparkles, name: '派对' },
+  { icon: icons.airplane, name: '国际' },
+  { icon: icons.sunMax, name: '户外' },
+  { icon: icons.cloud, name: '休闲' },
+];
+const tagsEN = [
+  { icon: icons.figure, name: 'Sports' },
+  { icon: icons.mountain, name: 'Climbing' },
+  { icon: icons.sparkles, name: 'Party' },
+  { icon: icons.airplane, name: 'Intl.' },
+  { icon: icons.sunMax, name: 'Outdoor' },
+  { icon: icons.cloud, name: 'Leisure' },
+];
+
+// === STATE ===
+const state = {
+  option: 'C',
+  showWeather: true,
+  showSettings: true,
+  lang: 'cn',
+  days: 7,
+};
+
+function selectOption(opt) {
+  state.option = opt;
+  document.querySelectorAll('.option-card').forEach(c => c.classList.toggle('active', c.dataset.option === opt));
+  updateAll();
+}
+
+function togglePanel(panel) {
+  if (panel === 'weather') state.showWeather = !state.showWeather;
+  if (panel === 'settings') state.showSettings = !state.showSettings;
+  document.getElementById('tog-weather').classList.toggle('active', state.showWeather);
+  document.getElementById('tog-settings').classList.toggle('active', state.showSettings);
+  updateAll();
+}
+
+function setLang(lang) {
+  state.lang = lang;
+  document.getElementById('tog-cn').classList.toggle('active', lang === 'cn');
+  document.getElementById('tog-en').classList.toggle('active', lang === 'en');
+  updateAll();
+}
+
+function applyPreset(name) {
+  switch (name) {
+    case 'minimal':
+      state.option = 'A'; state.showWeather = true; state.showSettings = false; state.days = 5;
+      break;
+    case 'full':
+      state.option = 'C'; state.showWeather = true; state.showSettings = true; state.days = 7;
+      break;
+    case 'weather-only':
+      state.option = 'A'; state.showWeather = true; state.showSettings = false; state.days = 7;
+      break;
+    case 'settings-only':
+      state.option = 'A'; state.showWeather = false; state.showSettings = true; state.days = 7;
+      break;
+  }
+  document.getElementById('dayCount').value = state.days;
+  document.getElementById('tog-weather').classList.toggle('active', state.showWeather);
+  document.getElementById('tog-settings').classList.toggle('active', state.showSettings);
+  document.querySelectorAll('.option-card').forEach(c => c.classList.toggle('active', c.dataset.option === state.option));
+  updateAll();
+}
+
+// === RENDER HELPERS ===
+function weatherDayHTML(i) {
+  return `<div class="wi-day">
+    <span class="label">${dayLabels[i]}</span>
+    <span class="icon" style="color:var(--app-muted)">${weatherIcons[i]}</span>
+    <span class="temp">${weatherHighs[i]}°</span>
+    <span class="temp-lo">${weatherLows[i]}°</span>
+  </div>`;
+}
+
+function settingsChipHTML(i) {
+  const tags = state.lang === 'cn' ? tagsCN : tagsEN;
+  const t = tags[i];
+  return `<span class="sc">${t.icon} ${t.name}</span>`;
+}
+
+function dateChipHTML() {
+  return `<span class="sc">${icons.calendar} ${state.lang === 'cn' ? '3/15 - 3/19' : 'Mar 15 - 19'}</span>`;
+}
+
+function weatherRowHTML() {
+  let html = '';
+  for (let i = 0; i < state.days; i++) html += weatherDayHTML(i);
+  return html;
+}
+
+function settingsRowHTML() {
+  let html = dateChipHTML();
+  const tags = state.lang === 'cn' ? tagsCN : tagsEN;
+  for (let i = 0; i < tags.length; i++) html += settingsChipHTML(i);
+  return html;
+}
+
+function pillHTML(type, active) {
+  if (type === 'weather') {
+    const label = state.lang === 'cn' ? '天气' : 'Weather';
+    return `<span class="pill ${active ? 'weather-on' : 'weather-off'}">${icons.cloudSun} ${label}</span>`;
+  } else {
+    const label = state.lang === 'cn' ? '设置' : 'Settings';
+    return `<span class="pill ${active ? 'settings-on' : 'settings-off'}">${icons.gear} ${label}</span>`;
+  }
+}
+
+function categoriesHTML() {
+  const cats = state.lang === 'cn'
+    ? [{ name: '证件/钱财', icon: icons.wallet, color: 'var(--app-primary)', count: '2/3' },
+       { name: '衣物', icon: icons.tshirt, color: '#A64D79', count: '1/4' }]
+    : [{ name: 'Documents', icon: icons.wallet, color: 'var(--app-primary)', count: '2/3' },
+       { name: 'Clothing', icon: icons.tshirt, color: '#A64D79', count: '1/4' }];
+
+  return cats.map(c => `
+    <div class="cat-mock">
+      <div class="cat-header">
+        <div class="cat-icon" style="background:${c.color}15;color:${c.color}">${c.icon}</div>
+        ${c.name}
+        <span class="cat-count">${c.count}</span>
+        <span class="cat-chevron">${icons.chevron}</span>
+      </div>
+    </div>`).join('');
+}
+
+// === OPTION RENDERERS ===
+function renderOptionA() {
+  let pills = '<div class="pill-row">';
+  pills += pillHTML('weather', state.showWeather);
+  pills += pillHTML('settings', state.showSettings);
+  pills += '</div>';
+
+  let content = '';
+  if (state.showWeather) {
+    content += `<div class="weather-inline">${weatherRowHTML()}</div>`;
+  }
+  if (state.showSettings) {
+    content += `<div class="settings-chips">${settingsRowHTML()}</div>`;
+  }
+
+  return pills + content;
+}
+
+function renderOptionB() {
+  // Accordion: pill shape changes when active, content attached directly below
+  let html = '<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:flex-start;">';
+
+  // Weather pill + accordion
+  html += '<div style="display:flex;flex-direction:column;">';
+  if (state.showWeather) {
+    html += `<span class="pill weather-on" style="border-radius:20px 20px 4px 4px;">${icons.cloudSun} ${state.lang === 'cn' ? '天气' : 'Weather'}</span>`;
+    html += `<div class="accordion-weather">${weatherRowHTML()}</div>`;
+  } else {
+    html += pillHTML('weather', false);
+  }
+  html += '</div>';
+
+  // Settings pill + accordion
+  html += '<div style="display:flex;flex-direction:column;">';
+  if (state.showSettings) {
+    html += `<span class="pill settings-on" style="border-radius:20px 20px 4px 4px;">${icons.gear} ${state.lang === 'cn' ? '设置' : 'Settings'}</span>`;
+    html += `<div class="accordion-settings">${settingsRowHTML()}</div>`;
+  } else {
+    html += pillHTML('settings', false);
+  }
+  html += '</div>';
+
+  html += '</div>';
+  return html;
+}
+
+function renderOptionC() {
+  let pills = '<div class="pill-row">';
+  pills += pillHTML('weather', state.showWeather);
+  pills += pillHTML('settings', state.showSettings);
+  pills += '</div>';
+
+  if (!state.showWeather && !state.showSettings) return pills;
+
+  let card = '<div class="combined-card">';
+  if (state.showSettings) {
+    card += `<div class="cc-settings">${settingsRowHTML()}</div>`;
+  }
+  if (state.showWeather && state.showSettings) {
+    card += '<div class="cc-divider"></div>';
+  }
+  if (state.showWeather) {
+    card += `<div class="cc-weather">${weatherRowHTML()}</div>`;
+  }
+  card += '</div>';
+
+  return pills + card;
+}
+
+function renderOptionD() {
+  let html = '<div class="popover-anchor">';
+  html += '<div class="pill-row">';
+  html += pillHTML('weather', state.showWeather);
+  html += pillHTML('settings', state.showSettings);
+  html += '</div>';
+
+  if (state.showWeather || state.showSettings) {
+    html += '<div class="popover-card">';
+    if (state.showWeather) {
+      html += `<div class="pc-weather">${weatherRowHTML()}</div>`;
+    }
+    if (state.showWeather && state.showSettings) {
+      // divider already via border-top on pc-settings
+    }
+    if (state.showSettings) {
+      html += `<div class="pc-settings">${settingsRowHTML()}</div>`;
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+// === MAIN UPDATE ===
+function updateAll() {
+  state.days = parseInt(document.getElementById('dayCount').value);
+  document.getElementById('dayCountVal').textContent = state.days;
+
+  const nav = state.lang === 'cn' ? '东京 - 商务' : 'Tokyo - Business';
+  let optionContent;
+  switch (state.option) {
+    case 'A': optionContent = renderOptionA(); break;
+    case 'B': optionContent = renderOptionB(); break;
+    case 'C': optionContent = renderOptionC(); break;
+    case 'D': optionContent = renderOptionD(); break;
+  }
+
+  const phone = document.getElementById('phone');
+  phone.innerHTML = `
+    <div class="nav-bar">${nav}</div>
+    <div class="progress-bar">
+      <div class="progress-fill"></div>
+      <span class="progress-text">5/11</span>
+    </div>
+    ${optionContent}
+    ${categoriesHTML()}
+  `;
+
+  // Measure content height above categories
+  const contentEls = phone.querySelectorAll('.weather-inline, .settings-chips, .combined-card, .popover-card, .accordion-weather, .accordion-settings');
+  let overhead = 0;
+  contentEls.forEach(el => overhead += el.offsetHeight + 8);
+  document.getElementById('heightLabel').textContent = overhead > 0 ? `~${overhead}px overhead` : 'No overhead (collapsed)';
+
+  updatePrompt();
+}
+
+function updatePrompt() {
+  const optNames = { A: 'Separate Rows', B: 'Accordion', C: 'Combined Card', D: 'Popover' };
+  const parts = [];
+
+  parts.push(`Redesign the WeatherCard + TripSettingsCard expanded state using the "${optNames[state.option]}" layout.`);
+
+  // Layout description
+  switch (state.option) {
+    case 'A':
+      parts.push('Weather and settings expand as independent card rows below the pill toggles. Each has its own rounded container with semi-transparent background.');
+      break;
+    case 'B':
+      parts.push('Content expands directly under each pill button. The active pill\'s bottom corners flatten to visually connect with the expanded panel below it. Each panel is independent.');
+      break;
+    case 'C':
+      parts.push('Weather and settings merge into a single combined card. Weather days on top, thin divider, settings chips below. When only one panel is active, the card shows only that section.');
+      break;
+    case 'D':
+      parts.push('Content appears as a floating popover card below the pills, overlaying the category list. Uses elevation shadow for depth. Dismisses when pills are toggled off.');
+      break;
+  }
+
+  // Weather specifics
+  if (state.showWeather) {
+    parts.push(`Weather shows 5 days visible in a horizontal ScrollView (total ${state.days} days, swipe left for more). Each day column: day label (10px), SF Symbol weather icon (20px), high temp (14px bold) + low temp (11px muted). No precipitation. No special highlight for "Today". Fixed column width 56px. Hide scrollbar.`);
+  }
+
+  // Settings specifics
+  if (state.showSettings) {
+    parts.push(`Settings shows all user-selected tags as a chip flow: date range chip + all tag chips. Each chip has an SF Symbol icon (10px) + label (11px). Compact padding (4px 8px). Chips wrap to next line via FlowLayout if they exceed container width.`);
+  }
+
+  // Default state
+  parts.push('Both weather and settings default to collapsed (showWeatherCard = false, showTripSettings = false). Pill buttons remain visible for toggle.');
+
+  // Icons
+  parts.push('Use SF Symbols exclusively (no emojis). Weather: sun.max.fill, cloud.fill, cloud.rain.fill, etc. Pills: cloud.sun.fill, gearshape.fill. Tags: figure.run, mountain.2, sparkles, airplane.');
+
+  // Style
+  parts.push('Background: semi-transparent white (rgba 0.85) with backdrop blur. Border: 0.5px primary opacity 0.06. Border radius: 14px. Consistent with existing app design system.');
+
+  document.getElementById('promptOutput').textContent = parts.join('\n\n');
+}
+
+function copyPrompt() {
+  const text = document.getElementById('promptOutput').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  });
+}
+
+// Init
+updateAll();
+</script>
+
+</body>
+</html>

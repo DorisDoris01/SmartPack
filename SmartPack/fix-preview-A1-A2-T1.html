@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartPack — Fix Preview: A1, A2, T1</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS (from SmartPack DesignSystem)
+   ============================================================ */
+:root {
+  --primary:    #0E7490;
+  --secondary:  #4B6072;
+  --success:    #166534;
+  --warning:    #B45309;
+  --error:      #B91C1C;
+  --bg:         #F0F4F5;
+  --bg2:        #E4ECEF;
+  --card-bg:    #F8FAFB;
+  --text:       #0C1E24;
+  --text2:      #446070;
+  --primary-light: rgba(14, 116, 144, 0.12);
+  --divider:    rgba(75, 96, 114, 0.15);
+
+  --sp-xxs: 4px;  --sp-xs: 8px;  --sp-sm: 12px;
+  --sp-md: 20px;  --sp-lg: 28px; --sp-xl: 36px;
+  --card-pad: 24px;
+  --r-lg: 16px;
+  --font: -apple-system, 'SF Pro Rounded', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: #1a1a2e;
+  color: #fff;
+  min-height: 100vh;
+  padding: 40px 20px 80px;
+}
+
+h1 {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+.page-sub {
+  text-align: center;
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+  margin-bottom: 48px;
+}
+
+/* ============================================================
+   LAYOUT: COMPARISON GRID
+   ============================================================ */
+.fix-section {
+  max-width: 900px;
+  margin: 0 auto 64px;
+}
+
+.fix-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.fix-tag {
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+}
+.fix-tag.high { background: #ef4444; }
+.fix-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+.fix-desc {
+  color: rgba(255,255,255,0.55);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  max-width: 720px;
+}
+
+.comparison {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+.comparison .side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.side-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 4px 14px;
+  border-radius: 999px;
+}
+.side-label.before {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+.side-label.after {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.arrow-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 40px;
+  font-size: 28px;
+  color: rgba(255,255,255,0.3);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   iPHONE FRAME (compact)
+   ============================================================ */
+.iphone {
+  width: 320px;
+  border-radius: 36px;
+  border: 3px solid #333;
+  overflow: hidden;
+  background: var(--bg);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+  display: flex;
+  flex-direction: column;
+}
+
+.status-bar {
+  height: 44px;
+  background: var(--bg);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 24px 5px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px 10px;
+  background: var(--bg);
+  flex-shrink: 0;
+}
+.nav-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.4px;
+}
+.nav-icons {
+  display: flex;
+  gap: 12px;
+  color: var(--primary);
+  font-size: 18px;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg);
+  padding-bottom: 20px;
+}
+
+.home-indicator {
+  height: 28px;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.home-indicator .bar {
+  width: 120px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--text);
+  opacity: 0.15;
+}
+
+/* ============================================================
+   TRIP ROW CARD
+   ============================================================ */
+.trip-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  padding: var(--card-pad);
+  margin: var(--sp-xs) var(--sp-md);
+  background: var(--card-bg);
+  border-radius: var(--r-lg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.02);
+}
+
+/* Progress Ring */
+.progress-ring {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  flex-shrink: 0;
+}
+.progress-ring svg {
+  width: 48px;
+  height: 48px;
+  transform: rotate(-90deg);
+}
+.ring-track {
+  fill: none;
+  stroke: rgba(75, 96, 114, 0.15);
+  stroke-width: 3;
+}
+.ring-fill {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.ring-fill.complete { stroke: var(--success); }
+.ring-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+}
+.ring-text.complete { color: var(--success); }
+
+.trip-info { flex: 1; min-width: 0; }
+.trip-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.trip-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  margin-top: var(--sp-xxs);
+}
+.trip-date, .trip-count {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  letter-spacing: 0.6px;
+}
+.trip-count.complete { color: var(--success); }
+.meta-sep {
+  width: 1px;
+  height: 10px;
+  background: rgba(68,96,112,0.3);
+  border-radius: 1px;
+}
+
+.chevron {
+  color: rgba(68,96,112,0.4);
+  font-size: 13px;
+}
+
+/* double chevron issue */
+.system-chevron {
+  color: rgba(68,96,112,0.3);
+  font-size: 14px;
+  margin-left: -4px;
+}
+
+/* ============================================================
+   BUG ANNOTATIONS
+   ============================================================ */
+.bug-callout {
+  position: relative;
+}
+.bug-badge {
+  position: absolute;
+  background: #ef4444;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* ============================================================
+   A1: REDUCED MOTION TOGGLE
+   ============================================================ */
+.a1-toggle-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(14, 116, 144, 0.08);
+  border-radius: 8px;
+  margin: 8px 16px 0;
+  font-size: 11px;
+  color: var(--text2);
+  font-weight: 600;
+}
+.a1-toggle-area .a1-icon { font-size: 14px; }
+
+/* ring with no animation */
+.ring-fill.no-anim {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* ring with animation */
+@keyframes ringGrow {
+  from { stroke-dashoffset: 138.23; }
+}
+.ring-fill.animated {
+  animation: ringGrow 0.6s ease-out forwards;
+}
+
+/* ============================================================
+   A2: COMPLETION BADGE
+   ============================================================ */
+.completion-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--success);
+  border: 2px solid var(--card-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.completion-badge svg {
+  width: 10px;
+  height: 10px;
+  transform: none;
+}
+.completion-badge svg path {
+  stroke: #fff;
+  stroke-width: 3;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* count with icon */
+.count-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.count-with-icon .check-icon {
+  width: 12px;
+  height: 12px;
+  display: flex;
+}
+.count-with-icon .check-icon svg {
+  width: 12px;
+  height: 12px;
+  transform: none;
+}
+.count-with-icon .check-icon svg path {
+  stroke: var(--success);
+  stroke-width: 2.5;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ============================================================
+   ANNOTATION LINES
+   ============================================================ */
+.annotation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 20px 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.annotation.problem { color: #f87171; }
+.annotation.fix { color: #4ade80; }
+.annotation .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.annotation.problem .dot { background: #ef4444; }
+.annotation.fix .dot { background: #22c55e; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+  .comparison {
+    flex-direction: column;
+    align-items: center;
+  }
+  .arrow-col {
+    transform: rotate(90deg);
+    padding: 0;
+  }
+}
+</style>
+</head>
+<body>
+
+<h1>SmartPack HomeView — Fix Preview</h1>
+<p class="page-sub">Before / After comparison for issues A1, A2, T1</p>
+
+<!-- ============================================================
+     FIX T1: DOUBLE CHEVRON
+     ============================================================ -->
+<div class="fix-section">
+  <div class="fix-header">
+    <span class="fix-tag high">T1 HIGH</span>
+    <span class="fix-title">双重箭头指示器 / Double Chevron</span>
+  </div>
+  <p class="fix-desc">
+    NavigationLink 自动渲染系统披露箭头，TripRowView 又手动添加了 chevron.right。<br>
+    修复：移除手动箭头，让 NavigationLink 系统箭头统一处理。
+  </p>
+
+  <div class="comparison">
+    <!-- BEFORE -->
+    <div class="side">
+      <span class="side-label before">BEFORE (BUG)</span>
+      <div class="iphone">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>...</span>
+        </div>
+        <div class="nav-bar">
+          <span class="nav-title">My Trips</span>
+          <div class="nav-icons">+ &bull;&bull;&bull;</div>
+        </div>
+        <div class="content">
+          <!-- Row 1 with DOUBLE chevron -->
+          <div class="trip-row" style="position:relative;">
+            <div class="progress-ring">
+              <svg viewBox="0 0 48 48">
+                <circle class="ring-track" cx="24" cy="24" r="22"/>
+                <circle class="ring-fill" cx="24" cy="24" r="22"
+                  stroke-dasharray="138.23" stroke-dashoffset="55.29"/>
+              </svg>
+              <span class="ring-text">60</span>
+            </div>
+            <div class="trip-info">
+              <div class="trip-name">Business Trip - Mar 1</div>
+              <div class="trip-meta">
+                <span class="trip-date">Mar 1 - Mar 5</span>
+                <span class="meta-sep"></span>
+                <span class="trip-count">15/25</span>
+              </div>
+            </div>
+            <!-- Manual chevron (from TripRowView) -->
+            <span class="chevron">&#x203A;</span>
+            <!-- System chevron (from NavigationLink) -->
+            <span class="system-chevron">&#x203A;</span>
+            <!-- Bug annotation -->
+            <span class="bug-badge" style="top:-8px; right:4px;">2 chevrons!</span>
+          </div>
+
+          <!-- Row 2 with DOUBLE chevron -->
+          <div class="trip-row" style="position:relative;">
+            <div class="progress-ring">
+              <svg viewBox="0 0 48 48">
+                <circle class="ring-track" cx="24" cy="24" r="22"/>
+                <circle class="ring-fill" cx="24" cy="24" r="22"
+                  stroke-dasharray="138.23" stroke-dashoffset="96.76"/>
+              </svg>
+              <span class="ring-text">30</span>
+            </div>
+            <div class="trip-info">
+              <div class="trip-name">Beach Vacation</div>
+              <div class="trip-meta">
+                <span class="trip-date">Mar 15 - Mar 20</span>
+                <span class="meta-sep"></span>
+                <span class="trip-count">9/30</span>
+              </div>
+            </div>
+            <span class="chevron">&#x203A;</span>
+            <span class="system-chevron">&#x203A;</span>
+            <span class="bug-badge" style="top:-8px; right:4px;">2 chevrons!</span>
+          </div>
+
+          <div class="annotation problem">
+            <span class="dot"></span>
+            NavigationLink + manual chevron = double arrow
+          </div>
+        </div>
+        <div class="home-indicator"><div class="bar"></div></div>
+      </div>
+    </div>
+
+    <div class="arrow-col">&rarr;</div>
+
+    <!-- AFTER -->
+    <div class="side">
+      <span class="side-label after">AFTER (FIXED)</span>
+      <div class="iphone">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>...</span>
+        </div>
+        <div class="nav-bar">
+          <span class="nav-title">My Trips</span>
+          <div class="nav-icons">+ &bull;&bull;&bull;</div>
+        </div>
+        <div class="content">
+          <!-- Row 1: single chevron -->
+          <div class="trip-row">
+            <div class="progress-ring">
+              <svg viewBox="0 0 48 48">
+                <circle class="ring-track" cx="24" cy="24" r="22"/>
+                <circle class="ring-fill" cx="24" cy="24" r="22"
+                  stroke-dasharray="138.23" stroke-dashoffset="55.29"/>
+              </svg>
+              <span class="ring-text">60</span>
+            </div>
+            <div class="trip-info">
+              <div class="trip-name">Business Trip - Mar 1</div>
+              <div class="trip-meta">
+                <span class="trip-date">Mar 1 - Mar 5</span>
+                <span class="meta-sep"></span>
+                <span class="trip-count">15/25</span>
+              </div>
+            </div>
+            <span class="chevron">&#x203A;</span>
+          </div>
+
+          <!-- Row 2: single chevron -->
+          <div class="trip-row">
+            <div class="progress-ring">
+              <svg viewBox="0 0 48 48">
+                <circle class="ring-track" cx="24" cy="24" r="22"/>
+                <circle class="ring-fill" cx="24" cy="24" r="22"
+                  stroke-dasharray="138.23" stroke-dashoffset="96.76"/>
+              </svg>
+              <span class="ring-text">30</span>
+            </div>
+            <div class="trip-info">
+              <div class="trip-name">Beach Vacation</div>
+              <div class="trip-meta">
+                <span class="trip-date">Mar 15 - Mar 20</span>
+                <span class="meta-sep"></span>
+                <span class="trip-count">9/30</span>
+              </div>
+            </div>
+            <span class="chevron">&#x203A;</span>
+          </div>
+
+          <div class="annotation fix">
+            <span class="dot"></span>
+            Single chevron — clean and consistent
+          </div>
+        </div>
+        <div class="home-indicator"><div class="bar"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     FIX A2: COLOR-ONLY STATUS
+     ============================================================ -->
+<div class="fix-section">
+  <div class="fix-header">
+    <span class="fix-tag high">A2 HIGH</span>
+    <span class="fix-title">仅通过颜色传达完成状态 / Color-Only Completion</span>
+  </div>
+  <p class="fix-desc">
+    完成状态仅靠颜色变化（primary &rarr; success）指示，色盲用户无法区分。<br>
+    修复：添加 checkmark badge 在圆环上 + 已完成计数旁显示 check 图标，双重指示器。
+  </p>
+
+  <div class="comparison">
+    <!-- BEFORE -->
+    <div class="side">
+      <span class="side-label before">BEFORE (BUG)</span>
+      <div class="iphone">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>...</span>
+        </div>
+        <div class="nav-bar">
+          <span class="nav-title">My Trips</span>
+          <div class="nav-icons">+ &bull;&bull;&bull;</div>
+        </div>
+        <div class="content">
+          <!-- In-progress row (for reference) -->
+          <div class="trip-row">
+            <div class="progress-ring">
+              <svg viewBox="0 0 48 48">
+                <circle class="ring-track" cx="24" cy="24" r="22"/>
+                <circle class="ring-fill" cx="24" cy="24" r="22"
+                  stroke-dasharray="138.23" stroke-dashoffset="55.29"/>
+              </svg>
+              <span class="ring-text">60</span>
+            </div>
+            <div class="trip-info">
+              <div class="trip-name">Business Trip</div>
+              <div class="trip-meta">
+                <span class="trip-date">Mar 1 - Mar 5</span>
+                <span class="meta-sep"></span>
+                <span class="trip-count">15/25</span>
+              </div>
+            </div>
+            <span class="chevron">&#x203A;</span>
+          </div>
+
+          <!-- Completed row: color-only -->
+          <div class="trip-row" style="position:relative;">
+            <div class="progress-ring">
+              <svg viewBox="0 0 48 48">
+                <circle class="ring-track" cx="24" cy="24" r="22"/>
+                <circle class="ring-fill complete" cx="24" cy="24" r="22"
+                  stroke-dasharray="138.23" stroke-dashoffset="0"/>
+              </svg>
+              <span class="ring-text complete" style="font-size:16px;">&#x2713;</span>
+            </div>
+            <div class="trip-info">
+              <div class="trip-name">Camping Trip</div>
+              <div class="trip-meta">
+                <span class="trip-date">Apr 5 - Apr 8</span>
+                <span class="meta-sep"></span>
+                <span class="trip-count complete">20/20</span>
+              </div>
+            </div>
+            <span class="chevron">&#x203A;</span>
+            <span class="bug-badge" style="top:-8px; left:4px;">Color only!</span>
+          </div>
+
+          <div class="annotation problem" style="margin-top:12px;">
+            <span class="dot"></span>
+            Color blind: green ring vs teal ring look identical
+          </div>
+          <div class="annotation problem">
+            <span class="dot"></span>
+            "20/20" text only changes color — no icon/shape cue
+          </div>
+
+          <!-- Simulated color-blind view -->
+          <div style="margin:16px; padding:12px; background:rgba(0,0,0,0.03); border-radius:12px;">
+            <div style="font-size:10px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">
+              Deuteranopia simulation (红绿色盲)
+            </div>
+            <div class="trip-row" style="margin:0;">
+              <div class="progress-ring">
+                <svg viewBox="0 0 48 48">
+                  <circle class="ring-track" cx="24" cy="24" r="22"/>
+                  <circle cx="24" cy="24" r="22" fill="none" stroke="#8B7D3C" stroke-width="3" stroke-linecap="round"
+                    stroke-dasharray="138.23" stroke-dashoffset="55.29" style="transform-origin:center; transform:rotate(-90deg);"/>
+                </svg>
+                <span class="ring-text" style="color:#6B6B3C;">60</span>
+              </div>
+              <div class="trip-info">
+                <div class="trip-name" style="font-size:16px;">Business Trip</div>
+                <div class="trip-meta">
+                  <span class="trip-count" style="color:#6B6B3C;">15/25</span>
+                </div>
+              </div>
+            </div>
+            <div class="trip-row" style="margin:4px 0 0 0;">
+              <div class="progress-ring">
+                <svg viewBox="0 0 48 48">
+                  <circle class="ring-track" cx="24" cy="24" r="22"/>
+                  <circle cx="24" cy="24" r="22" fill="none" stroke="#8B8B3C" stroke-width="3" stroke-linecap="round"
+                    stroke-dasharray="138.23" stroke-dashoffset="0" style="transform-origin:center; transform:rotate(-90deg);"/>
+                </svg>
+                <span style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:16px; color:#8B8B3C;">&#x2713;</span>
+              </div>
+              <div class="trip-info">
+                <div class="trip-name" style="font-size:16px;">Camping Trip</div>
+                <div class="trip-meta">
+                  <span class="trip-count" style="color:#8B8B3C;">20/20</span>
+                </div>
+              </div>
+            </div>
+            <div class="annotation problem" style="margin:6px 0 0 0;">
+              <span class="dot"></span>
+              Both rows look nearly the same to color-blind users
+            </div>
+          </div>
+        </div>
+        <div class="home-indicator"><div class="bar"></div></div>
+      </div>
+    </div>
+
+    <div class="arrow-col">&rarr;</div>
+
+    <!-- AFTER -->
+    <div class="side">
+      <span class="side-label after">AFTER (FIXED)</span>
+      <div class="iphone">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>...</span>
+        </div>
+        <div class="nav-bar">
+          <span class="nav-title">My Trips</span>
+          <div class="nav-icons">+ &bull;&bull;&bull;</div>
+        </div>
+        <div class="content">
+          <!-- In-progress (unchanged) -->
+          <div class="trip-row">
+            <div class="progress-ring">
+              <svg viewBox="0 0 48 48">
+                <circle class="ring-track" cx="24" cy="24" r="22"/>
+                <circle class="ring-fill" cx="24" cy="24" r="22"
+                  stroke-dasharray="138.23" stroke-dashoffset="55.29"/>
+              </svg>
+              <span class="ring-text">60</span>
+            </div>
+            <div class="trip-info">
+              <div class="trip-name">Business Trip</div>
+              <div class="trip-meta">
+                <span class="trip-date">Mar 1 - Mar 5</span>
+                <span class="meta-sep"></span>
+                <span class="trip-count">15/25</span>
+              </div>
+            </div>
+            <span class="chevron">&#x203A;</span>
+          </div>
+
+          <!-- Completed: with badge + icon -->
+          <div class="trip-row">
+            <div class="progress-ring" style="position:relative;">
+              <svg viewBox="0 0 48 48">
+                <circle class="ring-track" cx="24" cy="24" r="22"/>
+                <circle class="ring-fill complete" cx="24" cy="24" r="22"
+                  stroke-dasharray="138.23" stroke-dashoffset="0"/>
+              </svg>
+              <span class="ring-text complete" style="font-size:16px;">&#x2713;</span>
+              <!-- NEW: Completion badge -->
+              <div class="completion-badge">
+                <svg viewBox="0 0 16 16"><path d="M3 8.5 L6.5 12 L13 4"/></svg>
+              </div>
+            </div>
+            <div class="trip-info">
+              <div class="trip-name">Camping Trip</div>
+              <div class="trip-meta">
+                <span class="trip-date">Apr 5 - Apr 8</span>
+                <span class="meta-sep"></span>
+                <!-- NEW: Count with check icon -->
+                <span class="count-with-icon">
+                  <span class="check-icon">
+                    <svg viewBox="0 0 16 16"><path d="M3 8.5 L6.5 12 L13 4"/></svg>
+                  </span>
+                  <span class="trip-count complete">20/20</span>
+                </span>
+              </div>
+            </div>
+            <span class="chevron">&#x203A;</span>
+          </div>
+
+          <div class="annotation fix" style="margin-top:12px;">
+            <span class="dot"></span>
+            Green badge on ring = shape cue (not just color)
+          </div>
+          <div class="annotation fix">
+            <span class="dot"></span>
+            Check icon next to count = text + icon double indicator
+          </div>
+
+          <!-- Simulated color-blind view AFTER -->
+          <div style="margin:16px; padding:12px; background:rgba(0,0,0,0.03); border-radius:12px;">
+            <div style="font-size:10px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">
+              Deuteranopia simulation (红绿色盲) — FIXED
+            </div>
+            <div class="trip-row" style="margin:0;">
+              <div class="progress-ring">
+                <svg viewBox="0 0 48 48">
+                  <circle class="ring-track" cx="24" cy="24" r="22"/>
+                  <circle cx="24" cy="24" r="22" fill="none" stroke="#8B7D3C" stroke-width="3" stroke-linecap="round"
+                    stroke-dasharray="138.23" stroke-dashoffset="55.29" style="transform-origin:center; transform:rotate(-90deg);"/>
+                </svg>
+                <span class="ring-text" style="color:#6B6B3C;">60</span>
+              </div>
+              <div class="trip-info">
+                <div class="trip-name" style="font-size:16px;">Business Trip</div>
+                <div class="trip-meta">
+                  <span class="trip-count" style="color:#6B6B3C;">15/25</span>
+                </div>
+              </div>
+            </div>
+            <div class="trip-row" style="margin:4px 0 0 0;">
+              <div class="progress-ring" style="position:relative;">
+                <svg viewBox="0 0 48 48">
+                  <circle class="ring-track" cx="24" cy="24" r="22"/>
+                  <circle cx="24" cy="24" r="22" fill="none" stroke="#8B8B3C" stroke-width="3" stroke-linecap="round"
+                    stroke-dasharray="138.23" stroke-dashoffset="0" style="transform-origin:center; transform:rotate(-90deg);"/>
+                </svg>
+                <span style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:16px; color:#8B8B3C;">&#x2713;</span>
+                <!-- Badge still visible as shape! -->
+                <div class="completion-badge" style="background:#8B8B3C;">
+                  <svg viewBox="0 0 16 16"><path d="M3 8.5 L6.5 12 L13 4"/></svg>
+                </div>
+              </div>
+              <div class="trip-info">
+                <div class="trip-name" style="font-size:16px;">Camping Trip</div>
+                <div class="trip-meta">
+                  <span class="count-with-icon">
+                    <span class="check-icon">
+                      <svg viewBox="0 0 16 16"><path d="M3 8.5 L6.5 12 L13 4" stroke="#8B8B3C"/></svg>
+                    </span>
+                    <span class="trip-count" style="color:#8B8B3C;">20/20</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="annotation fix" style="margin:6px 0 0 0;">
+              <span class="dot"></span>
+              Badge shape + check icon = clearly distinguishable
+            </div>
+          </div>
+        </div>
+        <div class="home-indicator"><div class="bar"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     FIX A1: REDUCED MOTION
+     ============================================================ -->
+<div class="fix-section">
+  <div class="fix-header">
+    <span class="fix-tag high">A1 HIGH</span>
+    <span class="fix-title">未尊重 Reduce Motion / prefers-reduced-motion</span>
+  </div>
+  <p class="fix-desc">
+    进度圆环和空状态入场使用 spring 动画，但从未检查系统动画偏好。<br>
+    修复：读取 <code>@Environment(\.accessibilityReduceMotion)</code>，为 true 时跳过动画直接显示最终状态。
+  </p>
+
+  <div class="comparison">
+    <!-- BEFORE: Always animates -->
+    <div class="side">
+      <span class="side-label before">BEFORE (BUG)</span>
+      <div class="iphone">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>...</span>
+        </div>
+        <div class="nav-bar">
+          <span class="nav-title">My Trips</span>
+          <div class="nav-icons">+ &bull;&bull;&bull;</div>
+        </div>
+        <div class="content">
+          <!-- Settings indicator: Reduce Motion ON -->
+          <div class="a1-toggle-area">
+            <span class="a1-icon">&#9888;&#65039;</span>
+            iOS Settings &rarr; Reduce Motion = ON
+          </div>
+
+          <!-- Row with animation (BUG: still animates) -->
+          <div class="trip-row" style="margin-top:12px; position:relative;">
+            <div class="progress-ring">
+              <svg viewBox="0 0 48 48">
+                <circle class="ring-track" cx="24" cy="24" r="22"/>
+                <circle class="ring-fill animated" cx="24" cy="24" r="22"
+                  stroke-dasharray="138.23" stroke-dashoffset="55.29"/>
+              </svg>
+              <span class="ring-text">60</span>
+            </div>
+            <div class="trip-info">
+              <div class="trip-name">Business Trip</div>
+              <div class="trip-meta">
+                <span class="trip-date">Mar 1 - Mar 5</span>
+                <span class="meta-sep"></span>
+                <span class="trip-count">15/25</span>
+              </div>
+            </div>
+            <span class="chevron">&#x203A;</span>
+            <span class="bug-badge" style="top:-8px; left:50px;">Animates anyway!</span>
+          </div>
+
+          <div class="trip-row" style="position:relative;">
+            <div class="progress-ring">
+              <svg viewBox="0 0 48 48">
+                <circle class="ring-track" cx="24" cy="24" r="22"/>
+                <circle class="ring-fill animated" cx="24" cy="24" r="22"
+                  stroke-dasharray="138.23" stroke-dashoffset="96.76"/>
+              </svg>
+              <span class="ring-text">30</span>
+            </div>
+            <div class="trip-info">
+              <div class="trip-name">Beach Vacation</div>
+              <div class="trip-meta">
+                <span class="trip-date">Mar 15 - Mar 20</span>
+                <span class="meta-sep"></span>
+                <span class="trip-count">9/30</span>
+              </div>
+            </div>
+            <span class="chevron">&#x203A;</span>
+            <span class="bug-badge" style="top:-8px; left:50px;">Animates anyway!</span>
+          </div>
+
+          <div class="annotation problem" style="margin-top:10px;">
+            <span class="dot"></span>
+            Ring spring animation plays despite Reduce Motion ON
+          </div>
+          <div class="annotation problem">
+            <span class="dot"></span>
+            Empty state fade+slide ignores motion preference
+          </div>
+
+          <!-- Code snippet -->
+          <div style="margin:12px 16px; padding:10px 12px; background:#0C1E24; border-radius:8px; font-family:monospace; font-size:10px; color:#7A9BAA; line-height:1.6;">
+            <span style="color:#f87171;">// No check for reduceMotion!</span><br>
+            .onAppear {<br>
+            &nbsp;&nbsp;withAnimation(<span style="color:#22D3EE;">PremiumAnimation</span>.standard) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;appeared = <span style="color:#4ADE80;">true</span><br>
+            &nbsp;&nbsp;}<br>
+            }
+          </div>
+        </div>
+        <div class="home-indicator"><div class="bar"></div></div>
+      </div>
+    </div>
+
+    <div class="arrow-col">&rarr;</div>
+
+    <!-- AFTER: Respects Reduce Motion -->
+    <div class="side">
+      <span class="side-label after">AFTER (FIXED)</span>
+      <div class="iphone">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>...</span>
+        </div>
+        <div class="nav-bar">
+          <span class="nav-title">My Trips</span>
+          <div class="nav-icons">+ &bull;&bull;&bull;</div>
+        </div>
+        <div class="content">
+          <!-- Settings indicator: Reduce Motion ON -->
+          <div class="a1-toggle-area" style="background:rgba(34,197,94,0.08); color:#166534;">
+            <span class="a1-icon">&#x2713;</span>
+            iOS Settings &rarr; Reduce Motion = ON &rarr; Respected
+          </div>
+
+          <!-- Row WITHOUT animation (FIXED) -->
+          <div class="trip-row" style="margin-top:12px;">
+            <div class="progress-ring">
+              <svg viewBox="0 0 48 48">
+                <circle class="ring-track" cx="24" cy="24" r="22"/>
+                <!-- No animation - immediate final state -->
+                <circle class="ring-fill no-anim" cx="24" cy="24" r="22"
+                  stroke-dasharray="138.23" stroke-dashoffset="55.29"/>
+              </svg>
+              <span class="ring-text">60</span>
+            </div>
+            <div class="trip-info">
+              <div class="trip-name">Business Trip</div>
+              <div class="trip-meta">
+                <span class="trip-date">Mar 1 - Mar 5</span>
+                <span class="meta-sep"></span>
+                <span class="trip-count">15/25</span>
+              </div>
+            </div>
+            <span class="chevron">&#x203A;</span>
+          </div>
+
+          <div class="trip-row">
+            <div class="progress-ring">
+              <svg viewBox="0 0 48 48">
+                <circle class="ring-track" cx="24" cy="24" r="22"/>
+                <circle class="ring-fill no-anim" cx="24" cy="24" r="22"
+                  stroke-dasharray="138.23" stroke-dashoffset="96.76"/>
+              </svg>
+              <span class="ring-text">30</span>
+            </div>
+            <div class="trip-info">
+              <div class="trip-name">Beach Vacation</div>
+              <div class="trip-meta">
+                <span class="trip-date">Mar 15 - Mar 20</span>
+                <span class="meta-sep"></span>
+                <span class="trip-count">9/30</span>
+              </div>
+            </div>
+            <span class="chevron">&#x203A;</span>
+          </div>
+
+          <div class="annotation fix" style="margin-top:10px;">
+            <span class="dot"></span>
+            Ring shows final state immediately — no animation
+          </div>
+          <div class="annotation fix">
+            <span class="dot"></span>
+            Empty state appears instantly without fade/slide
+          </div>
+
+          <!-- Code snippet -->
+          <div style="margin:12px 16px; padding:10px 12px; background:#0C1E24; border-radius:8px; font-family:monospace; font-size:10px; color:#7A9BAA; line-height:1.6;">
+            <span style="color:#4ADE80;">@Environment</span>(\.accessibilityReduceMotion)<br>
+            <span style="color:#4ADE80;">var</span> reduceMotion<br>
+            <br>
+            .onAppear {<br>
+            &nbsp;&nbsp;<span style="color:#4ADE80;">if</span> reduceMotion {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;appeared = <span style="color:#4ADE80;">true</span> <span style="color:#4ADE80;">// instant</span><br>
+            &nbsp;&nbsp;} <span style="color:#4ADE80;">else</span> {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;withAnimation(.spring()) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;appeared = <span style="color:#4ADE80;">true</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+            &nbsp;&nbsp;}<br>
+            }
+          </div>
+        </div>
+        <div class="home-indicator"><div class="bar"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

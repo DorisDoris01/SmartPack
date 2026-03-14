@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather Color Fix — Before / After</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    padding: 32px 24px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 8px;
+    color: #fff;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 32px;
+  }
+  .comparison {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .panel {
+    flex: 1;
+    min-width: 340px;
+    max-width: 420px;
+  }
+  .panel-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+  .panel-label.before { color: #f87171; }
+  .panel-label.after { color: #4ade80; }
+
+  /* iPhone frame */
+  .phone {
+    background: #F0F4F5;
+    border-radius: 24px;
+    padding: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .dark .phone {
+    background: #0C1418;
+  }
+
+  /* Nav bar */
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding: 0 4px;
+  }
+  .nav-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #0C1E24;
+  }
+  .nav-btn {
+    font-size: 13px;
+    color: #0E7490;
+    font-weight: 500;
+  }
+  .nav-icon {
+    font-size: 18px;
+    color: #446070;
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    height: 24px;
+    background: rgba(75, 96, 114, 0.12);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #0E7490;
+    border-radius: 12px;
+    width: 40%;
+    transition: width 0.3s;
+  }
+  .progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 11px;
+    font-weight: 700;
+    color: #0E7490;
+    font-family: -apple-system, system-ui, 'SF Pro Rounded';
+  }
+
+  /* Pill buttons */
+  .pills {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .pill {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .pill.weather-active {
+    background: #0E7490;
+    color: #fff;
+  }
+  .pill.weather-inactive {
+    background: rgba(14, 116, 144, 0.12);
+    color: #0E7490;
+  }
+  .pill.settings-active {
+    background: #4B6072;
+    color: #fff;
+  }
+  .pill.settings-inactive {
+    background: rgba(75, 96, 114, 0.12);
+    color: #4B6072;
+  }
+  .pill-icon {
+    font-size: 11px;
+  }
+
+  /* Combined card */
+  .combined-card {
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    border: 0.5px solid rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+
+  /* Settings section */
+  .settings-section {
+    padding: 14px 16px;
+  }
+  .date-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #0C1E24;
+    margin-bottom: 8px;
+  }
+  .date-icon { color: #446070; font-size: 11px; }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .tag {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 4px 8px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 6px;
+    font-size: 10px;
+    color: #446070;
+  }
+  .tag-icon { font-size: 9px; }
+
+  /* Divider */
+  .card-divider {
+    height: 0.5px;
+    background: rgba(0,0,0,0.1);
+    margin: 0 14px;
+  }
+
+  /* Weather section */
+  .weather-section {
+    padding: 14px 16px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+  }
+  .weather-day {
+    width: 56px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .wd-date {
+    font-size: 10px;
+    color: #446070;
+  }
+  .wd-icon {
+    font-size: 20px;
+    line-height: 24px;
+  }
+  .wd-temps {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .wd-high {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .wd-low {
+    font-size: 11px;
+    color: rgba(0,0,0,0.25);
+  }
+
+  /* Color variants */
+  .temp-green { color: rgb(77, 191, 102); }
+  .temp-blue { color: rgb(51, 153, 242); }
+  .temp-cyan { color: rgb(77, 179, 217); }
+  .temp-orange { color: rgb(242, 153, 51); }
+
+  .temp-teal { color: #0E7490; }
+
+  /* Annotation callouts */
+  .annotation {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .annotation.problem {
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.2);
+    color: #fca5a5;
+  }
+  .annotation.solution {
+    background: rgba(74, 222, 128, 0.1);
+    border: 1px solid rgba(74, 222, 128, 0.2);
+    color: #86efac;
+  }
+  .annotation strong {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .color-swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    margin-right: 3px;
+    vertical-align: middle;
+  }
+
+  /* Category section placeholder */
+  .category-section {
+    margin-top: 12px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .cat-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0C1E24;
+    margin-bottom: 8px;
+  }
+  .cat-icon { font-size: 16px; }
+  .cat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 13px;
+    color: #0C1E24;
+    border-bottom: 0.5px solid rgba(0,0,0,0.06);
+  }
+  .cat-item:last-child { border-bottom: none; }
+  .checkbox {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 1.5px solid #bbb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: transparent;
+  }
+  .checkbox.checked {
+    background: #0E7490;
+    border-color: #0E7490;
+    color: #fff;
+  }
+
+  /* Legend */
+  .legend {
+    margin-top: 32px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #aaa;
+  }
+  .legend-color {
+    width: 24px;
+    height: 12px;
+    border-radius: 4px;
+  }
+
+  /* Weather data for mock */
+  .weather-data { display: contents; }
+</style>
+</head>
+<body>
+<h1>Weather Color Consistency Fix</h1>
+<p class="subtitle">CombinedInfoCard — temperature color should match progress bar &amp; pill accent</p>
+
+<div class="comparison">
+  <!-- BEFORE -->
+  <div class="panel">
+    <div class="panel-label before">BEFORE — Temperature-based colors</div>
+    <div class="phone">
+      <div class="nav">
+        <span class="nav-btn">Done</span>
+        <span class="nav-title">Tokyo Trip</span>
+        <span class="nav-icon">...</span>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 40%"></div>
+        <span class="progress-text">8/20</span>
+      </div>
+
+      <!-- Pills -->
+      <div class="pills">
+        <div class="pill weather-active">
+          <span class="pill-icon">☁</span> Weather
+        </div>
+        <div class="pill settings-active">
+          <span class="pill-icon">⚙</span> Settings
+        </div>
+      </div>
+
+      <!-- Combined card -->
+      <div class="combined-card">
+        <div class="settings-section">
+          <div class="date-row">
+            <span class="date-icon">📅</span> 2026/03/01 - 03/07
+          </div>
+          <div class="tags">
+            <div class="tag"><span class="tag-icon">🏃</span> Running</div>
+            <div class="tag"><span class="tag-icon">🧗</span> Hiking</div>
+            <div class="tag"><span class="tag-icon">🌏</span> International</div>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="weather-section">
+          <div class="weather-day">
+            <span class="wd-date">3/1</span>
+            <span class="wd-icon temp-cyan">☀</span>
+            <div class="wd-temps">
+              <span class="wd-high temp-cyan">8°</span>
+              <span class="wd-low">2°</span>
+            </div>
+          </div>
+          <div class="weather-day">
+            <span class="wd-date">3/2</span>
+            <span class="wd-icon temp-cyan">⛅</span>
+            <div class="wd-temps">
+              <span class="wd-high temp-cyan">12°</span>
+              <span class="wd-low">5°</span>
+            </div>
+          </div>
+          <div class="weather-day">
+            <span class="wd-date">3/3</span>
+            <span class="wd-icon temp-green">☁</span>
+            <div class="wd-temps">
+              <span class="wd-high temp-green">18°</span>
+              <span class="wd-low">10°</span>
+            </div>
+          </div>
+          <div class="weather-day">
+            <span class="wd-date">3/4</span>
+            <span class="wd-icon temp-green">☀</span>
+            <div class="wd-temps">
+              <span class="wd-high temp-green">22°</span>
+              <span class="wd-low">14°</span>
+            </div>
+          </div>
+          <div class="weather-day">
+            <span class="wd-date">3/5</span>
+            <span class="wd-icon temp-green">⛅</span>
+            <div class="wd-temps">
+              <span class="wd-high temp-green">20°</span>
+              <span class="wd-low">12°</span>
+            </div>
+          </div>
+          <div class="weather-day">
+            <span class="wd-date">3/6</span>
+            <span class="wd-icon temp-orange">☀</span>
+            <div class="wd-temps">
+              <span class="wd-high temp-orange">27°</span>
+              <span class="wd-low">18°</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Faded category placeholder -->
+      <div class="category-section" style="opacity: 0.5;">
+        <div class="cat-header"><span class="cat-icon">👕</span> Clothing</div>
+        <div class="cat-item"><span class="checkbox checked">✓</span> T-shirt x3</div>
+        <div class="cat-item"><span class="checkbox"></span> Jacket</div>
+        <div class="cat-item"><span class="checkbox"></span> Jeans x2</div>
+      </div>
+    </div>
+
+    <div class="annotation problem">
+      <strong>Problem: Color inconsistency</strong>
+      Weather uses temperature-based colors:
+      <span class="color-swatch" style="background:rgb(77,179,217)"></span>cyan (cold),
+      <span class="color-swatch" style="background:rgb(77,191,102)"></span>green (mild),
+      <span class="color-swatch" style="background:rgb(242,153,51)"></span>orange (warm)
+      — none match the teal design system.
+      The green especially clashes with the teal progress bar + pills.
+    </div>
+  </div>
+
+  <!-- AFTER -->
+  <div class="panel">
+    <div class="panel-label after">AFTER — Unified AppColors.primary</div>
+    <div class="phone">
+      <div class="nav">
+        <span class="nav-btn">Done</span>
+        <span class="nav-title">Tokyo Trip</span>
+        <span class="nav-icon">...</span>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 40%"></div>
+        <span class="progress-text">8/20</span>
+      </div>
+
+      <!-- Pills -->
+      <div class="pills">
+        <div class="pill weather-active">
+          <span class="pill-icon">☁</span> Weather
+        </div>
+        <div class="pill settings-active">
+          <span class="pill-icon">⚙</span> Settings
+        </div>
+      </div>
+
+      <!-- Combined card — AFTER -->
+      <div class="combined-card">
+        <div class="settings-section">
+          <div class="date-row">
+            <span class="date-icon">📅</span> 2026/03/01 - 03/07
+          </div>
+          <div class="tags">
+            <div class="tag"><span class="tag-icon">🏃</span> Running</div>
+            <div class="tag"><span class="tag-icon">🧗</span> Hiking</div>
+            <div class="tag"><span class="tag-icon">🌏</span> International</div>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="weather-section">
+          <div class="weather-day">
+            <span class="wd-date">3/1</span>
+            <span class="wd-icon temp-teal">☀</span>
+            <div class="wd-temps">
+              <span class="wd-high temp-teal">8°</span>
+              <span class="wd-low">2°</span>
+            </div>
+          </div>
+          <div class="weather-day">
+            <span class="wd-date">3/2</span>
+            <span class="wd-icon temp-teal">⛅</span>
+            <div class="wd-temps">
+              <span class="wd-high temp-teal">12°</span>
+              <span class="wd-low">5°</span>
+            </div>
+          </div>
+          <div class="weather-day">
+            <span class="wd-date">3/3</span>
+            <span class="wd-icon temp-teal">☁</span>
+            <div class="wd-temps">
+              <span class="wd-high temp-teal">18°</span>
+              <span class="wd-low">10°</span>
+            </div>
+          </div>
+          <div class="weather-day">
+            <span class="wd-date">3/4</span>
+            <span class="wd-icon temp-teal">☀</span>
+            <div class="wd-temps">
+              <span class="wd-high temp-teal">22°</span>
+              <span class="wd-low">14°</span>
+            </div>
+          </div>
+          <div class="weather-day">
+            <span class="wd-date">3/5</span>
+            <span class="wd-icon temp-teal">⛅</span>
+            <div class="wd-temps">
+              <span class="wd-high temp-teal">20°</span>
+              <span class="wd-low">12°</span>
+            </div>
+          </div>
+          <div class="weather-day">
+            <span class="wd-date">3/6</span>
+            <span class="wd-icon temp-teal">☀</span>
+            <div class="wd-temps">
+              <span class="wd-high temp-teal">27°</span>
+              <span class="wd-low">18°</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Faded category placeholder -->
+      <div class="category-section" style="opacity: 0.5;">
+        <div class="cat-header"><span class="cat-icon">👕</span> Clothing</div>
+        <div class="cat-item"><span class="checkbox checked">✓</span> T-shirt x3</div>
+        <div class="cat-item"><span class="checkbox"></span> Jacket</div>
+        <div class="cat-item"><span class="checkbox"></span> Jeans x2</div>
+      </div>
+    </div>
+
+    <div class="annotation solution">
+      <strong>Fix: Unified teal accent</strong>
+      All weather icons + high temps use
+      <span class="color-swatch" style="background:#0E7490"></span><code>AppColors.primary</code> (#0E7490)
+      — same as progress bar fill and "Weather" pill.
+      Low temps stay <code>.tertiary</code>. Unavailable days stay <code>.secondary</code>.
+      Visual hierarchy is now consistent across the entire view.
+    </div>
+  </div>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-color" style="background:#0E7490"></div>
+    AppColors.primary (teal)
+  </div>
+  <div class="legend-item">
+    <div class="legend-color" style="background:#4B6072"></div>
+    AppColors.secondary
+  </div>
+  <div class="legend-item">
+    <div class="legend-color" style="background:rgb(77,191,102)"></div>
+    Old temp green (removed)
+  </div>
+</div>
+
+<div style="max-width: 700px; margin: 32px auto 0; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 12px; font-size: 13px; line-height: 1.6; color: #bbb;">
+  <strong style="color: #fff; display: block; margin-bottom: 8px;">Plan — 1 file, 1 change:</strong>
+  <code style="color: #22d3ee;">CombinedInfoCard.swift</code> — Replace the <code>temperatureColor</code> computed property in <code>CompactWeatherDay</code>.<br><br>
+  <strong>Before:</strong> 5-tier temperature switch returning blue/cyan/green/orange/red.<br>
+  <strong>After:</strong> Return <code>AppColors.primary</code> unconditionally.<br><br>
+  <strong>No other files affected.</strong> The weather icon <code>.foregroundStyle</code> and high-temp <code>.foregroundStyle</code> already reference <code>temperatureColor</code>, so both update automatically. Low temp (<code>.tertiary</code>) and unavailable state (<code>.secondary.opacity(0.6)</code>) remain unchanged.
+</div>
+
+</body>
+</html>

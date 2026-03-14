@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Usage Assessment — Cooper Xu</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #232735;
+    --border: #2e3345;
+    --text: #e4e6ed;
+    --text2: #9498a8;
+    --accent: #6c8cff;
+    --green: #4ade80;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --orange: #fb923c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    padding: 2rem 1rem;
+  }
+
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  header {
+    text-align: center;
+    padding-bottom: 2.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2.5rem;
+  }
+
+  header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+  }
+
+  header .meta {
+    color: var(--text2);
+    font-size: 0.875rem;
+  }
+
+  h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h2 .part-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.5rem 0 0.5rem;
+    color: var(--text);
+  }
+
+  h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 1rem 0 0.4rem;
+    color: var(--text2);
+  }
+
+  p, li {
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+
+  p { margin-bottom: 0.75rem; }
+
+  ul, ol {
+    padding-left: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  li { margin-bottom: 0.35rem; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .card.green { border-left: 3px solid var(--green); }
+  .card.yellow { border-left: 3px solid var(--yellow); }
+  .card.red { border-left: 3px solid var(--red); }
+  .card.blue { border-left: 3px solid var(--accent); }
+
+  .card h3 { margin-top: 0; }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15em 0.55em;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-left: 0.4rem;
+  }
+  .badge.strong { background: rgba(74,222,128,0.15); color: var(--green); }
+  .badge.good { background: rgba(108,140,255,0.15); color: var(--accent); }
+  .badge.needs-work { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .badge.gap { background: rgba(248,113,113,0.15); color: var(--red); }
+  .badge.zero { background: rgba(248,113,113,0.2); color: var(--red); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    font-weight: 600;
+    color: var(--text2);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--surface2);
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  td.strong { color: var(--green); font-weight: 600; }
+  td.good { color: var(--accent); font-weight: 500; }
+  td.needs-work { color: var(--yellow); font-weight: 500; }
+  td.gap { color: var(--red); font-weight: 500; }
+
+  .number-card {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    margin: 0.4rem;
+    min-width: 100px;
+  }
+
+  .number-card .num {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .number-card .label {
+    font-size: 0.7rem;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+  }
+
+  .stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin: 1.5rem 0;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 2.5rem 0;
+  }
+
+  .top-change {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  .top-change .num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  code {
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.8rem;
+    background: var(--surface2);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+  }
+
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .toc h3 { margin-top: 0; font-size: 0.85rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .toc ol {
+    columns: 2;
+    column-gap: 2rem;
+    font-size: 0.85rem;
+  }
+
+  .toc a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .toc a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    .stats-row { justify-content: flex-start; }
+    .toc ol { columns: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<header>
+  <h1>Claude Code Usage Assessment</h1>
+  <div class="meta">Project: SmartPack &mdash; 34 sessions analyzed &mdash; Generated 2026-03-02</div>
+</header>
+
+<div class="stats-row">
+  <div class="number-card">
+    <div class="num">34</div>
+    <div class="label">Sessions</div>
+  </div>
+  <div class="number-card">
+    <div class="num">54+</div>
+    <div class="label">Subagents</div>
+  </div>
+  <div class="number-card">
+    <div class="num">30+</div>
+    <div class="label">Commits</div>
+  </div>
+  <div class="number-card">
+    <div class="num">~10</div>
+    <div class="label">Skill Invocations</div>
+  </div>
+  <div class="number-card">
+    <div class="num">15+</div>
+    <div class="label">Skills Installed</div>
+  </div>
+</div>
+
+<nav class="toc">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#general-well">What You Did Well (General)</a></li>
+    <li><a href="#general-improve">What to Improve (General)</a></li>
+    <li><a href="#general-score">General Scorecard</a></li>
+    <li><a href="#skills-used">Skills You Used</a></li>
+    <li><a href="#skills-missed">Skills You Never Used</a></li>
+    <li><a href="#agents">Agents &amp; Subagents</a></li>
+    <li><a href="#plan-mode">Plan Mode</a></li>
+    <li><a href="#task-tracking">Task Tracking</a></li>
+    <li><a href="#skills-score">Skills &amp; Agents Scorecard</a></li>
+    <li><a href="#top-changes">Top Changes to Make</a></li>
+  </ol>
+</nav>
+
+<!-- ==================== PART 1 ==================== -->
+
+<h2><span class="part-label">Part 1 &mdash; General</span>What You Did Well</h2>
+<div id="general-well"></div>
+
+<div class="card green">
+  <h3>1. Excellent use of planning artifacts</h3>
+  <p>Your project is full of high-quality planning documents: <code>code-bug-review.md</code>, <code>homeview-ux-audit.md</code>, <code>packinglistview-ux-audit.md</code>, <code>itemmanagement-ux-audit.md</code>, <code>plan-option-b-mapkit-autocomplete.md</code>, <code>itemmanagement-ux-fix-plan.md</code>. These show you're not just throwing prompts at Claude &mdash; you're driving structured workflows where problems get documented, triaged, and tracked. The consolidated bug review with 38 findings across two review passes is genuinely impressive project management.</p>
+</div>
+
+<div class="card green">
+  <h3>2. Strong issue tracking discipline</h3>
+  <p>Every plan has a status table (DONE / Pending / Superseded). You track fix IDs across commits (<code>F1-F4, F7, F8, F11</code>). The <code>pending-issues-guide.md</code> consolidates 49 issues across 4 audit sources with severity, plain English explanations, and fix suggestions. This is better issue tracking than many professional teams.</p>
+</div>
+
+<div class="card green">
+  <h3>3. Good commit hygiene</h3>
+  <p>Your Claude Code commits are well-structured with detailed bodies explaining <em>what</em> and <em>why</em>. Compare the Claude-era commits ("Fix ItemManagement UX: single-tap add/cancel, swipe-to-delete, delete constraint alert" with bullet points) to the earlier Cursor-era commits ("&shy;更新打包列表UI和设计系统组件" &mdash; vague). You clearly leveled up your commit discipline when switching to Claude Code.</p>
+</div>
+
+<div class="card green">
+  <h3>4. Leveraged code review effectively</h3>
+  <p>Running dual code reviews (general bug scanner + architecture reviewer), then merging/deduplicating findings into a consensus severity &mdash; that's sophisticated. You used Claude Code as a reviewer, not just a code generator.</p>
+</div>
+
+<div class="card green">
+  <h3>5. Persistent memory setup</h3>
+  <p>You set up <code>MEMORY.md</code> with project context and <code>swiftui-constraints.md</code> capturing hard-won lessons (the List + FocusState tap interception bug, the callback signature anti-pattern). These are exactly the kind of lessons that prevent repeated mistakes across sessions.</p>
+</div>
+
+<div class="card green">
+  <h3>6. Iterative UX refinement</h3>
+  <p>The HomeView audit shows healthy back-and-forth: you implemented U5 (archive animation), found it conflicted with SwiftUI List cross-section animation, then U8 rolled it back. A2 added a completion badge, you gave feedback it was redundant, U2 removed it. You're treating Claude Code as a collaborator, not an oracle.</p>
+</div>
+
+<div class="divider"></div>
+
+<h2><span class="part-label">Part 1 &mdash; General</span>What to Improve</h2>
+<div id="general-improve"></div>
+
+<div class="card red">
+  <h3>1. No CLAUDE.md in the project itself</h3>
+  <p>Your SmartPack repo has <strong>no <code>CLAUDE.md</code></strong>. This is the single highest-impact thing you're missing. Every session, Claude Code starts cold on your project conventions. You should have a <code>CLAUDE.md</code> in the project root with: build command, test command, architecture overview (MVVM, SwiftData, bilingual approach), design system file locations, and key constraints.</p>
+  <p>The memory file helps, but <code>CLAUDE.md</code> is loaded with higher priority and is project-scoped rather than directory-scoped.</p>
+</div>
+
+<div class="card yellow">
+  <h3>2. Planning docs accumulating in repo root</h3>
+  <p>You have 6+ <code>.md</code> files sitting in the project root alongside source code. These are working documents, not shipping artifacts. Consider moving them to a <code>docs/</code> or <code>.claude/plans/</code> directory, or <code>.gitignore</code>-ing them. Some (like <code>pending-issues-guide.md</code> at 56KB) are enormous and probably shouldn't be committed.</p>
+</div>
+
+<div class="card yellow">
+  <h3>3. No branching strategy for Claude Code work</h3>
+  <p>All 30+ commits are on <code>main</code> or <code>develop</code> with no feature branches for Claude Code work. The MapKit autocomplete change, the design system overhaul, and the bug fixes are all mixed together. Feature branches would give you: ability to review before merging, easy rollback, and cleaner history.</p>
+</div>
+
+<div class="card yellow">
+  <h3>4. Permission allowlist is too broad</h3>
+  <p><code>settings.local.json</code> allows <code>Bash(rm:*)</code> globally. This gives Claude Code unrestricted <code>rm</code> access anywhere on your system. Consider scoping it to your project directory, or removing it and approving on a case-by-case basis.</p>
+</div>
+
+<div class="card yellow">
+  <h3>5. Testing came too late</h3>
+  <p>Test coverage (F5) was listed as Critical but was one of the last things fixed. You had 30+ commits of feature work and bug fixes before adding any tests. TDD or "write tests alongside fixes" would catch regressions earlier.</p>
+</div>
+
+<div class="card yellow">
+  <h3>6. Prompt specificity could improve</h3>
+  <p>Some planning docs hint that you rely on Claude to audit <em>everything</em> rather than pointing it at specific concerns. Focused prompts ("audit the touch targets in PackingListView against Apple HIG 44pt minimum") get more precise results than broad ones ("do a UX audit").</p>
+</div>
+
+<div class="card yellow">
+  <h3>7. No verification step in workflow</h3>
+  <p>Several fixes had to be rolled back (U5&rarr;U8, A2&rarr;U2). Building a habit of "verify on device before committing" would reduce churn.</p>
+</div>
+
+<div class="divider"></div>
+
+<h2><span class="part-label">Part 1</span>General Scorecard</h2>
+<div id="general-score"></div>
+
+<table>
+  <thead>
+    <tr><th>Area</th><th>Rating</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Planning &amp; documentation</td><td class="strong">Strong</td><td>Structured audits, severity tracking, fix plans</td></tr>
+    <tr><td>Commit discipline</td><td class="strong">Strong</td><td>Clear messages with detailed bodies</td></tr>
+    <tr><td>Code review usage</td><td class="strong">Strong</td><td>Dual-pass review, consolidated findings</td></tr>
+    <tr><td>Project configuration</td><td class="needs-work">Needs work</td><td>Missing CLAUDE.md, broad permissions</td></tr>
+    <tr><td>Branching &amp; git workflow</td><td class="needs-work">Needs work</td><td>No feature branches for Claude work</td></tr>
+    <tr><td>Testing discipline</td><td class="needs-work">Needs work</td><td>Tests came too late in the process</td></tr>
+    <tr><td>Persistent memory</td><td class="good">Good</td><td>Useful constraints captured, could be richer</td></tr>
+  </tbody>
+</table>
+
+<!-- ==================== PART 2 ==================== -->
+
+<div class="divider"></div>
+
+<h2><span class="part-label">Part 2 &mdash; Skills</span>Skills You Used</h2>
+<div id="skills-used"></div>
+
+<div class="card green">
+  <h3>ui-ux-pro-max <span class="badge strong">Heavy</span></h3>
+  <p>210+ references in one session, 24 in another. Drove your HomeView and PackingListView audits. Got structured audit reports with severity tables. Good choice for your use case.</p>
+</div>
+
+<div class="card green">
+  <h3>frontend-design <span class="badge strong">Heavy</span></h3>
+  <p>Referenced in ~8 sessions (up to 70 references in one). Used consistently for design work across the project.</p>
+</div>
+
+<div class="card green">
+  <h3>superpowers:requesting-code-review + code-reviewer <span class="badge good">Moderate</span></h3>
+  <p>Used in one major session with 26 code-review references and 5 general-purpose subagents. This produced your excellent dual-pass <code>code-bug-review.md</code>.</p>
+</div>
+
+<div class="card blue">
+  <h3>superpowers:executing-plans + finishing-a-development-branch <span class="badge good">Light</span></h3>
+  <p>Used in 2 sessions. Shows awareness of the structured workflow, but not habitual.</p>
+</div>
+
+<div class="card blue">
+  <h3>planning-with-files, writing-plans, feature-dev <span class="badge good">Light</span></h3>
+  <p>Each used 1&ndash;2 times. You know they exist but don't reach for them consistently.</p>
+</div>
+
+<div class="divider"></div>
+
+<h2><span class="part-label">Part 2 &mdash; Skills</span>Skills You Never Used</h2>
+<div id="skills-missed"></div>
+
+<div class="card red">
+  <h3>superpowers:brainstorming <span class="badge zero">0 sessions</span></h3>
+  <p>Designed to explore requirements <em>before</em> building. Given how many features you iterated on (MapKit autocomplete, CombinedInfoCard redesign), brainstorming first would have reduced back-and-forth.</p>
+</div>
+
+<div class="card red">
+  <h3>superpowers:test-driven-development <span class="badge zero">0 sessions</span></h3>
+  <p>Installed but never invoked. Tests came at the very end of the project instead of alongside feature work.</p>
+</div>
+
+<div class="card red">
+  <h3>superpowers:systematic-debugging <span class="badge zero">0 sessions</span></h3>
+  <p>You had bugs that needed investigation (List tap interception, archive animation conflict) but tackled them ad-hoc instead of through the structured debugging skill.</p>
+</div>
+
+<div class="card red">
+  <h3>superpowers:verification-before-completion <span class="badge zero">0 sessions</span></h3>
+  <p>Multiple fixes had to be rolled back (U5&rarr;U8, A2&rarr;U2). This skill exists specifically to prevent premature "done" claims.</p>
+</div>
+
+<div class="card red">
+  <h3>playground <span class="badge zero">0 sessions</span></h3>
+  <p>Could have been useful for prototyping UI alternatives. You created several <code>fix-preview-*.html</code> files manually &mdash; playground automates this.</p>
+</div>
+
+<div class="card yellow">
+  <h4>Verdict</h4>
+  <p>You gravitate toward <strong>review/audit skills</strong> (ui-ux-pro-max, code-reviewer) and ignore <strong>process skills</strong> (brainstorming, TDD, debugging, verification). You're using skills as output generators, not as workflow discipline. The highest-value skills are the ones that change <em>how</em> you work, not just <em>what</em> Claude produces.</p>
+</div>
+
+<div class="divider"></div>
+
+<h2><span class="part-label">Part 2 &mdash; Agents</span>Agents &amp; Subagents</h2>
+<div id="agents"></div>
+
+<h3>What you did</h3>
+<ul>
+  <li><strong>~54 subagents</strong> across all sessions &mdash; not afraid to use them.</li>
+  <li><strong>Explore agents dominate</strong> &mdash; used in nearly every session. Good instinct to let agents explore the codebase rather than doing it manually.</li>
+  <li><strong>Plan agents</strong> used in ~4 sessions. Combined with EnterPlanMode (~6 sessions), shows you do plan before big work.</li>
+  <li><strong>general-purpose agents</strong> used in 2 sessions (the code review session had 5 of them).</li>
+  <li><strong>feature-dev:code-explorer</strong> used once.</li>
+</ul>
+
+<h3>What's missing</h3>
+
+<div class="card red">
+  <h3>No parallel agent dispatching</h3>
+  <p>When you had the dual code review, those two reviewers could have run in parallel in isolated worktrees. When you had multiple independent UX audits (HomeView, PackingListView, ItemManagement), those could have been 3 parallel agents. You're running things sequentially that don't need to be.</p>
+</div>
+
+<div class="card red">
+  <h3>Worktrees barely used</h3>
+  <p>Only 2 sessions referenced worktrees. For a project where you're doing design overhauls, bug fixes, and feature additions on <code>main</code>, worktrees would let you experiment safely. The MapKit autocomplete feature (5 files, new service + view) was a perfect worktree candidate.</p>
+</div>
+
+<div class="card red">
+  <h3>No subagent-driven-development</h3>
+  <p>When you have a multi-step plan (like the 5-step MapKit implementation plan), the <code>subagent-driven-development</code> skill dispatches independent steps to parallel agents. You wrote the plan manually and executed it sequentially.</p>
+</div>
+
+<div class="divider"></div>
+
+<h2><span class="part-label">Part 2</span>Plan Mode</h2>
+<div id="plan-mode"></div>
+
+<div class="card blue">
+  <ul>
+    <li>Used EnterPlanMode in about 6 sessions &mdash; decent.</li>
+    <li>Produced excellent plan artifacts (the MapKit plan is particularly well-structured with implementation order and verification checklist).</li>
+    <li>However: most of your largest sessions (2194-line, 1622-line) had <strong>0 plan mode usage</strong>. These were likely long, free-flowing sessions where planning would have helped structure the work.</li>
+  </ul>
+</div>
+
+<div class="divider"></div>
+
+<h2><span class="part-label">Part 2</span>Task Tracking</h2>
+<div id="task-tracking"></div>
+
+<div class="card blue">
+  <ul>
+    <li>Used TaskCreate/TaskUpdate in ~7 sessions with significant activity (up to 24 task operations in one session).</li>
+    <li>Not used in your largest sessions though. The 2194-line session had 0 task operations.</li>
+  </ul>
+</div>
+
+<div class="divider"></div>
+
+<h2><span class="part-label">Part 2</span>Skills &amp; Agents Scorecard</h2>
+<div id="skills-score"></div>
+
+<table>
+  <thead>
+    <tr><th>Feature</th><th>Usage Level</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Review/audit skills (ui-ux-pro-max, code-reviewer)</td><td class="strong">Heavy</td><td>Your strongest area</td></tr>
+    <tr><td>Explore agents</td><td class="strong">Heavy</td><td>Good instinct</td></tr>
+    <tr><td>Plan mode + plan artifacts</td><td class="good">Moderate</td><td>Good when used, inconsistent</td></tr>
+    <tr><td>Task tracking</td><td class="good">Moderate</td><td>Used in some sessions, absent in others</td></tr>
+    <tr><td>frontend-design skill</td><td class="good">Moderate</td><td>Consistent for design work</td></tr>
+    <tr><td>Plan/general-purpose agents</td><td class="needs-work">Light</td><td>Could use more</td></tr>
+    <tr><td>Worktrees</td><td class="gap">Barely</td><td>Should be routine for feature work</td></tr>
+    <tr><td>Process skills (brainstorming, TDD, debugging, verification)</td><td class="gap">Zero</td><td>Biggest gap</td></tr>
+    <tr><td>Parallel agent dispatch</td><td class="gap">Zero</td><td>Missing efficiency gains</td></tr>
+    <tr><td>Skill tool invocations overall</td><td class="gap">Very low (~10)</td><td>Under-using installed plugins</td></tr>
+  </tbody>
+</table>
+
+<div class="divider"></div>
+
+<h2><span class="part-label">Action Items</span>Top Changes to Make</h2>
+<div id="top-changes"></div>
+
+<div class="top-change">
+  <div class="num">1</div>
+  <div>
+    <h3>Add a CLAUDE.md to SmartPack</h3>
+    <p>Include build command, test command, architecture overview, design system locations, and key constraints. This is the single highest-impact improvement for session quality.</p>
+  </div>
+</div>
+
+<div class="top-change">
+  <div class="num">2</div>
+  <div>
+    <h3>Use brainstorming + verification as bookends</h3>
+    <p>Start sessions with <code>/brainstorming</code> before building. End with <code>verification-before-completion</code> before committing. These two skills would have prevented most of your rollbacks.</p>
+  </div>
+</div>
+
+<div class="top-change">
+  <div class="num">3</div>
+  <div>
+    <h3>Dispatch parallel agents for independent work</h3>
+    <p>When you have 3 views to audit, 2 reviewers to run, or 3 independent implementation steps &mdash; launch them simultaneously. You're paying for the tokens either way; parallel is faster.</p>
+  </div>
+</div>
+
+<div class="top-change">
+  <div class="num">4</div>
+  <div>
+    <h3>Invoke skills explicitly via the Skill tool</h3>
+    <p>You have 15+ skills installed but only ~10 explicit invocations across 34 sessions. Try starting sessions with <code>/brainstorming</code> or <code>/plan</code> instead of jumping straight to "explore the codebase."</p>
+  </div>
+</div>
+
+<div class="top-change">
+  <div class="num">5</div>
+  <div>
+    <h3>Use worktrees and feature branches</h3>
+    <p>Any change touching 3+ files should get a feature branch. Use <code>/worktree</code> for experimental work. This gives you safe rollback and cleaner history.</p>
+  </div>
+</div>
+
+<div class="top-change">
+  <div class="num">6</div>
+  <div>
+    <h3>Adopt TDD for bug fixes</h3>
+    <p>When fixing a bug, write a failing test first (<code>/test-driven-development</code>). You had 38 code bugs found &mdash; each fix was a missed opportunity to add regression coverage.</p>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<p style="text-align: center; color: var(--text2); font-size: 0.8rem; padding: 1rem 0;">
+  Assessment generated by Claude Opus 4.6 &mdash; 2026-03-02<br>
+  Based on analysis of 34 Claude Code sessions for the SmartPack iOS project
+</p>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PT1/PT2 Touch Target Fix — Option A vs B</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    padding: 32px 24px;
+    min-height: 100vh;
+  }
+  h1 { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 4px; color: #fff; }
+  .subtitle { text-align: center; font-size: 13px; color: #888; margin-bottom: 28px; }
+
+  .comparison {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .panel { flex: 1; min-width: 300px; max-width: 360px; }
+  .panel-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1.5px; margin-bottom: 10px; padding-left: 4px;
+  }
+  .panel-label.current { color: #888; }
+  .panel-label.optionA { color: #22d3ee; }
+  .panel-label.optionB { color: #a78bfa; }
+
+  /* Phone frame */
+  .phone {
+    background: #F0F4F5;
+    border-radius: 20px;
+    padding: 12px 0;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    overflow: hidden;
+  }
+
+  /* Section header */
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 20px 6px;
+    font-size: 14px; font-weight: 600; color: #0C1E24;
+  }
+  .section-header .left { display: flex; align-items: center; gap: 6px; }
+  .section-header .icon { font-size: 16px; }
+  .section-header .badge {
+    font-size: 11px; color: #446070; font-weight: 500;
+  }
+  .section-header .chevron { font-size: 12px; color: #bbb; }
+
+  /* Card container */
+  .card {
+    background: #fff;
+    margin: 0 16px 12px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  /* Item row */
+  .item-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 20px;
+    position: relative;
+    cursor: pointer;
+  }
+  .item-row:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 54px; right: 0;
+    height: 0.5px;
+    background: rgba(0,0,0,0.08);
+  }
+  /* Touch target visualization */
+  .item-row .touch-zone {
+    position: absolute;
+    left: 0; right: 0;
+    border: 1.5px dashed rgba(239, 68, 68, 0.5);
+    pointer-events: none;
+    border-radius: 4px;
+  }
+  .item-row .touch-zone.green {
+    border-color: rgba(34, 197, 94, 0.5);
+  }
+
+  /* Checkbox circle */
+  .circle {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid #c7c7cc;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .circle.checked {
+    background: #0E7490;
+    border-color: #0E7490;
+  }
+  .circle.checked::after {
+    content: '✓';
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .circle.empty-gray {
+    border-color: #c7c7cc;
+  }
+
+  .item-name {
+    font-size: 15px; color: #0C1E24;
+    flex: 1;
+  }
+  .item-name.checked {
+    color: #8e8e93;
+    text-decoration: line-through;
+    text-decoration-color: #c7c7cc;
+  }
+
+  /* Add item row */
+  .add-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 20px;
+    position: relative;
+  }
+  .add-row .touch-zone {
+    position: absolute;
+    left: 0; right: 0;
+    border: 1.5px dashed rgba(239, 68, 68, 0.5);
+    pointer-events: none;
+    border-radius: 4px;
+  }
+  .add-row .touch-zone.green {
+    border-color: rgba(34, 197, 94, 0.5);
+  }
+  .add-text {
+    font-size: 15px; color: #c7c7cc;
+  }
+
+  /* Height ruler */
+  .ruler {
+    position: absolute;
+    right: -4px;
+    display: flex; flex-direction: column;
+    align-items: center;
+    font-size: 9px;
+    color: #ef4444;
+    font-weight: 600;
+  }
+  .ruler.ok { color: #22c55e; }
+  .ruler .line {
+    width: 1px;
+    flex: 1;
+    background: currentColor;
+  }
+  .ruler .val {
+    padding: 2px 0;
+    white-space: nowrap;
+  }
+
+  /* Annotations */
+  .annotation {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .annotation.neutral {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #aaa;
+  }
+  .annotation.cyan {
+    background: rgba(34, 211, 238, 0.08);
+    border: 1px solid rgba(34, 211, 238, 0.2);
+    color: #67e8f9;
+  }
+  .annotation.purple {
+    background: rgba(167, 139, 250, 0.08);
+    border: 1px solid rgba(167, 139, 250, 0.2);
+    color: #c4b5fd;
+  }
+  .annotation strong { display: block; margin-bottom: 3px; font-weight: 600; }
+  code {
+    background: rgba(255,255,255,0.1);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+
+  /* Measurement overlay */
+  .measure {
+    position: relative;
+  }
+  .measure-label {
+    position: absolute;
+    right: 6px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .measure-label.red {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+  }
+  .measure-label.green {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+  }
+</style>
+</head>
+<body>
+
+<h1>PT1 / PT2 — Touch Target Fix</h1>
+<p class="subtitle">Minimum 44px touch target per Apple HIG. Dashed box = tappable area.</p>
+
+<div class="comparison">
+
+  <!-- CURRENT -->
+  <div class="panel">
+    <div class="panel-label current">Current — ~36px rows</div>
+    <div class="phone">
+      <div class="section-header">
+        <div class="left">
+          <span class="icon">👕</span>
+          <span>Clothing</span>
+        </div>
+        <div>
+          <span class="badge">2/4</span>
+          <span class="chevron">▼</span>
+        </div>
+      </div>
+      <div class="card">
+        <!-- Item rows at ~36px -->
+        <div class="item-row measure" style="height: 36px;">
+          <div class="touch-zone" style="top:0;bottom:0;"></div>
+          <div class="circle checked"></div>
+          <span class="item-name checked">T-shirt x3</span>
+          <span class="measure-label red" style="top:50%;transform:translateY(-50%);">36px</span>
+        </div>
+        <div class="item-row measure" style="height: 36px;">
+          <div class="touch-zone" style="top:0;bottom:0;"></div>
+          <div class="circle checked"></div>
+          <span class="item-name checked">Jeans x2</span>
+          <span class="measure-label red" style="top:50%;transform:translateY(-50%);">36px</span>
+        </div>
+        <div class="item-row measure" style="height: 36px;">
+          <div class="touch-zone" style="top:0;bottom:0;"></div>
+          <div class="circle"></div>
+          <span class="item-name">Jacket</span>
+          <span class="measure-label red" style="top:50%;transform:translateY(-50%);">36px</span>
+        </div>
+        <div class="item-row measure" style="height: 36px;">
+          <div class="touch-zone" style="top:0;bottom:0;"></div>
+          <div class="circle"></div>
+          <span class="item-name">Underwear x4</span>
+          <span class="measure-label red" style="top:50%;transform:translateY(-50%);">36px</span>
+        </div>
+        <!-- Add item row -->
+        <div class="add-row measure" style="height: 36px;">
+          <div class="touch-zone" style="top:0;bottom:0;"></div>
+          <div class="circle empty-gray"></div>
+          <span class="add-text">Add Item</span>
+          <span class="measure-label red" style="top:50%;transform:translateY(-50%);">36px</span>
+        </div>
+      </div>
+
+      <div class="section-header" style="opacity:0.4;">
+        <div class="left">
+          <span class="icon">🧴</span>
+          <span>Toiletries</span>
+        </div>
+        <div>
+          <span class="badge">0/3</span>
+          <span class="chevron">▼</span>
+        </div>
+      </div>
+      <div class="card" style="opacity:0.4;">
+        <div class="item-row" style="height: 36px;">
+          <div class="circle"></div>
+          <span class="item-name">Toothbrush</span>
+        </div>
+        <div class="item-row" style="height: 36px;">
+          <div class="circle"></div>
+          <span class="item-name">Shampoo</span>
+        </div>
+      </div>
+    </div>
+    <div class="annotation neutral">
+      <strong>Problem</strong>
+      Row height ~36px (22px circle + 0 vertical padding).
+      Below Apple HIG 44px minimum. Easy to mis-tap,
+      especially when checking items quickly.
+    </div>
+  </div>
+
+  <!-- OPTION A: Visible padding -->
+  <div class="panel">
+    <div class="panel-label optionA">Option A — Visible padding</div>
+    <div class="phone">
+      <div class="section-header">
+        <div class="left">
+          <span class="icon">👕</span>
+          <span>Clothing</span>
+        </div>
+        <div>
+          <span class="badge">2/4</span>
+          <span class="chevron">▼</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="item-row measure" style="height: 48px;">
+          <div class="touch-zone green" style="top:0;bottom:0;"></div>
+          <div class="circle checked"></div>
+          <span class="item-name checked">T-shirt x3</span>
+          <span class="measure-label green" style="top:50%;transform:translateY(-50%);">48px</span>
+        </div>
+        <div class="item-row measure" style="height: 48px;">
+          <div class="touch-zone green" style="top:0;bottom:0;"></div>
+          <div class="circle checked"></div>
+          <span class="item-name checked">Jeans x2</span>
+          <span class="measure-label green" style="top:50%;transform:translateY(-50%);">48px</span>
+        </div>
+        <div class="item-row measure" style="height: 48px;">
+          <div class="touch-zone green" style="top:0;bottom:0;"></div>
+          <div class="circle"></div>
+          <span class="item-name">Jacket</span>
+          <span class="measure-label green" style="top:50%;transform:translateY(-50%);">48px</span>
+        </div>
+        <div class="item-row measure" style="height: 48px;">
+          <div class="touch-zone green" style="top:0;bottom:0;"></div>
+          <div class="circle"></div>
+          <span class="item-name">Underwear x4</span>
+          <span class="measure-label green" style="top:50%;transform:translateY(-50%);">48px</span>
+        </div>
+        <div class="add-row measure" style="height: 48px;">
+          <div class="touch-zone green" style="top:0;bottom:0;"></div>
+          <div class="circle empty-gray"></div>
+          <span class="add-text">Add Item</span>
+          <span class="measure-label green" style="top:50%;transform:translateY(-50%);">48px</span>
+        </div>
+      </div>
+
+      <div class="section-header" style="opacity:0.4;">
+        <div class="left">
+          <span class="icon">🧴</span>
+          <span>Toiletries</span>
+        </div>
+        <div>
+          <span class="badge">0/3</span>
+          <span class="chevron">▼</span>
+        </div>
+      </div>
+      <div class="card" style="opacity:0.4;">
+        <div class="item-row" style="height: 48px;">
+          <div class="circle"></div>
+          <span class="item-name">Toothbrush</span>
+        </div>
+      </div>
+    </div>
+    <div class="annotation cyan">
+      <strong>Option A: Add row padding</strong>
+      <code>listRowInsets(top: 6, bottom: 6)</code><br>
+      22px content + 12px padding = <strong>~48px per row</strong>.<br>
+      Rows are visually more spacious and breathable.
+      List becomes ~33% taller for same item count.
+      Matches iOS Reminders row density.
+    </div>
+  </div>
+
+  <!-- OPTION B: Invisible contentShape -->
+  <div class="panel">
+    <div class="panel-label optionB">Option B — Invisible expansion</div>
+    <div class="phone">
+      <div class="section-header">
+        <div class="left">
+          <span class="icon">👕</span>
+          <span>Clothing</span>
+        </div>
+        <div>
+          <span class="badge">2/4</span>
+          <span class="chevron">▼</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="item-row measure" style="height: 44px;">
+          <div class="touch-zone green" style="top:-4px;bottom:-4px;"></div>
+          <div class="circle checked"></div>
+          <span class="item-name checked">T-shirt x3</span>
+          <span class="measure-label green" style="top:50%;transform:translateY(-50%);">44px tap</span>
+        </div>
+        <div class="item-row measure" style="height: 44px;">
+          <div class="touch-zone green" style="top:-4px;bottom:-4px;"></div>
+          <div class="circle checked"></div>
+          <span class="item-name checked">Jeans x2</span>
+          <span class="measure-label green" style="top:50%;transform:translateY(-50%);">44px tap</span>
+        </div>
+        <div class="item-row measure" style="height: 44px;">
+          <div class="touch-zone green" style="top:-4px;bottom:-4px;"></div>
+          <div class="circle"></div>
+          <span class="item-name">Jacket</span>
+          <span class="measure-label green" style="top:50%;transform:translateY(-50%);">44px tap</span>
+        </div>
+        <div class="item-row measure" style="height: 44px;">
+          <div class="touch-zone green" style="top:-4px;bottom:-4px;"></div>
+          <div class="circle"></div>
+          <span class="item-name">Underwear x4</span>
+          <span class="measure-label green" style="top:50%;transform:translateY(-50%);">44px tap</span>
+        </div>
+        <div class="add-row measure" style="height: 44px;">
+          <div class="touch-zone green" style="top:-4px;bottom:-4px;"></div>
+          <div class="circle empty-gray"></div>
+          <span class="add-text">Add Item</span>
+          <span class="measure-label green" style="top:50%;transform:translateY(-50%);">44px tap</span>
+        </div>
+      </div>
+
+      <div class="section-header" style="opacity:0.4;">
+        <div class="left">
+          <span class="icon">🧴</span>
+          <span>Toiletries</span>
+        </div>
+        <div>
+          <span class="badge">0/3</span>
+          <span class="chevron">▼</span>
+        </div>
+      </div>
+      <div class="card" style="opacity:0.4;">
+        <div class="item-row" style="height: 44px;">
+          <div class="circle"></div>
+          <span class="item-name">Toothbrush</span>
+        </div>
+        <div class="item-row" style="height: 44px;">
+          <div class="circle"></div>
+          <span class="item-name">Shampoo</span>
+        </div>
+      </div>
+    </div>
+    <div class="annotation purple">
+      <strong>Option B: Invisible tap expansion</strong>
+      <code>.frame(minHeight: 44)</code> + <code>.contentShape(Rectangle())</code><br>
+      Visual row stays compact at ~36px.
+      Tap zone expands to 44px (dashed green = actual tap area).
+      Dense look preserved, more items visible on screen.
+      Tap zones slightly overlap between adjacent rows.
+    </div>
+  </div>
+
+</div>
+
+<!-- Summary -->
+<div style="max-width: 800px; margin: 28px auto 0; display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;">
+  <div style="flex:1; min-width: 300px; padding: 14px; background: rgba(34,211,238,0.06); border: 1px solid rgba(34,211,238,0.15); border-radius: 10px; font-size: 12px; color: #67e8f9; line-height: 1.6;">
+    <strong style="display:block;margin-bottom:4px;">Option A — Pros/Cons</strong>
+    + More spacious, easier to read<br>
+    + Matches iOS Reminders density<br>
+    + No overlapping tap zones<br>
+    − List is ~33% taller (fewer items visible)<br>
+    − Long lists need more scrolling
+  </div>
+  <div style="flex:1; min-width: 300px; padding: 14px; background: rgba(167,139,250,0.06); border: 1px solid rgba(167,139,250,0.15); border-radius: 10px; font-size: 12px; color: #c4b5fd; line-height: 1.6;">
+    <strong style="display:block;margin-bottom:4px;">Option B — Pros/Cons</strong>
+    + Compact, more items visible<br>
+    + No visual change from current<br>
+    + Less scrolling for long lists<br>
+    − Adjacent tap zones overlap slightly<br>
+    − Rows still look cramped visually
+  </div>
+</div>
+
+</body>
+</html>

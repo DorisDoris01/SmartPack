@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPack — Drill-Down City Search Evaluation</title>
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --surface2: #22263a;
+            --border: #2a2e3f;
+            --text: #e4e6ed;
+            --muted: #8b8fa3;
+            --accent: #6c7bf7;
+            --accent-glow: rgba(108, 123, 247, 0.12);
+            --red: #f76c6c;
+            --red-bg: rgba(247, 108, 108, 0.08);
+            --red-border: rgba(247, 108, 108, 0.25);
+            --orange: #f7a96c;
+            --orange-bg: rgba(247, 169, 108, 0.08);
+            --orange-border: rgba(247, 169, 108, 0.25);
+            --green: #6cf79e;
+            --green-bg: rgba(108, 247, 158, 0.08);
+            --green-border: rgba(108, 247, 158, 0.25);
+            --yellow: #f7e76c;
+            --yellow-bg: rgba(247, 231, 108, 0.08);
+            --yellow-border: rgba(247, 231, 108, 0.25);
+            --blue: #6cc4f7;
+            --blue-bg: rgba(108, 196, 247, 0.08);
+            --blue-border: rgba(108, 196, 247, 0.25);
+            --purple: #b78cf7;
+            --purple-bg: rgba(183, 140, 247, 0.08);
+            --purple-border: rgba(183, 140, 247, 0.25);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.65;
+        }
+        .container { max-width: 980px; margin: 0 auto; padding: 48px 24px; }
+
+        /* Header */
+        .header { text-align: center; margin-bottom: 52px; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--accent-glow); border: 1px solid rgba(108,123,247,0.3);
+            border-radius: 20px; padding: 6px 16px; font-size: 13px;
+            color: var(--accent); font-weight: 500; margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 34px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--text), var(--muted));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .subtitle { font-size: 16px; color: var(--muted); max-width: 640px; margin: 0 auto; }
+
+        /* Section */
+        .section { margin-bottom: 52px; }
+        .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .section-num {
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            background: var(--accent-glow); border: 1px solid rgba(108,123,247,0.3);
+            border-radius: 10px; font-size: 14px; font-weight: 700; color: var(--accent); flex-shrink: 0;
+        }
+        h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; }
+        h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+        p { color: var(--muted); margin-bottom: 16px; font-size: 15px; }
+
+        /* Cards */
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; padding: 24px; margin-bottom: 16px;
+        }
+        .card-sm {
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 10px; padding: 16px 20px; margin-bottom: 10px;
+        }
+
+        /* Tags */
+        .tag {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 10px; border-radius: 6px; font-size: 12px;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .tag-green { background: var(--green-bg); border: 1px solid var(--green-border); color: var(--green); }
+        .tag-orange { background: var(--orange-bg); border: 1px solid var(--orange-border); color: var(--orange); }
+        .tag-red { background: var(--red-bg); border: 1px solid var(--red-border); color: var(--red); }
+        .tag-blue { background: var(--blue-bg); border: 1px solid var(--blue-border); color: var(--blue); }
+        .tag-purple { background: var(--purple-bg); border: 1px solid var(--purple-border); color: var(--purple); }
+        .tag-yellow { background: var(--yellow-bg); border: 1px solid var(--yellow-border); color: var(--yellow); }
+
+        /* Callout */
+        .callout { border-radius: 10px; padding: 16px 20px; margin: 16px 0; display: flex; gap: 12px; }
+        .callout p { margin-bottom: 0; color: var(--text); font-size: 14px; }
+        .callout-blue { background: var(--blue-bg); border: 1px solid var(--blue-border); }
+        .callout-green { background: var(--green-bg); border: 1px solid var(--green-border); }
+        .callout-orange { background: var(--orange-bg); border: 1px solid var(--orange-border); }
+
+        .divider { height: 1px; background: var(--border); margin: 48px 0; }
+        .mono {
+            font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px;
+            background: var(--surface2); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border);
+        }
+
+        /* Plain english box */
+        .plain {
+            background: linear-gradient(135deg, rgba(108,123,247,0.06), rgba(108,196,247,0.04));
+            border: 1px solid rgba(108,123,247,0.2); border-radius: 14px; padding: 28px; margin: 24px 0;
+        }
+        .plain h3 { color: var(--accent); margin-bottom: 16px; font-size: 17px; }
+        .plain p { color: var(--text); font-size: 15px; line-height: 1.75; }
+
+        /* iPhone mockup */
+        .mockup-wrapper { display: flex; justify-content: center; margin: 32px 0; }
+        .iphone {
+            width: 320px; background: #000; border-radius: 40px; padding: 16px;
+            box-shadow: 0 0 0 3px #333, 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .iphone-screen {
+            background: #1c1c1e; border-radius: 28px; overflow: hidden;
+            min-height: 500px;
+        }
+        .iphone-statusbar {
+            height: 48px; display: flex; align-items: center; justify-content: center;
+            padding: 0 24px; font-size: 13px; font-weight: 600; color: #fff;
+        }
+        .iphone-notch {
+            width: 100px; height: 28px; background: #000; border-radius: 0 0 16px 16px;
+            margin: 0 auto;
+        }
+        .iphone-nav {
+            padding: 8px 16px 12px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .iphone-nav-title { font-size: 17px; font-weight: 600; color: #fff; }
+        .iphone-nav-btn { font-size: 15px; color: #0a84ff; }
+        .iphone-content { padding: 0 16px 20px; }
+
+        .mock-section {
+            background: #2c2c2e; border-radius: 12px; padding: 16px; margin-bottom: 12px;
+        }
+        .mock-section-title {
+            display: flex; align-items: center; gap: 6px; font-size: 13px;
+            font-weight: 600; color: #8e8e93; margin-bottom: 12px;
+        }
+        .mock-input {
+            background: #3a3a3c; border-radius: 8px; padding: 10px 12px;
+            font-size: 15px; color: #fff; display: flex; align-items: center; justify-content: space-between;
+        }
+        .mock-input-placeholder { color: #636366; }
+        .mock-input-text { color: #fff; }
+        .mock-cursor { display: inline-block; width: 2px; height: 18px; background: #0a84ff; animation: blink 1s step-end infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        .mock-suggestions {
+            background: #2c2c2e; border-radius: 12px; margin-top: 8px; overflow: hidden;
+            border: 1px solid #3a3a3c;
+        }
+        .mock-suggestion {
+            padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+            border-bottom: 1px solid #3a3a3c; cursor: pointer; transition: background 0.15s;
+        }
+        .mock-suggestion:last-child { border-bottom: none; }
+        .mock-suggestion:hover { background: rgba(10,132,255,0.1); }
+        .mock-suggestion-icon {
+            width: 32px; height: 32px; background: rgba(10,132,255,0.15);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            font-size: 16px; color: #0a84ff; flex-shrink: 0;
+        }
+        .mock-suggestion-text { flex: 1; }
+        .mock-suggestion-name { font-size: 15px; color: #fff; font-weight: 500; }
+        .mock-suggestion-detail { font-size: 12px; color: #8e8e93; margin-top: 2px; }
+        .mock-suggestion-match { color: #0a84ff; font-weight: 600; }
+
+        /* Option cards */
+        .option-card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+            overflow: hidden; margin-bottom: 20px; transition: border-color 0.2s;
+        }
+        .option-card.recommended { border-color: var(--green); }
+        .option-card.recommended .option-header { background: var(--green-bg); }
+        .option-header {
+            padding: 20px 24px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+        .option-title-area { display: flex; align-items: center; gap: 12px; }
+        .option-letter {
+            width: 36px; height: 36px; border-radius: 10px; display: flex;
+            align-items: center; justify-content: center; font-weight: 700;
+            font-size: 16px; flex-shrink: 0;
+        }
+        .option-letter-a { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+        .option-letter-b { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+        .option-letter-c { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-border); }
+        .option-letter-d { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-border); }
+        .option-letter-e { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow-border); }
+        .option-name { font-size: 18px; font-weight: 600; }
+        .option-body { padding: 24px; }
+
+        /* Effort meter */
+        .effort-meter { margin: 16px 0 24px; }
+        .effort-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .effort-track { height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+        .effort-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+        .effort-fill.low { background: var(--green); }
+        .effort-fill.medium { background: var(--yellow); }
+        .effort-fill.high { background: var(--orange); }
+        .effort-fill.very-high { background: var(--red); }
+
+        /* Pros / Cons */
+        .proscons { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+        .pros, .cons { border-radius: 10px; padding: 16px 20px; }
+        .pros { background: var(--green-bg); border: 1px solid var(--green-border); }
+        .cons { background: var(--red-bg); border: 1px solid var(--red-border); }
+        .pros-title { font-size: 13px; font-weight: 600; color: var(--green); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .cons-title { font-size: 13px; font-weight: 600; color: var(--red); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .pc-list { list-style: none; padding: 0; }
+        .pc-list li { padding: 5px 0; font-size: 14px; color: var(--text); display: flex; align-items: flex-start; gap: 8px; }
+        .pc-list li::before { flex-shrink: 0; margin-top: 2px; }
+        .pros .pc-list li::before { content: '✓'; color: var(--green); font-weight: 700; }
+        .cons .pc-list li::before { content: '✗'; color: var(--red); font-weight: 700; }
+
+        /* Comparison table */
+        .cmp-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+        .cmp-table th {
+            text-align: left; padding: 12px 14px; background: var(--surface2); color: var(--muted);
+            font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border); position: sticky; top: 0;
+        }
+        .cmp-table th:first-child { border-radius: 8px 0 0 0; }
+        .cmp-table th:last-child { border-radius: 0 8px 0 0; }
+        .cmp-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .cmp-table tr:last-child td { border-bottom: none; }
+        .cmp-table tr:hover td { background: rgba(108,123,247,0.03); }
+        .cell-good { color: var(--green); font-weight: 600; }
+        .cell-ok { color: var(--yellow); font-weight: 600; }
+        .cell-bad { color: var(--red); font-weight: 600; }
+
+        /* Rating dots */
+        .rating { display: flex; gap: 4px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot-on { background: var(--accent); }
+        .dot-off { background: var(--surface2); border: 1px solid var(--border); }
+
+        /* Files affected */
+        .files-list { list-style: none; padding: 0; margin: 12px 0; }
+        .files-list li {
+            padding: 8px 12px; background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 8px; margin-bottom: 6px; font-size: 13px;
+            font-family: 'SF Mono', monospace; display: flex; align-items: center; gap: 10px;
+        }
+        .file-badge-new { color: var(--green); font-weight: 600; font-size: 11px; text-transform: uppercase; }
+        .file-badge-mod { color: var(--yellow); font-weight: 600; font-size: 11px; text-transform: uppercase; }
+
+        /* Verdict section */
+        .verdict {
+            background: linear-gradient(135deg, var(--green-bg), rgba(108,247,158,0.02));
+            border: 2px solid var(--green-border); border-radius: 16px; padding: 32px; margin: 32px 0;
+        }
+        .verdict h3 { color: var(--green); font-size: 20px; margin-bottom: 16px; }
+        .verdict p { color: var(--text); font-size: 15px; line-height: 1.75; }
+
+        /* Test results table */
+        .result-pass { color: var(--green); font-weight: 600; }
+        .result-fail { color: var(--red); font-weight: 600; }
+        .result-partial { color: var(--orange); font-weight: 600; }
+
+        @media (max-width: 640px) {
+            .proscons { grid-template-columns: 1fr; }
+            h1 { font-size: 28px; }
+            .container { padding: 32px 16px; }
+            .iphone { width: 280px; }
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- Header -->
+    <div class="header">
+        <div class="badge">Fix Evaluation</div>
+        <h1>Drill-Down City Search List</h1>
+        <p class="subtitle">Can we add an autocomplete dropdown when typing a destination? Here's every option evaluated with effort, pros, and cons.</p>
+    </div>
+
+    <!-- Section 1: What is a Drill-Down List? -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-num">1</div>
+            <h2>What We're Evaluating</h2>
+        </div>
+
+        <div class="plain">
+            <h3>The Idea</h3>
+            <p>Instead of a plain text box where you type a city and hope for the best, we'd add a <strong>search-as-you-type dropdown</strong>. As you type, a list of matching cities appears below the text field. You tap the correct one, and the app knows exactly which city you mean — no more guessing, no more wrong results.</p>
+            <p>This solves all the problems from the investigation: "赣州" would show "赣州市, 江西, 中国" in the list. "Lombok" would show "Lombok Island, Indonesia" alongside the small villages, so you pick the right one.</p>
+        </div>
+
+        <div class="mockup-wrapper">
+            <div class="iphone">
+                <div class="iphone-screen">
+                    <div class="iphone-notch"></div>
+                    <div class="iphone-nav">
+                        <span class="iphone-nav-btn">✕</span>
+                        <span class="iphone-nav-title">New Trip</span>
+                        <span style="width: 20px;"></span>
+                    </div>
+                    <div class="iphone-content">
+                        <div class="mock-section">
+                            <div class="mock-section-title">📍 DESTINATION</div>
+                            <div class="mock-input">
+                                <span class="mock-input-text">赣州<span class="mock-cursor"></span></span>
+                                <span style="color: #636366; font-size: 13px;">✕</span>
+                            </div>
+                        </div>
+
+                        <div class="mock-suggestions">
+                            <div class="mock-suggestion">
+                                <div class="mock-suggestion-icon">📍</div>
+                                <div class="mock-suggestion-text">
+                                    <div class="mock-suggestion-name"><span class="mock-suggestion-match">赣州</span>市</div>
+                                    <div class="mock-suggestion-detail">江西省, 中国 · Pop 2.0M</div>
+                                </div>
+                            </div>
+                            <div class="mock-suggestion">
+                                <div class="mock-suggestion-icon">📍</div>
+                                <div class="mock-suggestion-text">
+                                    <div class="mock-suggestion-name"><span class="mock-suggestion-match">赣州</span>区</div>
+                                    <div class="mock-suggestion-detail">江西省, 中国</div>
+                                </div>
+                            </div>
+                            <div class="mock-suggestion">
+                                <div class="mock-suggestion-icon">📍</div>
+                                <div class="mock-suggestion-text">
+                                    <div class="mock-suggestion-name">Ganzhou (<span class="mock-suggestion-match">赣州</span>)</div>
+                                    <div class="mock-suggestion-detail">Jiangxi, China</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mock-section" style="margin-top: 12px; opacity: 0.4;">
+                            <div class="mock-section-title">🏷️ TRAVEL ACTIVITIES</div>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                <span style="background: #3a3a3c; border-radius: 16px; padding: 6px 12px; font-size: 13px; color: #8e8e93;">Beach</span>
+                                <span style="background: #3a3a3c; border-radius: 16px; padding: 6px 12px; font-size: 13px; color: #8e8e93;">Hiking</span>
+                                <span style="background: rgba(10,132,255,0.2); border-radius: 16px; padding: 6px 12px; font-size: 13px; color: #0a84ff;">Shopping</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p style="text-align: center; font-size: 13px; color: var(--muted); margin-top: 8px;">Mockup: What the drill-down list would look like</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Section 2: The 5 Options -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-num">2</div>
+            <h2>Five Approaches Compared</h2>
+        </div>
+
+        <p>There are different ways to power the suggestion list. Each uses a different data source to look up city names. Here they are from simplest to most thorough.</p>
+
+        <!-- Option A: Open-Meteo API -->
+        <div class="option-card">
+            <div class="option-header">
+                <div class="option-title-area">
+                    <div class="option-letter option-letter-a">A</div>
+                    <div>
+                        <div class="option-name">Open-Meteo API Autocomplete</div>
+                        <div style="font-size: 13px; color: var(--muted); margin-top: 2px;">Use the same API we already have, but show multiple results</div>
+                    </div>
+                </div>
+                <span class="tag tag-orange">Not Recommended</span>
+            </div>
+            <div class="option-body">
+                <div class="effort-meter">
+                    <div class="effort-label">
+                        <span>Development Effort</span>
+                        <span style="color: var(--green); font-weight: 600;">~2 days</span>
+                    </div>
+                    <div class="effort-track">
+                        <div class="effort-fill low" style="width: 25%;"></div>
+                    </div>
+                </div>
+
+                <div class="plain" style="padding: 20px;">
+                    <h3>How It Works</h3>
+                    <p>As you type, the app calls the same Open-Meteo geocoding API but with <span class="mono">count=5</span> to get multiple results. Shows them in a dropdown so you pick the right one.</p>
+                </div>
+
+                <div class="proscons">
+                    <div class="pros">
+                        <div class="pros-title">Pros</div>
+                        <ul class="pc-list">
+                            <li>Least code to write — reuses existing API</li>
+                            <li>No new dependencies or permissions</li>
+                            <li>Already free, no API key needed</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <div class="cons-title">Cons</div>
+                        <ul class="pc-list">
+                            <li><strong>Doesn't fix the root problem!</strong> "赣州" still returns 0 results from this API</li>
+                            <li>Chinese names for foreign places still missing (龙目岛, 巴厘岛)</li>
+                            <li>Results have no autocomplete/fuzzy matching — you need to type the full name</li>
+                            <li>Needs internet for every keystroke</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Files Affected</h3>
+                <ul class="files-list">
+                    <li><span class="file-badge-new">NEW</span> Components/Trip/CitySearchField.swift</li>
+                    <li><span class="file-badge-mod">MODIFY</span> Components/Trip/CreateTripSheet.swift</li>
+                    <li><span class="file-badge-mod">MODIFY</span> Services/WeatherService.swift (expose geocoding)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Option B: MKLocalSearchCompleter (RECOMMENDED) -->
+        <div class="option-card recommended">
+            <div class="option-header">
+                <div class="option-title-area">
+                    <div class="option-letter option-letter-b">B</div>
+                    <div>
+                        <div class="option-name">Apple MapKit Search Completer</div>
+                        <div style="font-size: 13px; color: var(--muted); margin-top: 2px;">Use Apple's built-in search-as-you-type for locations</div>
+                    </div>
+                </div>
+                <span class="tag tag-green">Recommended</span>
+            </div>
+            <div class="option-body">
+                <div class="effort-meter">
+                    <div class="effort-label">
+                        <span>Development Effort</span>
+                        <span style="color: var(--yellow); font-weight: 600;">~3 days</span>
+                    </div>
+                    <div class="effort-track">
+                        <div class="effort-fill medium" style="width: 38%;"></div>
+                    </div>
+                </div>
+
+                <div class="plain" style="padding: 20px;">
+                    <h3>How It Works</h3>
+                    <p>Apple has a built-in tool called <strong>MKLocalSearchCompleter</strong> that's specifically designed for "search as you type" location lookups — it's the same technology that powers the search bar in Apple Maps. It understands Chinese, English, and every other language that Apple Maps supports.</p>
+                    <p>When you type "赣州", it instantly suggests "赣州市, 江西省, 中国". When you type "龙目", it suggests "龙目岛, 印度尼西亚". When you type "Bali", it shows "Bali, Indonesia" at the top. It handles all the edge cases we found.</p>
+                    <p><strong>No location permission needed.</strong> It only searches a database of place names — it doesn't track where you are.</p>
+                </div>
+
+                <div class="proscons">
+                    <div class="pros">
+                        <div class="pros-title">Pros</div>
+                        <ul class="pc-list">
+                            <li><strong>Fixes all reported bugs</strong> — "赣州", "龙目岛", "巴厘岛" all work</li>
+                            <li>Excellent Chinese language support (it's Apple Maps data)</li>
+                            <li>True autocomplete — shows results as you type each character</li>
+                            <li>Knows which city is more popular (Beijing the capital, not the village)</li>
+                            <li><strong>No location permission needed</strong> — won't scare users</li>
+                            <li>Free and built into every iPhone — no API key, no usage limits</li>
+                            <li>Already familiar UX — works like Apple Maps search</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <div class="cons-title">Cons</div>
+                        <ul class="pc-list">
+                            <li>Needs internet (but so does weather fetching anyway)</li>
+                            <li>Adds MapKit framework dependency (~1 MB)</li>
+                            <li>Still need Open-Meteo for the actual weather data — need to convert Apple's result to coordinates</li>
+                            <li>Apple controls the data — can't customize ranking</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="callout callout-green">
+                    <span style="font-size: 18px; flex-shrink: 0;">&#128161;</span>
+                    <div>
+                        <p><strong>Key insight:</strong> MKLocalSearchCompleter gives us coordinates directly in the search result. So we can <strong>bypass the Open-Meteo geocoding step entirely</strong> — go straight from the user's selection to fetching weather with coordinates. This eliminates all geocoding bugs in one move.</p>
+                    </div>
+                </div>
+
+                <h3>Files Affected</h3>
+                <ul class="files-list">
+                    <li><span class="file-badge-new">NEW</span> Services/LocationSearchService.swift (~80 lines)</li>
+                    <li><span class="file-badge-new">NEW</span> Components/Trip/CitySearchField.swift (~120 lines)</li>
+                    <li><span class="file-badge-mod">MODIFY</span> Components/Trip/CreateTripSheet.swift (swap TextField)</li>
+                    <li><span class="file-badge-mod">MODIFY</span> Services/WeatherService.swift (accept coordinates)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Option C: Local City Database -->
+        <div class="option-card">
+            <div class="option-header">
+                <div class="option-title-area">
+                    <div class="option-letter option-letter-c">C</div>
+                    <div>
+                        <div class="option-name">Local Curated City Database</div>
+                        <div style="font-size: 13px; color: var(--muted); margin-top: 2px;">Ship a JSON file of popular cities with the app</div>
+                    </div>
+                </div>
+                <span class="tag tag-yellow">Viable Alternative</span>
+            </div>
+            <div class="option-body">
+                <div class="effort-meter">
+                    <div class="effort-label">
+                        <span>Development Effort</span>
+                        <span style="color: var(--yellow); font-weight: 600;">~3–4 days</span>
+                    </div>
+                    <div class="effort-track">
+                        <div class="effort-fill medium" style="width: 45%;"></div>
+                    </div>
+                </div>
+
+                <div class="plain" style="padding: 20px;">
+                    <h3>How It Works</h3>
+                    <p>Bundle a JSON file inside the app containing ~500–1000 popular travel destinations worldwide, each with Chinese name, English name, and coordinates. When you type, the app searches this local list instantly — no internet needed.</p>
+                    <p>Think of it like a phone book that comes pre-loaded with the most popular cities. If your city isn't in the book, you can still type it manually and it falls back to the API.</p>
+                </div>
+
+                <div class="proscons">
+                    <div class="pros">
+                        <div class="pros-title">Pros</div>
+                        <ul class="pc-list">
+                            <li><strong>Works offline</strong> — search works even without internet</li>
+                            <li>Instant response — no network delay</li>
+                            <li>Full control over Chinese names (龙目岛, 巴厘岛, 普吉岛 etc.)</li>
+                            <li>Can prioritize cities popular with Chinese travelers</li>
+                            <li>No permissions needed, no external dependencies</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <div class="cons-title">Cons</div>
+                        <ul class="pc-list">
+                            <li><strong>Limited coverage</strong> — can only search cities in the list</li>
+                            <li>Needs manual curation and maintenance</li>
+                            <li>Obscure destinations will be missing</li>
+                            <li>Building the initial dataset takes effort (research 500+ cities)</li>
+                            <li>Increases app bundle size (~50–100 KB)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Files Affected</h3>
+                <ul class="files-list">
+                    <li><span class="file-badge-new">NEW</span> Resources/cities.json (~500 entries)</li>
+                    <li><span class="file-badge-new">NEW</span> Services/CityDatabase.swift</li>
+                    <li><span class="file-badge-new">NEW</span> Components/Trip/CitySearchField.swift</li>
+                    <li><span class="file-badge-mod">MODIFY</span> Components/Trip/CreateTripSheet.swift</li>
+                    <li><span class="file-badge-mod">MODIFY</span> Services/WeatherService.swift</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Option D: CLGeocoder -->
+        <div class="option-card">
+            <div class="option-header">
+                <div class="option-title-area">
+                    <div class="option-letter option-letter-d">D</div>
+                    <div>
+                        <div class="option-name">Apple CLGeocoder</div>
+                        <div style="font-size: 13px; color: var(--muted); margin-top: 2px;">Use Apple's geocoding to replace Open-Meteo geocoding</div>
+                    </div>
+                </div>
+                <span class="tag tag-orange">Overkill</span>
+            </div>
+            <div class="option-body">
+                <div class="effort-meter">
+                    <div class="effort-label">
+                        <span>Development Effort</span>
+                        <span style="color: var(--orange); font-weight: 600;">~3–4 days</span>
+                    </div>
+                    <div class="effort-track">
+                        <div class="effort-fill high" style="width: 50%;"></div>
+                    </div>
+                </div>
+
+                <div class="plain" style="padding: 20px;">
+                    <h3>How It Works</h3>
+                    <p>Apple's CLGeocoder converts place names to coordinates (like Open-Meteo's geocoding, but much better for Chinese). Instead of adding a dropdown, this replaces the behind-the-scenes name lookup while keeping the same text field UI.</p>
+                </div>
+
+                <div class="proscons">
+                    <div class="pros">
+                        <div class="pros-title">Pros</div>
+                        <ul class="pc-list">
+                            <li>Excellent Chinese support — handles all edge cases</li>
+                            <li>Minimal UI changes — same text field, just better backend</li>
+                            <li>Free, built into iOS</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <div class="cons-title">Cons</div>
+                        <ul class="pc-list">
+                            <li><strong>No autocomplete UI</strong> — doesn't add a drill-down list</li>
+                            <li>Still vulnerable to ambiguous names (user types "Bali", gets... what?)</li>
+                            <li>Rate-limited — only 1 request at a time (not for live search)</li>
+                            <li>Needs internet</li>
+                            <li>Fixes backend but doesn't improve user experience</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Files Affected</h3>
+                <ul class="files-list">
+                    <li><span class="file-badge-mod">MODIFY</span> Services/WeatherService.swift (replace geocoding logic)</li>
+                    <li><span class="file-badge-mod">MODIFY</span> Info.plist (maybe, for location usage description)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Option E: Hybrid -->
+        <div class="option-card">
+            <div class="option-header">
+                <div class="option-title-area">
+                    <div class="option-letter option-letter-e">E</div>
+                    <div>
+                        <div class="option-name">Hybrid: Local Database + MapKit</div>
+                        <div style="font-size: 13px; color: var(--muted); margin-top: 2px;">Best of C and B — local first, Apple as backup</div>
+                    </div>
+                </div>
+                <span class="tag tag-blue">Gold Standard</span>
+            </div>
+            <div class="option-body">
+                <div class="effort-meter">
+                    <div class="effort-label">
+                        <span>Development Effort</span>
+                        <span style="color: var(--orange); font-weight: 600;">~5–6 days</span>
+                    </div>
+                    <div class="effort-track">
+                        <div class="effort-fill high" style="width: 70%;"></div>
+                    </div>
+                </div>
+
+                <div class="plain" style="padding: 20px;">
+                    <h3>How It Works</h3>
+                    <p>Combine a local database of popular cities with Apple's MapKit search. When you type, the app first checks the local list for instant results, then also queries Apple for additional matches. Results are merged and deduplicated.</p>
+                    <p>It's the "ultimate" solution, but at the cost of more code to build and maintain.</p>
+                </div>
+
+                <div class="proscons">
+                    <div class="pros">
+                        <div class="pros-title">Pros</div>
+                        <ul class="pc-list">
+                            <li>Popular cities show up instantly (offline)</li>
+                            <li>Apple fills in the gaps for obscure destinations</li>
+                            <li>Best possible coverage and speed</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <div class="cons-title">Cons</div>
+                        <ul class="pc-list">
+                            <li>Most complex to build — nearly double the effort of Option B</li>
+                            <li>More code to maintain long-term</li>
+                            <li>Merging two data sources adds edge cases</li>
+                            <li>May be over-engineering for a packing app</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Files Affected</h3>
+                <ul class="files-list">
+                    <li><span class="file-badge-new">NEW</span> Resources/cities.json</li>
+                    <li><span class="file-badge-new">NEW</span> Services/CityDatabase.swift</li>
+                    <li><span class="file-badge-new">NEW</span> Services/LocationSearchService.swift</li>
+                    <li><span class="file-badge-new">NEW</span> Components/Trip/CitySearchField.swift</li>
+                    <li><span class="file-badge-mod">MODIFY</span> Components/Trip/CreateTripSheet.swift</li>
+                    <li><span class="file-badge-mod">MODIFY</span> Services/WeatherService.swift</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Section 3: Side-by-Side Comparison -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-num">3</div>
+            <h2>Side-by-Side Comparison</h2>
+        </div>
+
+        <div class="card" style="padding: 0; overflow-x: auto;">
+            <table class="cmp-table">
+                <thead>
+                    <tr>
+                        <th style="min-width: 140px;">Criteria</th>
+                        <th>A: Open-Meteo</th>
+                        <th>B: MapKit</th>
+                        <th>C: Local DB</th>
+                        <th>D: CLGeocoder</th>
+                        <th>E: Hybrid</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Effort</strong></td>
+                        <td class="cell-good">~2 days</td>
+                        <td class="cell-ok">~3 days</td>
+                        <td class="cell-ok">~3–4 days</td>
+                        <td class="cell-ok">~3–4 days</td>
+                        <td class="cell-bad">~5–6 days</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fixes "赣州"?</strong></td>
+                        <td class="cell-bad">No</td>
+                        <td class="cell-good">Yes</td>
+                        <td class="cell-good">Yes</td>
+                        <td class="cell-good">Yes</td>
+                        <td class="cell-good">Yes</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fixes "北京" wrong city?</strong></td>
+                        <td class="cell-bad">No</td>
+                        <td class="cell-good">Yes</td>
+                        <td class="cell-good">Yes</td>
+                        <td class="cell-good">Yes</td>
+                        <td class="cell-good">Yes</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fixes "龙目岛"?</strong></td>
+                        <td class="cell-bad">No</td>
+                        <td class="cell-good">Yes</td>
+                        <td class="cell-good">If in list</td>
+                        <td class="cell-good">Yes</td>
+                        <td class="cell-good">Yes</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fixes "Lombok"?</strong></td>
+                        <td class="cell-partial">Partial *</td>
+                        <td class="cell-good">Yes</td>
+                        <td class="cell-good">If in list</td>
+                        <td class="cell-partial">Maybe</td>
+                        <td class="cell-good">Yes</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Has drill-down list?</strong></td>
+                        <td class="cell-good">Yes</td>
+                        <td class="cell-good">Yes</td>
+                        <td class="cell-good">Yes</td>
+                        <td class="cell-bad">No</td>
+                        <td class="cell-good">Yes</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Chinese quality</strong></td>
+                        <td>
+                            <div class="rating"><div class="dot dot-on"></div><div class="dot dot-off"></div><div class="dot dot-off"></div><div class="dot dot-off"></div><div class="dot dot-off"></div></div>
+                        </td>
+                        <td>
+                            <div class="rating"><div class="dot dot-on"></div><div class="dot dot-on"></div><div class="dot dot-on"></div><div class="dot dot-on"></div><div class="dot dot-on"></div></div>
+                        </td>
+                        <td>
+                            <div class="rating"><div class="dot dot-on"></div><div class="dot dot-on"></div><div class="dot dot-on"></div><div class="dot dot-on"></div><div class="dot dot-off"></div></div>
+                        </td>
+                        <td>
+                            <div class="rating"><div class="dot dot-on"></div><div class="dot dot-on"></div><div class="dot dot-on"></div><div class="dot dot-on"></div><div class="dot dot-on"></div></div>
+                        </td>
+                        <td>
+                            <div class="rating"><div class="dot dot-on"></div><div class="dot dot-on"></div><div class="dot dot-on"></div><div class="dot dot-on"></div><div class="dot dot-on"></div></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Works offline?</strong></td>
+                        <td class="cell-bad">No</td>
+                        <td class="cell-bad">No</td>
+                        <td class="cell-good">Yes</td>
+                        <td class="cell-bad">No</td>
+                        <td class="cell-partial">Partly</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Covers all cities?</strong></td>
+                        <td class="cell-bad">Poor</td>
+                        <td class="cell-good">Yes</td>
+                        <td class="cell-partial">~500 only</td>
+                        <td class="cell-good">Yes</td>
+                        <td class="cell-good">Yes</td>
+                    </tr>
+                    <tr>
+                        <td><strong>New dependencies</strong></td>
+                        <td class="cell-good">None</td>
+                        <td class="cell-ok">MapKit</td>
+                        <td class="cell-good">None</td>
+                        <td class="cell-ok">CoreLocation</td>
+                        <td class="cell-ok">MapKit</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Permissions needed?</strong></td>
+                        <td class="cell-good">None</td>
+                        <td class="cell-good">None</td>
+                        <td class="cell-good">None</td>
+                        <td class="cell-good">None</td>
+                        <td class="cell-good">None</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Maintenance</strong></td>
+                        <td class="cell-good">Low</td>
+                        <td class="cell-good">Low</td>
+                        <td class="cell-partial">Medium</td>
+                        <td class="cell-good">Low</td>
+                        <td class="cell-partial">Medium</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p style="font-size: 13px; color: var(--muted);">* Option A "partial" fix for Lombok: shows the dropdown so user can see multiple results, but the right island may not be in the list.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Section 4: Bug Fix Coverage -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-num">4</div>
+            <h2>Will Each Option Fix the Original Bugs?</h2>
+        </div>
+
+        <div class="card" style="padding: 0; overflow-x: auto;">
+            <table class="cmp-table">
+                <thead>
+                    <tr>
+                        <th style="min-width: 200px;">Test Case</th>
+                        <th>A</th>
+                        <th>B</th>
+                        <th>C</th>
+                        <th>D</th>
+                        <th>E</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>"赣州" → Ganzhou, Jiangxi</td>
+                        <td class="result-fail">FAIL</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td>"北京" → Beijing (capital)</td>
+                        <td class="result-fail">WRONG</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td>"成都" → Chengdu, Sichuan</td>
+                        <td class="result-fail">WRONG</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td>"温州" → Wenzhou, Zhejiang</td>
+                        <td class="result-fail">FAIL</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td>"龙目岛" → Lombok Island</td>
+                        <td class="result-fail">FAIL</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-partial">If listed</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td>"巴厘岛" → Bali, Indonesia</td>
+                        <td class="result-fail">FAIL</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-partial">If listed</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td>"Lombok" → Lombok Island</td>
+                        <td class="result-partial">AMBIGUOUS</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-partial">If listed</td>
+                        <td class="result-partial">AMBIGUOUS</td>
+                        <td class="result-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td>"Bali" → Bali, Indonesia</td>
+                        <td class="result-fail">WRONG 1st</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-partial">If listed</td>
+                        <td class="result-partial">MAYBE</td>
+                        <td class="result-pass">PASS</td>
+                    </tr>
+                    <tr>
+                        <td>"some tiny village" → works</td>
+                        <td class="result-partial">MAYBE</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-fail">NOT LISTED</td>
+                        <td class="result-pass">PASS</td>
+                        <td class="result-pass">PASS</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Section 5: Verdict -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-num">5</div>
+            <h2>The Verdict</h2>
+        </div>
+
+        <div class="verdict">
+            <h3>Recommendation: Option B — Apple MapKit Search Completer</h3>
+            <p><strong>Why?</strong> It's the sweet spot between effort and quality. In ~3 days of development:</p>
+            <p>
+                <strong>1.</strong> It fixes <strong>every single bug</strong> we found — "赣州", "北京", "龙目岛", "Lombok", "Bali" — all resolved.<br>
+                <strong>2.</strong> It gives users a polished <strong>drill-down list</strong> that feels like Apple Maps search.<br>
+                <strong>3.</strong> It needs <strong>no permissions</strong>, no API key, no usage limits, and no maintenance.<br>
+                <strong>4.</strong> It covers <strong>every city in the world</strong>, not just a curated list.<br>
+                <strong>5.</strong> It <strong>bypasses Open-Meteo's buggy geocoding entirely</strong> — MKLocalSearchCompleter gives coordinates directly, so we skip the broken name-to-coordinates step altogether.
+            </p>
+            <p style="margin-top: 16px; margin-bottom: 0;">Option A doesn't fix the core problems. Option C is good but limited to pre-loaded cities. Option D doesn't add the drill-down list. Option E is the "gold standard" but costs nearly double the effort for marginal improvement over B alone. <strong>Option B gives you 95% of the value at 50% of the maximum cost.</strong></p>
+        </div>
+
+        <div class="callout callout-blue">
+            <span style="font-size: 18px; flex-shrink: 0;">&#128736;</span>
+            <div>
+                <p><strong>Implementation path for Option B:</strong></p>
+                <p>1. Create <span class="mono">LocationSearchService</span> — thin wrapper around MKLocalSearchCompleter<br>
+                2. Create <span class="mono">CitySearchField</span> — new UI component with TextField + suggestion dropdown (can follow the existing pattern from <span class="mono">AddItemRow</span> suggestions)<br>
+                3. Swap into <span class="mono">CreateTripSheet</span> — replace the plain TextField with the new component<br>
+                4. Update <span class="mono">WeatherService</span> — add a method that accepts coordinates directly (skip geocoding)</p>
+            </div>
+        </div>
+
+        <div class="plain">
+            <h3>What if you want to start even smaller?</h3>
+            <p>If 3 days feels like too much right now, there's a <strong>"quick patch"</strong> you can apply in ~30 minutes that doesn't add a drill-down list but fixes the worst bugs: auto-append "市" for 2-character Chinese city names, and request <span class="mono">count=5</span> instead of <span class="mono">count=1</span> and pick the result with the highest population. This won't fix 龙目岛 or 巴厘岛, but it fixes 赣州, 北京, 成都, Bali, and most ambiguous names. You can always add the drill-down list (Option B) later.</p>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+    <div style="text-align: center; padding: 24px 0 48px;">
+        <p style="font-size: 13px; color: var(--muted);">
+            SmartPack Fix Evaluation — Generated March 1, 2026
+        </p>
+    </div>
+</div>
+</body>
+</html>

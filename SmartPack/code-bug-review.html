@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartPack Code Bug Review (Consolidated)</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2333;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --accent: #58a6ff;
+    --critical: #f85149;
+    --high: #f0883e;
+    --medium: #d29922;
+    --low: #8b949e;
+    --green: #3fb950;
+    --teal: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  h1 .subtitle {
+    display: block;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 40px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 24px 0 8px;
+    color: var(--text);
+  }
+
+  /* Summary cards */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 16px 0 24px;
+  }
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .summary-card .count {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .summary-card .label {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+  .summary-card.critical .count { color: var(--critical); }
+  .summary-card.high .count { color: var(--high); }
+  .summary-card.medium .count { color: var(--medium); }
+  .summary-card.low .count { color: var(--low); }
+  .summary-card.total .count { color: var(--accent); }
+
+  /* Top 5 list */
+  .top5 {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .top5 h3 { margin: 0 0 10px; font-size: 14px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+  .top5 ol { padding-left: 20px; }
+  .top5 li { margin: 6px 0; font-size: 14px; }
+  .top5 .id { font-weight: 700; }
+
+  /* Strength list */
+  .strengths {
+    background: var(--surface);
+    border: 1px solid #1a3a2a;
+    border-left: 3px solid var(--green);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .strengths li {
+    margin: 8px 0;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .strengths strong { color: var(--green); }
+
+  /* Severity section headers */
+  .severity-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 40px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    width: 100%;
+  }
+  .severity-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-critical { background: rgba(248,81,73,0.15); color: var(--critical); }
+  .badge-high { background: rgba(240,136,62,0.15); color: var(--high); }
+  .badge-medium { background: rgba(210,153,34,0.15); color: var(--medium); }
+  .badge-low { background: rgba(139,148,158,0.15); color: var(--low); }
+  .badge-fixed { background: rgba(63,185,80,0.15); color: var(--green); }
+
+  /* Issue cards */
+  .issue {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    transition: border-color 0.2s;
+  }
+  .issue.fixed { border-left: 3px solid var(--green); opacity: 0.75; }
+  .issue:hover { border-color: #484f58; }
+  .issue.critical { border-left: 3px solid var(--critical); }
+  .issue.high { border-left: 3px solid var(--high); }
+  .issue.medium { border-left: 3px solid var(--medium); }
+  .issue.low { border-left: 3px solid var(--low); }
+  .issue-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .issue-title .fid {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .issue-meta {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 4px 12px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .issue-meta dt {
+    color: var(--text2);
+    font-weight: 500;
+  }
+  .issue-meta dd {
+    color: var(--text);
+  }
+  .issue-meta dd code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    background: var(--surface2);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--teal);
+  }
+  .issue-meta dd.source {
+    color: var(--text2);
+    font-style: italic;
+    font-size: 12px;
+  }
+  .issue-meta dd.plain {
+    background: rgba(88,166,255,0.08);
+    border-left: 2px solid var(--accent);
+    padding: 6px 10px;
+    border-radius: 0 6px 6px 0;
+    margin: 2px 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #c9d1d9;
+  }
+
+  /* Phase cards */
+  .phase {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 12px 0;
+  }
+  .phase h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .phase ol { padding-left: 20px; font-size: 14px; }
+  .phase li { margin: 4px 0; }
+  .phase .fid { font-weight: 700; color: var(--accent); font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; }
+
+  /* Cross-reference table */
+  .xref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 16px 0;
+  }
+  .xref-table th {
+    background: var(--surface);
+    color: var(--text2);
+    font-weight: 600;
+    text-align: left;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .xref-table td {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+  }
+  .xref-table tr:nth-child(even) { background: var(--surface); }
+  .xref-table tr:hover { background: var(--surface2); }
+  .xref-table .new { color: var(--green); font-style: italic; }
+
+  .footer {
+    margin-top: 60px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text2);
+    text-align: center;
+  }
+
+  /* Nav pills */
+  .nav-pills {
+    display: flex;
+    gap: 8px;
+    margin: 24px 0;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    padding: 12px 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-pills a {
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 20px;
+    text-decoration: none;
+    color: var(--text2);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    transition: all 0.15s;
+  }
+  .nav-pills a:hover { color: var(--text); border-color: #484f58; }
+  .nav-pills a.pill-critical { color: var(--critical); border-color: rgba(248,81,73,0.3); }
+  .nav-pills a.pill-high { color: var(--high); border-color: rgba(240,136,62,0.3); }
+  .nav-pills a.pill-medium { color: var(--medium); border-color: rgba(210,153,34,0.3); }
+  .nav-pills a.pill-low { color: var(--low); border-color: rgba(139,148,158,0.3); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>SmartPack Code Bug Review
+  <span class="subtitle">Consolidated from two independent reviews across 40+ Swift source files</span>
+</h1>
+
+<nav class="nav-pills">
+  <a href="#summary">Summary</a>
+  <a href="#fixed" style="background: rgba(63,185,80,0.1); color: var(--green);">Fixed (7)</a>
+  <a href="#strengths">Strengths</a>
+  <a href="#critical" class="pill-critical">Critical (5)</a>
+  <a href="#high" class="pill-high">High (8)</a>
+  <a href="#medium" class="pill-medium">Medium (13)</a>
+  <a href="#low" class="pill-low">Low (12)</a>
+  <a href="#xref">Cross-Ref</a>
+  <a href="#priority">Fix Priority</a>
+</nav>
+
+<!-- ============ SUMMARY ============ -->
+<section id="summary">
+<h2>Summary</h2>
+<div class="summary-grid">
+  <div class="summary-card critical"><div class="count">5</div><div class="label">Critical</div></div>
+  <div class="summary-card high"><div class="count">8</div><div class="label">High</div></div>
+  <div class="summary-card medium"><div class="count">13</div><div class="label">Medium</div></div>
+  <div class="summary-card low"><div class="count">12</div><div class="label">Low</div></div>
+  <div class="summary-card" style="border-color: var(--green);"><div class="count" style="color: var(--green);">7</div><div class="label">Fixed</div></div>
+    <div class="summary-card total"><div class="count">38</div><div class="label">Total</div></div>
+</div>
+<div class="top5">
+  <h3>Top 5 to Fix First</h3>
+  <ol>
+    <li>✓ <span class="id">F1</span> &mdash; <code>weatherForecasts</code> getter mutates state (infinite re-render / crash)</li>
+    <li>✓ <span class="id">F2</span> &mdash; No SwiftData migration strategy (data loss on app update)</li>
+    <li>✓ <span class="id">F3</span> &mdash; Category sorting silently broken (wrong list order for all users)</li>
+    <li>✓ <span class="id">F4</span> &mdash; CelebrationOverlay double-dismiss (navigation crash)</li>
+    <li><span class="id">F5</span> &mdash; Zero test coverage (no safety net for any regression)</li>
+  </ol>
+</div>
+</section>
+
+<!-- ============ STRENGTHS ============ -->
+<section id="strengths">
+<h2>Strengths</h2>
+<div class="strengths">
+  <ol>
+    <li><strong>Clean MVVM separation</strong> &mdash; <code>PackingListViewModel</code> encapsulates business logic; views stay presentational. The three-phase toggle strategy (sync mutation, deferred Live Activity, deferred completion check) is thoughtful.</li>
+    <li><strong>Well-designed design system</strong> &mdash; <code>AppColors</code>, <code>Typography</code>, <code>Spacing</code>, <code>CornerRadius</code> provide a consistent vocabulary. <code>AppColors</code> properly supports light/dark mode.</li>
+    <li><strong>Performance-conscious data model</strong> &mdash; Pre-computed counters with O(1) reads. <code>@Transient</code> weather cache avoids repeated JSON decoding.</li>
+    <li><strong>Robust weather service</strong> &mdash; Handles geocoding failures, network errors, HTTP errors, and JSON parse errors gracefully. Dual-language geocoding fallback is practical.</li>
+    <li><strong>Good accessibility coverage</strong> &mdash; <code>ItemRow</code>, <code>CategoryHeader</code>, and <code>ProgressHeader</code> include bilingual <code>accessibilityLabel</code> and <code>accessibilityHint</code>.</li>
+    <li><strong>Thorough bilingual support</strong> &mdash; Every user-facing string has Chinese and English variants with model-level <code>displayName(language:)</code>.</li>
+    <li><strong>Correct SwiftData relationships</strong> &mdash; <code>@Relationship(deleteRule: .cascade)</code> prevents orphaned records.</li>
+  </ol>
+</div>
+</section>
+
+<!-- ============ CRITICAL ============ -->
+<section id="critical">
+<div class="severity-header"><span class="severity-badge badge-critical">Critical</span> Must Fix Before Ship</div>
+
+<div class="issue critical fixed">
+  <div class="issue-title"><span class="fid">F1</span> <span class="severity-badge badge-fixed">FIXED</span> <code>weatherForecasts</code> Getter Mutates <code>@Transient</code> Cache</div>
+  <dl class="issue-meta">
+    <dt>Status</dt><dd style="color: var(--green); font-weight: 600;">✓ FIXED — Made getter pure; added warmWeatherCache()</dd>
+    <dt>File</dt><dd><code>Models/Trip.swift:222-236</code></dd>
+    <dt>Source</dt><dd class="source">Review A (B1, B6) + Review B (R1) &mdash; both flagged Critical</dd>
+    <dt>Problem</dt><dd>The <code>weatherForecasts</code> computed getter sets <code>cachedWeather</code> as a side effect. Since <code>Trip</code> is <code>@Model</code> (implicitly <code>@Observable</code>), mutating a property inside a getter can trigger an infinite observation loop: read triggers write, write triggers re-read. SwiftData may also fire change-tracking during the getter. <code>@Transient</code> properties can be reset during fault/unfault cycles, making the cache unreliable.</dd>
+    <dt>Impact</dt><dd>UI freeze/hang from infinite re-render, unexpected persistence writes, or data race crash.</dd>
+    <dt>In Plain English</dt><dd class="plain">The app could suddenly freeze and become completely unresponsive when viewing weather data. You'd have to force-quit and reopen the app.</dd>
+    <dt>Fix</dt><dd>Decode weather data in <code>didSet</code> of <code>weatherData</code> or on explicit refresh &mdash; never inside the getter.</dd>
+  </dl>
+</div>
+
+<div class="issue critical fixed">
+  <div class="issue-title"><span class="fid">F2</span> <span class="severity-badge badge-fixed">FIXED</span> No SwiftData Schema Migration Strategy</div>
+  <dl class="issue-meta">
+    <dt>Status</dt><dd style="color: var(--green); font-weight: 600;">✓ FIXED — Created SchemaVersions.swift with VersionedSchema + MigrationPlan</dd>
+    <dt>File</dt><dd><code>SmartPackApp.swift:38</code></dd>
+    <dt>Source</dt><dd class="source">Review B (R2) only &mdash; Critical</dd>
+    <dt>Problem</dt><dd>Model container uses <code>.modelContainer(for:)</code> with no <code>VersionedSchema</code> or <code>SchemaMigrationPlan</code>. The <code>Trip</code> model has added many stored properties over its evolution.</dd>
+    <dt>Impact</dt><dd>If any user on an older schema updates the app, SwiftData's automatic lightweight migration may fail &mdash; causing an unrecoverable launch crash and complete data loss.</dd>
+    <dt>In Plain English</dt><dd class="plain">When users update the app from the App Store, all their saved trips and packing lists could be permanently deleted. The app might not even open anymore &mdash; they'd have to delete and reinstall it, losing everything.</dd>
+    <dt>Fix</dt><dd>Implement <code>VersionedSchema</code> (V1, V2) and a <code>SchemaMigrationPlan</code>. Formally declare a V1 schema so future changes have a migration path.</dd>
+  </dl>
+</div>
+
+<div class="issue critical fixed">
+  <div class="issue-title"><span class="fid">F3</span> <span class="severity-badge badge-fixed">FIXED</span> Category Sorting Completely Broken</div>
+  <dl class="issue-meta">
+    <dt>Status</dt><dd style="color: var(--green); font-weight: 600;">✓ FIXED — Replaced broken rawValue lookup with direct item.sortOrder</dd>
+    <dt>File</dt><dd><code>Data/PresetData.swift:446-452</code></dd>
+    <dt>Source</dt><dd class="source">Review A (B3) Critical + Review B (R11) Minor &mdash; upgraded to Critical</dd>
+    <dt>Problem</dt><dd>Sorting uses <code>ItemCategory(rawValue: item.category.lowercased())</code>, but <code>item.category</code> stores Chinese names while <code>ItemCategory</code> raw values are English. The <code>rawValue</code> init always returns <code>nil</code>, so all items fall back to <code>sortOrder = 5</code>.</dd>
+    <dt>Impact</dt><dd>All packing list items are effectively unsorted by category for every user.</dd>
+    <dt>In Plain English</dt><dd class="plain">When the app creates a packing list, items appear in a jumbled order instead of being neatly grouped (e.g., all clothes together, all toiletries together). Every user sees this mess.</dd>
+    <dt>Fix</dt><dd>Use <code>item.sortOrder</code> directly (already set correctly when creating <code>TripItem</code>).</dd>
+  </dl>
+</div>
+
+<div class="issue critical fixed">
+  <div class="issue-title"><span class="fid">F4</span> <span class="severity-badge badge-fixed">FIXED</span> CelebrationOverlay Double-Dismiss Race Condition</div>
+  <dl class="issue-meta">
+    <dt>Status</dt><dd style="color: var(--green); font-weight: 600;">✓ FIXED — Added hasDismissed guard flag</dd>
+    <dt>File</dt><dd><code>Components/PackingList/CelebrationOverlay.swift:58,82</code></dd>
+    <dt>Source</dt><dd class="source">Review A (B2) only &mdash; Critical</dd>
+    <dt>Problem</dt><dd><code>dismissAndComplete()</code> fires from both the 2.5s auto-dismiss timer and user tap. If the user taps before the timer fires, <code>onComplete()</code> runs twice &mdash; calling <code>dismiss()</code> twice can corrupt the navigation stack.</dd>
+    <dt>Impact</dt><dd>Navigation stack corruption, blank screen, or crash.</dd>
+    <dt>In Plain English</dt><dd class="plain">After you finish packing everything and the confetti celebration plays, the app could crash or show a blank white screen. You'd have to reopen the app.</dd>
+    <dt>Fix</dt><dd>Add <code>@State private var hasDismissed = false</code> guard flag, or use a cancellable <code>DispatchWorkItem</code>.</dd>
+  </dl>
+</div>
+
+<div class="issue critical">
+  <div class="issue-title"><span class="fid">F5</span> Zero Test Coverage</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Entire project (no test files)</code></dd>
+    <dt>Source</dt><dd class="source">Review B (R3) only &mdash; Critical</dd>
+    <dt>Problem</dt><dd>No unit or integration tests exist. <code>PackingListViewModel</code>, <code>PresetData.generatePackingList</code>, <code>WeatherService</code>, <code>CustomItemManager</code>, and <code>Trip</code> model logic are all untested.</dd>
+    <dt>Impact</dt><dd>Any regression is caught only by manual testing.</dd>
+    <dt>In Plain English</dt><dd class="plain">There's no automated safety net. If a code change accidentally breaks something (like the progress bar or item counting), nobody will notice until a real user hits the bug. It's like driving without a dashboard &mdash; you won't know something's wrong until it's too late.</dd>
+    <dt>Fix</dt><dd>Add test targets: (1) Trip counter integrity, (2) PackingList generation, (3) ViewModel toggle/add/delete, (4) CustomItemManager persistence.</dd>
+  </dl>
+</div>
+</section>
+
+<!-- ============ HIGH ============ -->
+<section id="high">
+<div class="severity-header"><span class="severity-badge badge-high">High</span> Should Fix Before Release</div>
+
+<div class="issue high">
+  <div class="issue-title"><span class="fid">F6</span> <code>PackingActivityManager.endActivity()</code> Race Condition</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Activity/PackingActivityManager.swift:90-102</code></dd>
+    <dt>Source</dt><dd class="source">Review A (B4)</dd>
+    <dt>Problem</dt><dd><code>endActivity()</code> launches a <code>Task</code> then immediately sets <code>currentActivity = nil</code>. No synchronization.</dd>
+    <dt>Impact</dt><dd>Orphaned Live Activities that never end, or crash from data race.</dd>
+    <dt>In Plain English</dt><dd class="plain">The packing progress widget on your lock screen could get stuck and never go away, even after you finish packing or delete the trip. You'd have to restart your phone to clear it.</dd>
+    <dt>Fix</dt><dd>Make <code>PackingActivityManager</code> an <code>actor</code> or add <code>@MainActor</code>.</dd>
+  </dl>
+</div>
+
+<div class="issue high fixed">
+  <div class="issue-title"><span class="fid">F7</span> <span class="severity-badge badge-fixed">FIXED</span> CreateTripSheet Weather Task Not Cancelled on Dismissal</div>
+  <dl class="issue-meta">
+    <dt>Status</dt><dd style="color: var(--green); font-weight: 600;">✓ FIXED — Stored Task handle, cancel on disappear, snapshot values, added isCancelled guards</dd>
+    <dt>File</dt><dd><code>Components/Trip/CreateTripSheet.swift:216-287</code></dd>
+    <dt>Source</dt><dd class="source">Review A (B5, B21) + Review B (R8)</dd>
+    <dt>Problem</dt><dd>Unstructured <code>Task</code> not cancelled on sheet dismissal. If user dismisses during weather fetch, task continues and inserts a phantom trip. <code>items</code> captured mutably across async boundary.</dd>
+    <dt>Impact</dt><dd>Ghost trip created after sheet dismissed. Possible inconsistent data.</dd>
+    <dt>In Plain English</dt><dd class="plain">If you start creating a trip, then change your mind and close the form while the weather is loading, a mystery trip could still appear in your list even though you cancelled it.</dd>
+    <dt>Fix</dt><dd>Store the <code>Task</code> and cancel in <code>onDisappear</code>, or use <code>.task {}</code> modifier.</dd>
+  </dl>
+</div>
+
+<div class="issue high fixed">
+  <div class="issue-title"><span class="fid">F8</span> <span class="severity-badge badge-fixed">FIXED</span> <code>@StateObject</code> Misused with Singleton + Mixed Observation</div>
+  <dl class="issue-meta">
+    <dt>Status</dt><dd style="color: var(--green); font-weight: 600;">✓ FIXED — Migrated CustomItemManager to @Observable; changed @StateObject to @State</dd>
+    <dt>File</dt><dd><code>Views/Settings/ItemManagementView.swift:16,213</code></dd>
+    <dt>Source</dt><dd class="source">Review A (B7) + Review B (R5)</dd>
+    <dt>Problem</dt><dd><code>@StateObject</code> used with <code>CustomItemManager.shared</code> (a singleton). Also mixes <code>ObservableObject</code>/<code>@Published</code> with the rest of the app's <code>@Observable</code>.</dd>
+    <dt>Impact</dt><dd>Violates SwiftUI ownership model. Potential lifecycle issues.</dd>
+    <dt>In Plain English</dt><dd class="plain">The custom items settings page might occasionally not show your latest changes, or changes you make might not save properly. It works most of the time, but can be unreliable.</dd>
+    <dt>Fix</dt><dd>Use <code>@ObservedObject</code> for singletons, or migrate to <code>@Observable</code>.</dd>
+  </dl>
+</div>
+
+<div class="issue high">
+  <div class="issue-title"><span class="fid">F9</span> <code>UIScreen.main.bounds</code> Deprecated</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Components/PackingList/CelebrationOverlay.swift:71,108,115</code></dd>
+    <dt>Source</dt><dd class="source">Review A (B8) + Review B (R7)</dd>
+    <dt>Problem</dt><dd>Deprecated iOS 16+. Returns full screen size on iPad multitasking, not app window size.</dd>
+    <dt>Impact</dt><dd>Confetti positioned incorrectly on iPad Split View / Stage Manager.</dd>
+    <dt>In Plain English</dt><dd class="plain">On iPad, when you use the app in split-screen mode (two apps side by side), the celebration confetti flies off to the wrong places &mdash; it looks broken.</dd>
+    <dt>Fix</dt><dd>Use <code>GeometryReader</code>.</dd>
+  </dl>
+</div>
+
+<div class="issue high">
+  <div class="issue-title"><span class="fid">F10</span> Item Counters Can Go Out of Sync</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Models/Trip.swift:146-178</code></dd>
+    <dt>Source</dt><dd class="source">Review A (B9)</dd>
+    <dt>Problem</dt><dd>Counters maintained incrementally. Direct mutation of <code>TripItem.isChecked</code> (which SwiftData allows) bypasses counter updates.</dd>
+    <dt>Impact</dt><dd>Wrong progress %, premature/missed auto-archive.</dd>
+    <dt>In Plain English</dt><dd class="plain">The progress bar might say "80% packed" when you've actually packed everything, or "100% packed" when you haven't. Your trip could get automatically archived before you're actually done.</dd>
+    <dt>Fix</dt><dd>Add <code>recalculateCounts()</code> safety net at critical checkpoints.</dd>
+  </dl>
+</div>
+
+<div class="issue high fixed">
+  <div class="issue-title"><span class="fid">F11</span> <span class="severity-badge badge-fixed">FIXED</span> Weather Descriptions Hardcoded in Chinese</div>
+  <dl class="issue-meta">
+    <dt>Status</dt><dd style="color: var(--green); font-weight: 600;">✓ FIXED — Added conditionDescriptionEn; bilingual weatherCodeToCondition; fixed displayCondition and unavailable (also fixes F35, F36)</dd>
+    <dt>File</dt><dd><code>Services/WeatherService.swift:244-273</code> + <code>Models/WeatherForecast.swift:48,62-69</code></dd>
+    <dt>Source</dt><dd class="source">Review A (B15, B26, B31) + Review B (R6, R16)</dd>
+    <dt>Problem</dt><dd><code>weatherCodeToCondition</code> returns only Chinese. <code>displayCondition(language:)</code> returns same value for both languages (dead switch). <code>unavailable</code> defaults to Chinese.</dd>
+    <dt>Impact</dt><dd>English users see Chinese weather text everywhere.</dd>
+    <dt>In Plain English</dt><dd class="plain">If you use the app in English, the weather section still shows Chinese characters like "晴天" and "多云" instead of "Sunny" and "Cloudy". It looks like a translation was forgotten.</dd>
+    <dt>Fix</dt><dd>Store both CN/EN descriptions, or localize at display time from condition code.</dd>
+  </dl>
+</div>
+
+<div class="issue high">
+  <div class="issue-title"><span class="fid">F12</span> <code>PackingListViewModel</code> Missing <code>@MainActor</code></div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>ViewModels/PackingListViewModel.swift</code></dd>
+    <dt>Source</dt><dd class="source">Review A (B17) + Review B (R4)</dd>
+    <dt>Problem</dt><dd><code>@Observable</code> class without <code>@MainActor</code>. Holds and mutates a SwiftData <code>@Model</code>. No enforcement of main-thread access.</dd>
+    <dt>Impact</dt><dd>Data races from background callers. Won't compile under Swift 6 strict concurrency.</dd>
+    <dt>In Plain English</dt><dd class="plain">The app could randomly crash or behave unpredictably when checking/unchecking items. Also, when Apple releases new development tools, this code won't be compatible and will need to be rewritten.</dd>
+    <dt>Fix</dt><dd>Add <code>@MainActor</code> to the class.</dd>
+  </dl>
+</div>
+
+<div class="issue high">
+  <div class="issue-title"><span class="fid">F13</span> <code>hasCompletedOnboarding</code> Not Observable</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Localization/LocalizationManager.swift:80-83</code></dd>
+    <dt>Source</dt><dd class="source">Review A (B10)</dd>
+    <dt>Problem</dt><dd>Computed property backed by UserDefaults, not <code>@Published</code>. Setting it doesn't trigger <code>objectWillChange</code>.</dd>
+    <dt>Impact</dt><dd>Views observing this property won't react to changes. Fragile for future maintenance.</dd>
+    <dt>In Plain English</dt><dd class="plain">After completing the welcome setup, the app might occasionally show the welcome screen again unexpectedly. It works now, but future code changes could easily break it.</dd>
+    <dt>Fix</dt><dd>Make it <code>@Published</code> and sync with UserDefaults.</dd>
+  </dl>
+</div>
+</section>
+
+<!-- ============ MEDIUM ============ -->
+<section id="medium">
+<div class="severity-header"><span class="severity-badge badge-medium">Medium</span> Should Fix for Quality</div>
+
+<div class="issue medium">
+  <div class="issue-title"><span class="fid">F14</span> <code>try? modelContext.save()</code> Silently Swallows Errors</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Views/Main/HomeView.swift:278,286,292</code></dd>
+    <dt>Problem</dt><dd>All save calls use <code>try?</code>, silently ignoring errors.</dd>
+    <dt>In Plain English</dt><dd class="plain">You might delete or archive a trip and it looks like it worked, but when you reopen the app later, the trip is back. Your changes weren't actually saved.</dd>
+    <dt>Fix</dt><dd>Log errors. Consider relying on SwiftData auto-save.</dd>
+  </dl>
+</div>
+
+<div class="issue medium">
+  <div class="issue-title"><span class="fid">F15</span> TripRowView Ring Animation Replays on Re-render</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Components/Trip/TripRowView.swift:16,48,77-81</code></dd>
+    <dt>Problem</dt><dd><code>@State appeared = false</code> resets when list re-renders, replaying animation.</dd>
+    <dt>In Plain English</dt><dd class="plain">The circular progress rings on the home screen keep replaying their fill animation every time the list updates, creating a flickering/pulsing effect that looks glitchy.</dd>
+    <dt>Fix</dt><dd>Use <code>.animation</code> on the trim value directly.</dd>
+  </dl>
+</div>
+
+<div class="issue medium">
+  <div class="issue-title"><span class="fid">F16</span> addItem Dedup Only Checks Chinese Name</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>ViewModels/PackingListViewModel.swift:109-111</code></dd>
+    <dt>Problem</dt><dd>Duplicate check uses <code>$0.name.lowercased()</code> only. English names bypass it.</dd>
+    <dt>In Plain English</dt><dd class="plain">If you're using the app in English and type "Sunglasses" to add it, the app won't notice you already have sunglasses in your list. You end up with duplicate items.</dd>
+    <dt>Fix</dt><dd>Check both <code>name</code> and <code>nameEn</code>.</dd>
+  </dl>
+</div>
+
+<div class="issue medium">
+  <div class="issue-title"><span class="fid">F17</span> PackingListView May Hold Stale ViewModel</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Views/Trip/PackingListView.swift:32,346-349</code></dd>
+    <dt>Problem</dt><dd><code>@State</code> VM created lazily. NavigationStack view reuse could point VM to wrong trip.</dd>
+    <dt>In Plain English</dt><dd class="plain">If you go back and forth between different trips quickly, you might end up editing the wrong trip's packing list without realizing it. Items you check off could be checked on a different trip.</dd>
+    <dt>Fix</dt><dd>Use <code>.id(trip.id)</code> on <code>PackingListView</code> in navigation destination.</dd>
+  </dl>
+</div>
+
+<div class="issue medium">
+  <div class="issue-title"><span class="fid">F18</span> Deprecated Files Still Compiled</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>MainTabView.swift</code>, <code>MyListsView.swift</code></dd>
+    <dt>Problem</dt><dd>Marked deprecated in comments but still compiled. MyListsView has deletion without save.</dd>
+    <dt>In Plain English</dt><dd class="plain">Old, unused screens are still hiding in the app. They do nothing useful but add clutter and could accidentally be shown to users with buggy behavior.</dd>
+    <dt>Fix</dt><dd>Remove from project entirely.</dd>
+  </dl>
+</div>
+
+<div class="issue medium">
+  <div class="issue-title"><span class="fid">F19</span> WelcomeView dismissCard Non-Cancellable</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Views/Main/WelcomeView.swift:142-149</code></dd>
+    <dt>Problem</dt><dd><code>asyncAfter(0.3)</code> with no cancellation. Rapid swiping could double-dismiss.</dd>
+    <dt>In Plain English</dt><dd class="plain">If you swipe really fast on the welcome screen, it might glitch and try to close itself twice, which could cause a brief visual hiccup.</dd>
+    <dt>Fix</dt><dd>Add a guard flag.</dd>
+  </dl>
+</div>
+
+<div class="issue medium">
+  <div class="issue-title"><span class="fid">F20</span> ItemRow Checkbox Animation Pile-up</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Components/PackingList/ItemRow.swift:25-33</code></dd>
+    <dt>Problem</dt><dd>Rapid tapping causes overlapping <code>asyncAfter</code> scale callbacks.</dd>
+    <dt>In Plain English</dt><dd class="plain">If you tap a checkbox very quickly multiple times, the checkmark animation looks jittery and broken instead of smooth.</dd>
+    <dt>Fix</dt><dd>Debounce or use <code>.animation</code> modifier.</dd>
+  </dl>
+</div>
+
+<div class="issue medium">
+  <div class="issue-title"><span class="fid">F21</span> Preset Suggestion Chips Show Existing Items</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Components/PackingList/AddItemRow.swift:113-115</code></dd>
+    <dt>Problem</dt><dd>Chips filter by ID, but dedup checks by name. Mismatch causes silent failures.</dd>
+    <dt>In Plain English</dt><dd class="plain">When typing to add an item, the app suggests items you already have. Tapping those suggestions does nothing and gives you a confusing error vibration with no explanation.</dd>
+    <dt>Fix</dt><dd>Filter by both ID and name.</dd>
+  </dl>
+</div>
+
+<div class="issue medium">
+  <div class="issue-title"><span class="fid">F22</span> Trip.id Shadows SwiftData PersistentIdentifier</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Models/Trip.swift:66</code></dd>
+    <dt>Problem</dt><dd>Explicit <code>var id: UUID</code> creates two identity systems.</dd>
+    <dt>In Plain English</dt><dd class="plain">The app uses two different ways to identify each trip internally, which could cause confusion when updating saved data in future app versions.</dd>
+    <dt>Fix</dt><dd>Annotate with <code>@Attribute(.unique)</code>.</dd>
+  </dl>
+</div>
+
+<div class="issue medium">
+  <div class="issue-title"><span class="fid">F23</span> Duplicate Toggle Methods in Two Views</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>CreateTripSheet.swift:192-214</code> + <code>TripConfigView.swift:141-155</code></dd>
+    <dt>Problem</dt><dd><code>toggleActivityTag</code>, <code>toggleOccasionTag</code>, <code>toggleConfigTag</code> duplicated identically.</dd>
+    <dt>In Plain English</dt><dd class="plain">The same code is copy-pasted in two places. If we fix a bug in one, we might forget to fix it in the other, leading to inconsistent behavior.</dd>
+    <dt>Fix</dt><dd>Extract into <code>TripConfig</code>.</dd>
+  </dl>
+</div>
+
+<div class="issue medium">
+  <div class="issue-title"><span class="fid">F24</span> Inconsistent Localization Approach</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>LocalizationManager.swift:122-168</code> + 30+ views</dd>
+    <dt>Problem</dt><dd>Two approaches: inline ternary and <code>LocalizedKey</code> enum. Used inconsistently.</dd>
+    <dt>In Plain English</dt><dd class="plain">Translations are handled in two different ways across the app, making it very hard to add a third language (e.g., Japanese) in the future, or to find untranslated text.</dd>
+    <dt>Fix</dt><dd>Consolidate on one approach.</dd>
+  </dl>
+</div>
+
+<div class="issue medium">
+  <div class="issue-title"><span class="fid">F25</span> Two Conflicting Navigation Destinations for Trip</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Views/Main/HomeView.swift:182-183,243</code></dd>
+    <dt>Problem</dt><dd>Both <code>.navigationDestination(for:)</code> and <code>.navigationDestination(item:)</code> for the same type.</dd>
+    <dt>In Plain English</dt><dd class="plain">The app has two different ways to open a trip's packing list, which could occasionally cause the wrong screen to appear or the back button to behave strangely.</dd>
+    <dt>Fix</dt><dd>Use a single mechanism.</dd>
+  </dl>
+</div>
+
+<div class="issue medium">
+  <div class="issue-title"><span class="fid">F26</span> deleteCustomItem Uses Stale Count</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Views/Settings/ItemManagementView.swift:181-190</code></dd>
+    <dt>Problem</dt><dd><code>customCount</code> computed at render time. Rapid deletions use stale value.</dd>
+    <dt>In Plain English</dt><dd class="plain">If you delete custom items very quickly in settings, the app might let you delete the last one even though it's supposed to keep at least one.</dd>
+    <dt>Fix</dt><dd>Re-fetch count inside the function.</dd>
+  </dl>
+</div>
+</section>
+
+<!-- ============ LOW ============ -->
+<section id="low">
+<div class="severity-header"><span class="severity-badge badge-low">Low</span> Nice to Have</div>
+
+<div class="issue low">
+  <div class="issue-title"><span class="fid">F27</span> PresetData Singleton Not Thread-Safe</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Data/PresetData.swift:14-15,21-27</code></dd>
+    <dt>In Plain English</dt><dd class="plain">The built-in packing item database could theoretically get confused if two parts of the app try to load it at the exact same moment. Very unlikely but technically unsafe.</dd>
+    <dt>Fix</dt><dd>Add <code>@MainActor</code> or <code>nonisolated(unsafe)</code>.</dd>
+  </dl>
+</div>
+
+<div class="issue low">
+  <div class="issue-title"><span class="fid">F28</span> WeatherService Missing Sendable</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Services/WeatherService.swift:12</code></dd>
+    <dt>In Plain English</dt><dd class="plain">The weather fetching code doesn't follow the latest Apple safety rules. It works fine now but will trigger warnings with newer development tools.</dd>
+    <dt>Fix</dt><dd>Add <code>Sendable</code> conformance.</dd>
+  </dl>
+</div>
+
+<div class="issue low">
+  <div class="issue-title"><span class="fid">F29</span> HapticFeedback Generators Not Pre-Prepared</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Configuration/HapticFeedback.swift:12-14</code></dd>
+    <dt>In Plain English</dt><dd class="plain">The vibration you feel when tapping a checkbox has a tiny delay (barely noticeable) because the vibration motor isn't warmed up in advance. A minor polish issue.</dd>
+    <dt>Fix</dt><dd>Use static generators with <code>prepare()</code>.</dd>
+  </dl>
+</div>
+
+<div class="issue low">
+  <div class="issue-title"><span class="fid">F30</span> TripConfigView Different Navigation (Possibly Dead)</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Views/Trip/TripConfigView.swift:157-196</code></dd>
+    <dt>In Plain English</dt><dd class="plain">An old version of the "create trip" screen is still in the code. It might not be used anymore, but it's confusing to have two versions.</dd>
+    <dt>Fix</dt><dd>Verify if used; remove or align.</dd>
+  </dl>
+</div>
+
+<div class="issue low">
+  <div class="issue-title"><span class="fid">F31</span> TagChip @EnvironmentObject Fragile</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Components/PackingList/TripSettingsCard.swift</code></dd>
+    <dt>In Plain English</dt><dd class="plain">The small tag labels (like "Beach", "Business") are wired up in a way that would crash if we tried to reuse them on a different screen. No issue right now, but limits future flexibility.</dd>
+    <dt>Fix</dt><dd>Pass <code>language</code> as parameter.</dd>
+  </dl>
+</div>
+
+<div class="issue low">
+  <div class="issue-title"><span class="fid">F32</span> Custom Item Dedup Key Inconsistent</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Data/PresetData.swift:426</code></dd>
+    <dt>In Plain English</dt><dd class="plain">If you add a custom item that has the same name as a built-in item, both could appear in your packing list instead of being merged into one.</dd>
+    <dt>Fix</dt><dd>Normalize dedup key.</dd>
+  </dl>
+</div>
+
+<div class="issue low">
+  <div class="issue-title"><span class="fid">F33</span> Item Deletion Has No Undo</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Views/Trip/PackingListView.swift:362-364</code></dd>
+    <dt>In Plain English</dt><dd class="plain">If you accidentally swipe-delete an item from your packing list, it's gone immediately with no way to bring it back. You'd have to manually re-add it.</dd>
+    <dt>Fix</dt><dd>Consider adding an undo toast.</dd>
+  </dl>
+</div>
+
+<div class="issue low">
+  <div class="issue-title"><span class="fid">F34</span> Debug print() Statements in Production</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>WeatherService.swift</code>, <code>SmartPackApp.swift</code>, <code>PresetData.swift</code>, <code>PackingActivityManager.swift</code></dd>
+    <dt>In Plain English</dt><dd class="plain">Developer debug messages are being written to the system log even in the released app. Users won't see them, but it's unprofessional and could slightly impact performance.</dd>
+    <dt>Fix</dt><dd>Wrap in <code>#if DEBUG</code> or use <code>os.Logger</code>.</dd>
+  </dl>
+</div>
+
+<div class="issue low fixed">
+  <div class="issue-title"><span class="fid">F35</span> <span class="severity-badge badge-fixed">FIXED</span> WeatherForecast.unavailable Defaults to Chinese</div>
+  <dl class="issue-meta">
+    <dt>Status</dt><dd style="color: var(--green); font-weight: 600;">✓ FIXED — Fixed as part of F11</dd>
+    <dt>File</dt><dd><code>Models/WeatherForecast.swift:48</code></dd>
+    <dt>In Plain English</dt><dd class="plain">When weather data isn't available for a date, English users see the Chinese text "数据不可用" instead of "Data unavailable".</dd>
+    <dt>Fix</dt><dd>Part of F11 fix.</dd>
+  </dl>
+</div>
+
+<div class="issue low fixed">
+  <div class="issue-title"><span class="fid">F36</span> <span class="severity-badge badge-fixed">FIXED</span> displayCondition(language:) Is Dead Code</div>
+  <dl class="issue-meta">
+    <dt>Status</dt><dd style="color: var(--green); font-weight: 600;">✓ FIXED — Fixed as part of F11</dd>
+    <dt>File</dt><dd><code>Models/WeatherForecast.swift:62-69</code></dd>
+    <dt>In Plain English</dt><dd class="plain">There's code that looks like it supports both languages for weather descriptions, but it's fake &mdash; it returns Chinese for both. Misleading for anyone reading the code.</dd>
+    <dt>Fix</dt><dd>Part of F11 fix.</dd>
+  </dl>
+</div>
+
+<div class="issue low">
+  <div class="issue-title"><span class="fid">F37</span> MyListsView.deleteTrips Missing save()</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Views/Shared/MyListsView.swift:76-79</code></dd>
+    <dt>In Plain English</dt><dd class="plain">An old screen lets you delete trips but doesn't properly save the deletion. If the app closes right after, the trip comes back. (This screen is deprecated and should be removed.)</dd>
+    <dt>Fix</dt><dd>Part of F18 (remove file).</dd>
+  </dl>
+</div>
+
+<div class="issue low">
+  <div class="issue-title"><span class="fid">F38</span> TripRowView Ring Animation Duplicate</div>
+  <dl class="issue-meta">
+    <dt>File</dt><dd><code>Components/Trip/TripRowView.swift:16,48</code></dd>
+    <dt>In Plain English</dt><dd class="plain">Same as F15 &mdash; the progress ring animation on the home screen replays when it shouldn't.</dd>
+    <dt>Fix</dt><dd>Same as F15.</dd>
+  </dl>
+</div>
+</section>
+
+<!-- ============ CROSS-REF ============ -->
+<section id="xref">
+<h2>Cross-Reference: Review A &harr; Review B &harr; Final</h2>
+<table class="xref-table">
+  <thead>
+    <tr><th>Final</th><th>Review A</th><th>Review B</th><th>Consensus</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>F1</td><td>B1, B6</td><td>R1</td><td>Critical</td><td style="color: var(--green); font-weight: 600;">✓ Fixed</td></tr>
+    <tr><td>F2</td><td>&mdash;</td><td>R2</td><td class="new">Critical (new)</td><td style="color: var(--green); font-weight: 600;">✓ Fixed</td></tr>
+    <tr><td>F3</td><td>B3</td><td>R11</td><td>Critical (upgraded)</td><td style="color: var(--green); font-weight: 600;">✓ Fixed</td></tr>
+    <tr><td>F4</td><td>B2</td><td>&mdash;</td><td>Critical</td><td style="color: var(--green); font-weight: 600;">✓ Fixed</td></tr>
+    <tr><td>F5</td><td>&mdash;</td><td>R3</td><td class="new">Critical (new)</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F6</td><td>B4</td><td>&mdash;</td><td>High</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F7</td><td>B5, B21</td><td>R8</td><td>High (merged)</td><td style="color: var(--green); font-weight: 600;">✓ Fixed</td></tr>
+    <tr><td>F8</td><td>B7</td><td>R5</td><td>High (merged)</td><td style="color: var(--green); font-weight: 600;">✓ Fixed</td></tr>
+    <tr><td>F9</td><td>B8</td><td>R7</td><td>High</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F10</td><td>B9</td><td>&mdash;</td><td>High</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F11</td><td>B15, B26, B31</td><td>R6, R16</td><td>High (cluster)</td><td style="color: var(--green); font-weight: 600;">✓ Fixed</td></tr>
+    <tr><td>F12</td><td>B17</td><td>R4</td><td>High</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F13</td><td>B10</td><td>&mdash;</td><td>High</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F14</td><td>&mdash;</td><td>R9</td><td class="new">Medium (new)</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F15</td><td>B11</td><td>&mdash;</td><td>Medium</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F16</td><td>B12</td><td>&mdash;</td><td>Medium</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F17</td><td>B14</td><td>&mdash;</td><td>Medium</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F18</td><td>B16</td><td>R10</td><td>Medium (merged)</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F19</td><td>B13</td><td>&mdash;</td><td>Medium</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F20</td><td>B18</td><td>&mdash;</td><td>Medium</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F21</td><td>B19</td><td>&mdash;</td><td>Medium</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F22</td><td>B20</td><td>&mdash;</td><td>Medium</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F23</td><td>&mdash;</td><td>R12</td><td class="new">Medium (new)</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F24</td><td>&mdash;</td><td>R13</td><td class="new">Medium (new)</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F25</td><td>B27</td><td>&mdash;</td><td>Medium</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F26</td><td>B32</td><td>&mdash;</td><td>Medium</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F27</td><td>B22</td><td>&mdash;</td><td>Low</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F28</td><td>B23</td><td>&mdash;</td><td>Low</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F29</td><td>B24</td><td>R14</td><td>Low</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F30</td><td>B25</td><td>R12</td><td>Low</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F31</td><td>B28</td><td>&mdash;</td><td>Low</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F32</td><td>B29</td><td>&mdash;</td><td>Low</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F33</td><td>B30</td><td>&mdash;</td><td>Low</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F34</td><td>&mdash;</td><td>R15</td><td class="new">Low (new)</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F35</td><td>B31</td><td>&mdash;</td><td>Low</td><td style="color: var(--green); font-weight: 600;">✓ Fixed</td></tr>
+    <tr><td>F36</td><td>B26</td><td>R16</td><td>Low</td><td style="color: var(--green); font-weight: 600;">✓ Fixed</td></tr>
+    <tr><td>F37</td><td>B16</td><td>R10</td><td>Low</td><td style="color: var(--text2);">—</td></tr>
+    <tr><td>F38</td><td>B11</td><td>&mdash;</td><td>Low</td><td style="color: var(--text2);">—</td></tr>
+  </tbody>
+</table>
+</section>
+
+<!-- ============ FIX PRIORITY ============ -->
+<section id="priority">
+<h2>Recommended Fix Priority</h2>
+
+<div class="phase">
+  <h4>Phase 1: Ship-Blockers (Critical)</h4>
+  <ol>
+    <li>✓ <span class="fid">F1</span> &mdash; Fix <code>weatherForecasts</code> getter mutation</li>
+    <li>✓ <span class="fid">F2</span> &mdash; Add SwiftData <code>VersionedSchema</code> + migration plan</li>
+    <li>✓ <span class="fid">F3</span> &mdash; Fix category sorting (use <code>sortOrder</code>)</li>
+    <li>✓ <span class="fid">F4</span> &mdash; Add dismiss guard to CelebrationOverlay</li>
+  </ol>
+</div>
+
+<div class="phase">
+  <h4>Phase 2: Quality Gate (High)</h4>
+  <ol start="5">
+    <li>✓ <span class="fid">F7</span> &mdash; Cancel weather Task on sheet dismiss</li>
+    <li>✓ <span class="fid">F11</span> &mdash; Localize weather descriptions for English</li>
+    <li><span class="fid">F12</span> &mdash; Add <code>@MainActor</code> to PackingListViewModel</li>
+    <li><span class="fid">F6</span> &mdash; Make PackingActivityManager an actor</li>
+  </ol>
+</div>
+
+<div class="phase">
+  <h4>Phase 3: Polish (Medium)</h4>
+  <ol start="9">
+    <li><span class="fid">F16</span> &mdash; Fix addItem dedup for English mode</li>
+    <li><span class="fid">F17</span> &mdash; Add <code>.id(trip.id)</code> to prevent stale ViewModel</li>
+    <li><span class="fid">F18</span> &mdash; Remove deprecated files</li>
+    <li><span class="fid">F25</span> &mdash; Consolidate navigation destinations</li>
+  </ol>
+</div>
+
+<div class="phase">
+  <h4>Phase 4: Hardening (Low + Tests)</h4>
+  <ol start="13">
+    <li><span class="fid">F5</span> &mdash; Add unit test target</li>
+    <li><span class="fid">F34</span> &mdash; Wrap prints in <code>#if DEBUG</code></li>
+    <li>Remaining Low items</li>
+  </ol>
+</div>
+</section>
+
+<div class="footer">
+  Generated: 2026-03-01 &middot; Updated: 7 of 38 fixed &middot; Two-pass review: General Bug Scanner + Superpowers Architecture Reviewer
+</div>
+
+</div>
+</body>
+</html>

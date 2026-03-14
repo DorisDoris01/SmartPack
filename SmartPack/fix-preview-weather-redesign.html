@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WeatherCard Redesign — Before / After</title>
+<style>
+  :root {
+    --bg: #F0F4F5;
+    --card: #F8FAFB;
+    --primary: #0E7490;
+    --secondary: #4B6072;
+    --text: #0C1E24;
+    --muted: #446070;
+    --muted2: #7A95AA;
+    --success: #166534;
+    --shadow: 0 2px 8px rgba(0,0,0,0.06);
+    --radius: 16px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, 'SF Pro Display', 'SF Pro Rounded', system-ui, sans-serif;
+    background: var(--bg); color: var(--text);
+    padding: 20px; max-width: 520px; margin: 0 auto;
+  }
+  h1 { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+  .subtitle { text-align: center; color: var(--muted); font-size: 12px; margin-bottom: 24px; }
+
+  .label-tag {
+    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; padding: 4px 10px; border-radius: 6px; margin-bottom: 10px;
+  }
+  .label-tag.before { background: #FEE2E2; color: #991B1B; }
+  .label-tag.after { background: #D1FAE5; color: #065F46; }
+
+  .phone {
+    background: var(--bg); border-radius: 20px; padding: 16px 12px;
+    border: 2px solid #E0E7EA; margin-bottom: 20px; position: relative;
+  }
+
+  /* Nav bar mock */
+  .nav-bar {
+    text-align: center; font-size: 15px; font-weight: 600; color: var(--text);
+    padding: 8px 0 12px; border-bottom: 0.5px solid rgba(0,0,0,0.08); margin-bottom: 12px;
+  }
+
+  /* Progress bar mock */
+  .progress-mock {
+    height: 24px; border-radius: 12px; background: rgba(75,96,114,0.12);
+    position: relative; overflow: hidden; margin-bottom: 10px;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 12px; background: var(--primary); width: 45%;
+  }
+  .progress-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    font-size: 11px; font-weight: 700; color: var(--primary);
+    font-family: -apple-system, system-ui; letter-spacing: -0.2px;
+  }
+
+  /* Pill buttons */
+  .pill-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .pill {
+    display: flex; align-items: center; gap: 4px;
+    padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; border: none;
+    font-family: -apple-system, system-ui;
+  }
+  .pill.active { color: white; }
+  .pill.inactive-weather { background: rgba(14,116,144,0.12); color: var(--primary); }
+  .pill.active-weather { background: var(--primary); }
+  .pill.inactive-settings { background: rgba(75,96,114,0.12); color: var(--secondary); }
+  .pill.active-settings { background: var(--secondary); }
+  .pill:active { transform: scale(0.96); }
+
+  /* --- BEFORE: Current WeatherCard --- */
+  .weather-card-before {
+    background: rgba(255,255,255,0.6); backdrop-filter: blur(20px);
+    border-radius: var(--radius); border: 0.5px solid rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .wc-header {
+    display: flex; align-items: baseline; gap: 6px;
+    padding: 14px 16px 0; font-size: 15px; font-weight: 500; color: var(--text);
+  }
+  .wc-header .icon { color: var(--muted); font-size: 13px; }
+  .wc-scroll {
+    display: flex; gap: 8px; padding: 10px 16px 14px; overflow-x: auto;
+  }
+  .wc-day {
+    min-width: 52px; padding: 10px 6px; border-radius: 12px;
+    background: white; border: 0.5px solid rgba(0,0,0,0.06);
+    text-align: center; flex-shrink: 0;
+  }
+  .wc-day .day { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.3px; }
+  .wc-day .weather-icon { font-size: 22px; margin: 4px 0; }
+  .wc-day .hi { font-size: 17px; font-weight: 700; }
+  .wc-day .lo { font-size: 12px; font-weight: 600; color: var(--muted2); }
+  .wc-day .precip {
+    display: inline-flex; align-items: center; gap: 2px;
+    font-size: 9px; font-weight: 500; color: rgba(59,130,246,0.7);
+    background: rgba(59,130,246,0.08); padding: 2px 5px; border-radius: 10px;
+    margin-top: 4px;
+  }
+
+  /* Settings card before */
+  .settings-card-before {
+    background: rgba(255,255,255,0.6); backdrop-filter: blur(20px);
+    border-radius: var(--radius); border: 0.5px solid rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04); padding: 14px 16px; margin-bottom: 10px;
+  }
+  .sc-date { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text); margin-bottom: 8px; }
+  .sc-date .icon { color: var(--muted); }
+  .sc-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .sc-tag {
+    display: flex; align-items: center; gap: 3px;
+    font-size: 11px; font-weight: 600; padding: 4px 8px;
+    background: #F0F0F0; border-radius: 6px; color: var(--text);
+  }
+
+  /* Category mock */
+  .cat-mock {
+    background: white; border-radius: 12px; padding: 12px 16px;
+    box-shadow: var(--shadow); margin-bottom: 8px;
+  }
+  .cat-header {
+    display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 600;
+  }
+  .cat-icon {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .cat-count { font-size: 13px; color: var(--muted); font-weight: 500; margin-left: auto; }
+
+  /* Item rows inside expanded categories */
+  .item-list { margin-top: 8px; }
+  .item-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 0; border-top: 0.5px solid rgba(0,0,0,0.05);
+  }
+  .item-row:first-child { border-top: none; }
+  .checkbox {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 1.5px solid #C4C4C6; display: flex; align-items: center;
+    justify-content: center; font-size: 10px; font-weight: 700;
+    flex-shrink: 0; color: transparent;
+  }
+  .checkbox.checked {
+    background: var(--primary); border-color: var(--primary); color: white;
+  }
+  .checkbox.empty { border-color: #C4C4C6; }
+  .item-name { font-size: 15px; color: var(--text); }
+  .item-name.done { color: #A0A0A0; text-decoration: line-through; text-decoration-color: #C4C4C6; }
+  .item-name.placeholder { color: #C4C4C6; }
+  .add-row { opacity: 0.7; }
+
+  /* --- AFTER: Redesigned Weather --- */
+  .weather-mini {
+    display: flex; align-items: center; gap: 0;
+    background: rgba(255,255,255,0.7); backdrop-filter: blur(16px);
+    border-radius: 14px; border: 0.5px solid rgba(0,0,0,0.06);
+    padding: 10px 14px; margin-bottom: 10px;
+    overflow-x: auto;
+  }
+  .wm-days {
+    display: flex; gap: 2px; flex: 1; justify-content: space-around;
+  }
+  .wm-day {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    min-width: 42px; padding: 4px 2px;
+  }
+  .wm-day .d { font-size: 10px; font-weight: 600; color: var(--muted2); letter-spacing: 0.2px; }
+  .wm-day .i { font-size: 18px; line-height: 1.2; }
+  .wm-day .t { font-size: 13px; font-weight: 700; color: var(--text); }
+  .wm-day .rain {
+    font-size: 8px; font-weight: 600; color: rgba(59,130,246,0.8);
+    display: flex; align-items: center; gap: 1px;
+  }
+  .wm-day.today .d { color: var(--primary); font-weight: 700; }
+  .wm-day.today .t { color: var(--primary); }
+
+  /* Settings mini */
+  .settings-mini {
+    display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+    padding: 10px 14px; margin-bottom: 10px;
+    background: rgba(255,255,255,0.7); backdrop-filter: blur(16px);
+    border-radius: 14px; border: 0.5px solid rgba(0,0,0,0.06);
+  }
+  .sm-chip {
+    font-size: 11px; font-weight: 600; padding: 4px 8px;
+    background: rgba(75,96,114,0.08); border-radius: 6px; color: var(--muted);
+    display: flex; align-items: center; gap: 3px;
+  }
+  .sm-chip .ci { font-size: 9px; }
+
+  /* Divider */
+  .divider { height: 1px; background: #E0E7EA; margin: 24px 0; }
+
+  /* Notes */
+  .notes {
+    background: white; border-radius: 12px; padding: 14px; margin-bottom: 16px;
+    box-shadow: var(--shadow); font-size: 12px; line-height: 1.7; color: var(--muted);
+  }
+  .notes strong { color: var(--text); }
+  .notes ul { padding-left: 16px; margin-top: 4px; }
+
+  /* Toggle */
+  .toggle-row { display: flex; justify-content: center; gap: 6px; margin-bottom: 20px; }
+  .toggle-btn {
+    padding: 7px 16px; border: 2px solid #E0E7EA; border-radius: 10px;
+    background: white; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .toggle-btn.active { border-color: var(--primary); background: rgba(14,116,144,0.08); color: var(--primary); }
+
+  .hidden { display: none !important; }
+  .slide-down {
+    animation: slideDown 0.25s cubic-bezier(0.4,0,0.2,1);
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); max-height: 0; }
+    to { opacity: 1; transform: translateY(0); max-height: 200px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>WeatherCard + Context Row 重设计</h1>
+<p class="subtitle">默认折叠 · 极简天气 · 最少信息</p>
+
+<div class="toggle-row">
+  <button class="toggle-btn active" onclick="showView('before')">Before</button>
+  <button class="toggle-btn" onclick="showView('after-collapsed')">After (默认)</button>
+  <button class="toggle-btn" onclick="showView('after-expanded')">After (展开)</button>
+</div>
+
+<!-- ========== BEFORE ========== -->
+<div id="view-before">
+<span class="label-tag before">BEFORE — 默认展开，信息冗余</span>
+<div class="phone">
+  <div class="nav-bar">东京 - 商务</div>
+
+  <div class="progress-mock">
+    <div class="progress-fill"></div>
+    <span class="progress-text">5/11</span>
+  </div>
+
+  <!-- Context row: pills active by default -->
+  <div class="pill-row">
+    <button class="pill active-weather active">☁️ 天气</button>
+    <button class="pill active-settings active">⚙️ 设置</button>
+  </div>
+
+  <!-- Weather card: full, always open -->
+  <div class="weather-card-before">
+    <div class="wc-header">
+      <span class="icon">📍</span>
+      <span>东京</span>
+    </div>
+    <div class="wc-scroll">
+      <div class="wc-day">
+        <div class="day">今天</div>
+        <div class="weather-icon">☀️</div>
+        <div class="hi" style="color:#3CBF66">22°</div>
+        <div class="lo">12°</div>
+      </div>
+      <div class="wc-day">
+        <div class="day">3/16</div>
+        <div class="weather-icon">⛅</div>
+        <div class="hi" style="color:#3CBF66">18°</div>
+        <div class="lo">8°</div>
+      </div>
+      <div class="wc-day">
+        <div class="day">3/17</div>
+        <div class="weather-icon">🌧</div>
+        <div class="hi" style="color:#4D99D9">15°</div>
+        <div class="lo">7°</div>
+        <div class="precip">💧 80%</div>
+      </div>
+      <div class="wc-day">
+        <div class="day">3/18</div>
+        <div class="weather-icon">☀️</div>
+        <div class="hi" style="color:#3CBF66">20°</div>
+        <div class="lo">10°</div>
+      </div>
+      <div class="wc-day">
+        <div class="day">3/19</div>
+        <div class="weather-icon">⛅</div>
+        <div class="hi" style="color:#3CBF66">19°</div>
+        <div class="lo">9°</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings card: full -->
+  <div class="settings-card-before">
+    <div class="sc-date"><span class="icon">📅</span> 2026/03/15 - 03/19</div>
+    <div class="sc-tags">
+      <span class="sc-tag">🏃 运动</span>
+      <span class="sc-tag">🧗 攀岩</span>
+      <span class="sc-tag">🎉 派对</span>
+      <span class="sc-tag">✈️ 国际</span>
+    </div>
+  </div>
+
+  <!-- Category (pushed way down) -->
+  <div class="cat-mock">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:rgba(14,116,144,0.15);color:var(--primary)">👛</div>
+      证件/钱财
+      <span class="cat-count">2/3</span>
+    </div>
+  </div>
+  <div style="text-align:center;color:var(--muted2);font-size:11px;padding:8px 0;">
+    ↓ 需要滚动才能看到物品清单 ↓
+  </div>
+</div>
+
+<div class="notes">
+  <strong>问题：</strong>
+  <ul>
+    <li>天气和设置默认<strong>展开</strong>，推低核心内容</li>
+    <li>目的地 "东京" 与导航栏标题重复</li>
+    <li>低温数据对打包决策价值低</li>
+    <li>每日卡片有独立背景、边框、圆角 — 视觉噪音</li>
+    <li>设置卡片日期与天气卡日期重复</li>
+    <li>"天气"/"Weather" 胶囊尺寸跨语言不一致</li>
+  </ul>
+</div>
+</div>
+
+<!-- ========== AFTER: COLLAPSED (DEFAULT) ========== -->
+<div id="view-after-collapsed" class="hidden">
+<span class="label-tag after">AFTER — 天气/设置折叠，物品清单展开</span>
+<div class="phone">
+  <div class="nav-bar">东京 - 商务</div>
+
+  <div class="progress-mock">
+    <div class="progress-fill"></div>
+    <span class="progress-text">5/11</span>
+  </div>
+
+  <!-- Collapsed pills (inactive) -->
+  <div class="pill-row">
+    <button class="pill inactive-weather" onclick="document.getElementById('view-after-collapsed').classList.add('hidden');document.getElementById('view-after-expanded').classList.remove('hidden');document.querySelectorAll('.toggle-btn').forEach((b,i)=>b.classList.toggle('active',i===2))">☁️ 天气</button>
+    <button class="pill inactive-settings">⚙️ 设置</button>
+  </div>
+
+  <!-- No cards — items immediately visible and EXPANDED -->
+  <div class="cat-mock">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:rgba(14,116,144,0.15);color:var(--primary)">👛</div>
+      证件/钱财
+      <span class="cat-count">2/3</span>
+      <span style="color:var(--muted2);font-size:13px;margin-left:4px">▾</span>
+    </div>
+    <div class="item-list">
+      <div class="item-row"><span class="checkbox checked">✓</span><span class="item-name done">护照</span></div>
+      <div class="item-row"><span class="checkbox checked">✓</span><span class="item-name done">信用卡</span></div>
+      <div class="item-row"><span class="checkbox"></span><span class="item-name">现金</span></div>
+      <div class="item-row add-row"><span class="checkbox empty"></span><span class="item-name placeholder">添加物品</span></div>
+    </div>
+  </div>
+  <div class="cat-mock">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:rgba(166,77,121,0.15);color:#A64D79">👕</div>
+      衣物
+      <span class="cat-count">1/4</span>
+      <span style="color:var(--muted2);font-size:13px;margin-left:4px">▾</span>
+    </div>
+    <div class="item-list">
+      <div class="item-row"><span class="checkbox checked">✓</span><span class="item-name done">T恤 x3</span></div>
+      <div class="item-row"><span class="checkbox"></span><span class="item-name">裤子 x2</span></div>
+      <div class="item-row"><span class="checkbox"></span><span class="item-name">内衣</span></div>
+      <div class="item-row"><span class="checkbox"></span><span class="item-name">运动鞋</span></div>
+      <div class="item-row add-row"><span class="checkbox empty"></span><span class="item-name placeholder">添加物品</span></div>
+    </div>
+  </div>
+  <div class="cat-mock">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:rgba(59,130,246,0.15);color:#3B82F6">🧴</div>
+      洗漱用品
+      <span class="cat-count">2/2</span>
+      <span style="color:var(--muted2);font-size:13px;margin-left:4px">▾</span>
+    </div>
+    <div class="item-list">
+      <div class="item-row"><span class="checkbox checked">✓</span><span class="item-name done">牙刷牙膏</span></div>
+      <div class="item-row"><span class="checkbox checked">✓</span><span class="item-name done">洗面奶</span></div>
+      <div class="item-row add-row"><span class="checkbox empty"></span><span class="item-name placeholder">添加物品</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="notes">
+  <strong>改进：</strong>
+  <ul>
+    <li>天气/设置默认<strong>折叠</strong> — 物品清单立即可见</li>
+    <li>分类默认<strong>展开</strong> — 物品勾选项一目了然</li>
+    <li>胶囊保持可见 — 用户随时可点击查看天气/设置</li>
+    <li>核心交互（勾选物品）无需任何滚动即可开始</li>
+  </ul>
+</div>
+</div>
+
+<!-- ========== AFTER: EXPANDED ========== -->
+<div id="view-after-expanded" class="hidden">
+<span class="label-tag after">AFTER — 点击展开，极简天气卡</span>
+<div class="phone">
+  <div class="nav-bar">东京 - 商务</div>
+
+  <div class="progress-mock">
+    <div class="progress-fill"></div>
+    <span class="progress-text">5/11</span>
+  </div>
+
+  <!-- Active pills -->
+  <div class="pill-row">
+    <button class="pill active-weather active">☁️ 天气</button>
+    <button class="pill active-settings active">⚙️ 设置</button>
+  </div>
+
+  <!-- REDESIGNED: Minimal weather card -->
+  <div class="weather-mini slide-down">
+    <div class="wm-days">
+      <div class="wm-day today">
+        <span class="d">今天</span>
+        <span class="i">☀️</span>
+        <span class="t">22°</span>
+      </div>
+      <div class="wm-day">
+        <span class="d">周六</span>
+        <span class="i">⛅</span>
+        <span class="t">18°</span>
+      </div>
+      <div class="wm-day">
+        <span class="d">周日</span>
+        <span class="i">🌧</span>
+        <span class="t">15°</span>
+        <span class="rain">💧80</span>
+      </div>
+      <div class="wm-day">
+        <span class="d">周一</span>
+        <span class="i">☀️</span>
+        <span class="t">20°</span>
+      </div>
+      <div class="wm-day">
+        <span class="d">周二</span>
+        <span class="i">⛅</span>
+        <span class="t">19°</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- REDESIGNED: Minimal settings row -->
+  <div class="settings-mini slide-down">
+    <span class="sm-chip"><span class="ci">📅</span> 3/15 - 3/19</span>
+    <span class="sm-chip"><span class="ci">🏃</span> 运动</span>
+    <span class="sm-chip"><span class="ci">🧗</span> 攀岩</span>
+    <span class="sm-chip"><span class="ci">🎉</span> 派对</span>
+    <span class="sm-chip"><span class="ci">✈️</span> 国际</span>
+  </div>
+
+  <!-- Categories still visible -->
+  <div class="cat-mock">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:rgba(14,116,144,0.15);color:var(--primary)">👛</div>
+      证件/钱财
+      <span class="cat-count">2/3</span>
+    </div>
+  </div>
+  <div class="cat-mock">
+    <div class="cat-header">
+      <div class="cat-icon" style="background:rgba(166,77,121,0.15);color:#A64D79">👕</div>
+      衣物
+      <span class="cat-count">1/4</span>
+    </div>
+  </div>
+</div>
+
+<div class="notes">
+  <strong>极简天气卡改动：</strong>
+  <ul>
+    <li><strong>移除</strong>目的地头部 — 导航栏已显示</li>
+    <li><strong>移除</strong>低温 — 高温足够判断穿衣</li>
+    <li><strong>移除</strong>每日独立卡片背景 — 单一容器，视觉干净</li>
+    <li><strong>仅保留</strong>：日期 + 图标 + 高温 + 降水（仅高概率时显示）</li>
+    <li>固定列宽 42px — <strong>尺寸跨日期一致</strong></li>
+    <li>"今天" 用主题色高亮</li>
+  </ul>
+  <br>
+  <strong>极简设置行改动：</strong>
+  <ul>
+    <li>日期 + 标签合并为<strong>一行 chip 流</strong></li>
+    <li>日期简化为 <code>3/15 - 3/19</code>（无年份）</li>
+    <li>移除独立卡片 — 与天气卡同级 chip 容器</li>
+  </ul>
+  <br>
+  <strong>高度对比：</strong>
+  <ul>
+    <li>Before: 天气卡 ~160px + 设置卡 ~80px = <strong>~240px overhead</strong></li>
+    <li>After: 天气行 ~80px + 设置行 ~36px = <strong>~116px overhead</strong> (52% 减少)</li>
+  </ul>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<div class="notes" style="background: rgba(14,116,144,0.06); border: 1px solid rgba(14,116,144,0.15);">
+  <strong>代码改动摘要：</strong>
+  <ul>
+    <li><code>PackingListView.swift</code> — <code>showWeatherCard = false</code>, <code>showTripSettings = false</code></li>
+    <li><code>WeatherCard.swift</code> — 重写为单行布局，移除目的地头部、低温、每日卡片背景</li>
+    <li><code>TripSettingsCard.swift</code> — 简化为 chip 流，日期无年份</li>
+  </ul>
+</div>
+
+<script>
+function showView(id) {
+  ['view-before','view-after-collapsed','view-after-expanded'].forEach(v => {
+    document.getElementById(v).classList.toggle('hidden', v !== 'view-'+id);
+  });
+  document.querySelectorAll('.toggle-btn').forEach((b,i) => {
+    const map = {before:0, 'after-collapsed':1, 'after-expanded':2};
+    b.classList.toggle('active', i === map[id]);
+  });
+}
+</script>
+
+</body>
+</html>

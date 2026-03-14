@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PL1 Fix Preview — Remove Floating Progress Bar</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    background: #0f1117;
+    color: #e4e4e7;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .header p {
+    font-size: 14px;
+    color: #71717a;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  .comparison {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 48px;
+  }
+
+  .phone-wrapper {
+    text-align: center;
+  }
+  .phone-wrapper .label {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 16px;
+  }
+  .phone-wrapper.before .label { color: #f87171; }
+  .phone-wrapper.after .label { color: #34d399; }
+
+  .phone {
+    width: 300px;
+    height: 620px;
+    border-radius: 40px;
+    border: 3px solid #27272a;
+    background: #18181b;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 54px;
+    background: #18181b;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 4px;
+    position: relative;
+    z-index: 10;
+  }
+  .status-bar .notch {
+    width: 120px;
+    height: 28px;
+    background: #0f0f12;
+    border-radius: 0 0 20px 20px;
+    position: absolute;
+    top: 0;
+  }
+
+  /* Nav bar */
+  .nav-bar {
+    height: 44px;
+    background: #18181b;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    border-bottom: 1px solid #27272a;
+    position: relative;
+    z-index: 10;
+  }
+  .nav-bar .back {
+    font-size: 17px;
+    color: #60a5fa;
+  }
+  .nav-bar .title {
+    flex: 1;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .nav-bar .menu {
+    font-size: 17px;
+    color: #60a5fa;
+  }
+
+  /* Floating bar (BEFORE only) */
+  .floating-bar {
+    position: absolute;
+    top: 98px;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    padding: 8px 16px;
+  }
+  .floating-bar-inner {
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    background: rgba(39,39,42,0.85);
+    padding: 10px 12px;
+    border-radius: 12px;
+  }
+  .floating-bar-track {
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .floating-bar-fill {
+    height: 100%;
+    width: 60%;
+    background: #60a5fa;
+    border-radius: 2px;
+  }
+
+  /* Scrollable content */
+  .scroll-area {
+    height: calc(100% - 98px);
+    overflow-y: auto;
+    padding: 0 12px;
+    position: relative;
+  }
+  .scroll-area::-webkit-scrollbar { display: none; }
+
+  /* "Scrolled up" — no progress header visible */
+  .scroll-hint {
+    text-align: center;
+    padding: 10px 0 6px;
+    font-size: 10px;
+    color: #52525b;
+    letter-spacing: 0.5px;
+  }
+
+  /* Category section */
+  .category {
+    background: #1e1e23;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .category-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    gap: 8px;
+  }
+  .category-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .category-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: #e4e4e7;
+  }
+  .category-count {
+    font-size: 12px;
+    color: #71717a;
+  }
+  .category-chevron {
+    color: #52525b;
+    font-size: 12px;
+  }
+
+  .item-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px 10px 50px;
+    gap: 10px;
+    border-top: 1px solid #27272a;
+  }
+  .checkbox {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 2px solid #52525b;
+    flex-shrink: 0;
+  }
+  .checkbox.checked {
+    background: #60a5fa;
+    border-color: #60a5fa;
+    position: relative;
+  }
+  .checkbox.checked::after {
+    content: '✓';
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .item-name {
+    font-size: 14px;
+    color: #d4d4d8;
+  }
+  .item-name.checked {
+    color: #71717a;
+    text-decoration: line-through;
+  }
+
+  /* Overlap highlight */
+  .overlap-zone {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 44px;
+    background: rgba(248, 113, 113, 0.12);
+    border: 1px dashed #f87171;
+    border-radius: 0;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .overlap-zone span {
+    font-size: 9px;
+    color: #f87171;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* Code changes */
+  .changes {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .changes h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 16px;
+  }
+  .change-item {
+    background: #1e1e23;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .change-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .change-icon.remove { background: rgba(248,113,113,0.15); color: #f87171; }
+  .change-icon.clean { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .change-detail .file {
+    font-size: 12px;
+    color: #71717a;
+    font-family: monospace;
+    margin-bottom: 4px;
+  }
+  .change-detail .desc {
+    font-size: 13px;
+    color: #d4d4d8;
+    line-height: 1.4;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .tag.red { background: rgba(248,113,113,0.15); color: #f87171; }
+  .tag.green { background: rgba(52,211,153,0.15); color: #34d399; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>PL1 — Remove Floating Progress Bar</h1>
+  <p>The floating progress bar was intended to stick to the top when scrolling, but it doesn't work reliably. Removing it along with all the scroll-tracking machinery (GeometryReader, PreferenceKey, isHeaderCollapsed state).</p>
+</div>
+
+<div class="comparison">
+  <!-- BEFORE -->
+  <div class="phone-wrapper before">
+    <div class="label">Before — Scrolled down</div>
+    <div class="phone">
+      <div class="status-bar"><div class="notch"></div></div>
+      <div class="nav-bar">
+        <span class="back">‹</span>
+        <span class="title">Tokyo Trip</span>
+        <span class="menu">•••</span>
+      </div>
+
+      <!-- Floating bar overlay -->
+      <div class="floating-bar">
+        <div class="floating-bar-inner">
+          <div class="floating-bar-track">
+            <div class="floating-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-area" style="padding-top: 0;">
+        <!-- Overlap zone indicator -->
+        <div class="overlap-zone">
+          <span>⚠ Overlap zone — bar covers content</span>
+        </div>
+
+        <div class="scroll-hint">↑ Progress header scrolled off screen ↑</div>
+
+        <!-- Categories -->
+        <div class="category">
+          <div class="category-header">
+            <div class="category-icon" style="background:rgba(96,165,250,0.15);">👕</div>
+            <span class="category-name">Clothing</span>
+            <span class="category-count">3/5</span>
+            <span class="category-chevron">▾</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox checked"></div>
+            <span class="item-name checked">T-shirts</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox checked"></div>
+            <span class="item-name checked">Pants</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox checked"></div>
+            <span class="item-name checked">Jacket</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox"></div>
+            <span class="item-name">Socks</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox"></div>
+            <span class="item-name">Underwear</span>
+          </div>
+        </div>
+
+        <div class="category">
+          <div class="category-header">
+            <div class="category-icon" style="background:rgba(251,191,36,0.15);">🧴</div>
+            <span class="category-name">Toiletries</span>
+            <span class="category-count">1/4</span>
+            <span class="category-chevron">▾</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox checked"></div>
+            <span class="item-name checked">Toothbrush</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox"></div>
+            <span class="item-name">Shampoo</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox"></div>
+            <span class="item-name">Sunscreen</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox"></div>
+            <span class="item-name">Deodorant</span>
+          </div>
+        </div>
+
+        <div class="category">
+          <div class="category-header">
+            <div class="category-icon" style="background:rgba(52,211,153,0.15);">📱</div>
+            <span class="category-name">Electronics</span>
+            <span class="category-count">2/3</span>
+            <span class="category-chevron">▾</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox checked"></div>
+            <span class="item-name checked">Charger</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox checked"></div>
+            <span class="item-name checked">Power bank</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox"></div>
+            <span class="item-name">Headphones</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AFTER -->
+  <div class="phone-wrapper after">
+    <div class="label">After — Scrolled down</div>
+    <div class="phone">
+      <div class="status-bar"><div class="notch"></div></div>
+      <div class="nav-bar">
+        <span class="back">‹</span>
+        <span class="title">Tokyo Trip</span>
+        <span class="menu">•••</span>
+      </div>
+
+      <!-- No floating bar! Clean. -->
+
+      <div class="scroll-area">
+        <div class="scroll-hint">↑ Progress header scrolled off screen ↑</div>
+
+        <!-- Categories — no overlap -->
+        <div class="category">
+          <div class="category-header">
+            <div class="category-icon" style="background:rgba(96,165,250,0.15);">👕</div>
+            <span class="category-name">Clothing</span>
+            <span class="category-count">3/5</span>
+            <span class="category-chevron">▾</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox checked"></div>
+            <span class="item-name checked">T-shirts</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox checked"></div>
+            <span class="item-name checked">Pants</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox checked"></div>
+            <span class="item-name checked">Jacket</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox"></div>
+            <span class="item-name">Socks</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox"></div>
+            <span class="item-name">Underwear</span>
+          </div>
+        </div>
+
+        <div class="category">
+          <div class="category-header">
+            <div class="category-icon" style="background:rgba(251,191,36,0.15);">🧴</div>
+            <span class="category-name">Toiletries</span>
+            <span class="category-count">1/4</span>
+            <span class="category-chevron">▾</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox checked"></div>
+            <span class="item-name checked">Toothbrush</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox"></div>
+            <span class="item-name">Shampoo</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox"></div>
+            <span class="item-name">Sunscreen</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox"></div>
+            <span class="item-name">Deodorant</span>
+          </div>
+        </div>
+
+        <div class="category">
+          <div class="category-header">
+            <div class="category-icon" style="background:rgba(52,211,153,0.15);">📱</div>
+            <span class="category-name">Electronics</span>
+            <span class="category-count">2/3</span>
+            <span class="category-chevron">▾</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox checked"></div>
+            <span class="item-name checked">Charger</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox checked"></div>
+            <span class="item-name checked">Power bank</span>
+          </div>
+          <div class="item-row">
+            <div class="checkbox"></div>
+            <span class="item-name">Headphones</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="changes">
+  <h2>Code Removals</h2>
+
+  <div class="change-item">
+    <div class="change-icon remove">✕</div>
+    <div class="change-detail">
+      <div class="file">PackingListView.swift</div>
+      <div class="desc">Remove <code>HeaderBoundsKey</code> PreferenceKey struct <span class="tag red">delete</span></div>
+    </div>
+  </div>
+
+  <div class="change-item">
+    <div class="change-icon remove">✕</div>
+    <div class="change-detail">
+      <div class="file">PackingListView.swift</div>
+      <div class="desc">Remove <code>@State isHeaderCollapsed</code> property <span class="tag red">delete</span></div>
+    </div>
+  </div>
+
+  <div class="change-item">
+    <div class="change-icon remove">✕</div>
+    <div class="change-detail">
+      <div class="file">PackingListView.swift</div>
+      <div class="desc">Remove <code>GeometryReader</code> + <code>.preference(key:)</code> wrapping ProgressHeader <span class="tag red">delete</span></div>
+    </div>
+  </div>
+
+  <div class="change-item">
+    <div class="change-icon remove">✕</div>
+    <div class="change-detail">
+      <div class="file">PackingListView.swift</div>
+      <div class="desc">Remove <code>.onPreferenceChange(HeaderBoundsKey.self)</code> handler <span class="tag red">delete</span></div>
+    </div>
+  </div>
+
+  <div class="change-item">
+    <div class="change-icon remove">✕</div>
+    <div class="change-detail">
+      <div class="file">PackingListView.swift</div>
+      <div class="desc">Remove <code>compactProgressOverlay</code> view and its call in body ZStack <span class="tag red">delete</span></div>
+    </div>
+  </div>
+
+  <div class="change-item">
+    <div class="change-icon clean">~</div>
+    <div class="change-detail">
+      <div class="file">ProgressHeader.swift</div>
+      <div class="desc">Remove <code>isFloating</code> param, <code>floatingBar</code> branch, and <code>Group { if/else }</code> — body renders <code>normalBar</code> directly <span class="tag green">simplify</span></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

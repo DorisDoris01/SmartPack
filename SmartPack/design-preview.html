@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartPack — Design Preview</title>
+<!-- Lucide Icons (closest to SF Symbols aesthetic) -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+/* ============================================================
+   DESIGN TOKENS (from AppColors, Typography, Spacing, CornerRadius)
+   ============================================================ */
+:root {
+  /* Core Palette — Light */
+  --primary:    #0E7490;
+  --secondary:  #4B6072;
+  --success:    #166534;
+  --warning:    #B45309;
+  --error:      #B91C1C;
+
+  /* Backgrounds */
+  --bg:         #F0F4F5;
+  --bg2:        #E4ECEF;
+  --card-bg:    #F8FAFB;
+
+  /* Text */
+  --text:       #0C1E24;
+  --text2:      #446070;
+
+  /* Derived */
+  --primary-light: rgba(14, 116, 144, 0.12);
+  --divider:    rgba(75, 96, 114, 0.15);
+  --archive:    #4A7080;
+
+  /* Category accents */
+  --cat-documents: #B45309;
+  --cat-clothing:  #0E7490;
+  --cat-toiletries:#40B3A5;
+  --cat-electronics:#4B6072;
+  --cat-sports:    #B91C1C;
+  --cat-other:     #446070;
+
+  /* Spacing */
+  --sp-xxs: 4px;  --sp-xs: 8px;  --sp-sm: 12px;
+  --sp-md: 20px;  --sp-lg: 28px; --sp-xl: 36px;
+  --sp-xxl: 56px; --sp-xxxl: 72px;
+  --btn-h: 54px;  --card-pad: 24px;
+
+  /* Corner Radius */
+  --r-sm: 6px;  --r-md: 12px;  --r-lg: 16px;
+  --r-xl: 22px; --r-xxl: 28px; --r-full: 999px;
+
+  /* Font */
+  --font: -apple-system, 'SF Pro Rounded', system-ui, sans-serif;
+}
+
+/* ============================================================
+   RESET & PAGE LAYOUT
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: #1a1a2e;
+  color: #fff;
+  min-height: 100vh;
+  padding: 40px 20px 80px;
+}
+
+h1.page-title {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+p.page-sub {
+  text-align: center;
+  color: rgba(255,255,255,0.5);
+  font-size: 15px;
+  margin-bottom: 48px;
+}
+
+.screen-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 48px;
+  justify-content: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.screen-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.screen-label {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: rgba(255,255,255,0.65);
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   iPHONE FRAME
+   ============================================================ */
+.iphone {
+  width: 375px;
+  height: 812px;
+  border-radius: 44px;
+  border: 4px solid #333;
+  overflow: hidden;
+  position: relative;
+  background: var(--bg);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Status bar */
+.status-bar {
+  height: 54px;
+  background: var(--bg);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 28px 6px;
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.status-bar .time { font-weight: 700; }
+.status-bar .status-icons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.status-bar .status-icons i {
+  width: 16px;
+  height: 16px;
+}
+
+/* Nav bar */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px 12px;
+  background: var(--bg);
+  flex-shrink: 0;
+}
+.nav-bar .nav-title {
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.4px;
+}
+.nav-bar .nav-title-inline {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+}
+.nav-bar-icons {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.nav-bar-icons .icon-btn {
+  color: var(--primary);
+  cursor: pointer;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+}
+.nav-bar-icons .icon-btn i { width: 22px; height: 22px; }
+.nav-back {
+  color: var(--primary);
+  font-size: 17px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.nav-back i { width: 18px; height: 18px; }
+
+/* Content area */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg);
+}
+
+/* Home indicator */
+.home-indicator {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--bg);
+}
+.home-indicator .bar {
+  width: 134px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--text);
+  opacity: 0.15;
+}
+
+/* ============================================================
+   COMPONENT STYLES
+   ============================================================ */
+
+/* Lucide icon sizing helpers */
+.icon-xs i { width: 12px; height: 12px; }
+.icon-sm i { width: 14px; height: 14px; }
+.icon-md i { width: 18px; height: 18px; }
+.icon-lg i { width: 22px; height: 22px; }
+.icon-xl i { width: 28px; height: 28px; }
+.icon-2xl i { width: 36px; height: 36px; }
+.icon-3xl i { width: 42px; height: 42px; }
+.icon-hero i { width: 60px; height: 60px; }
+
+/* --- Trip Row Card --- */
+.trip-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  padding: var(--card-pad);
+  margin: var(--sp-xs) var(--sp-md);
+  background: var(--card-bg);
+  border-radius: var(--r-lg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.trip-row .progress-ring {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  flex-shrink: 0;
+}
+.trip-row .progress-ring svg.ring-svg {
+  width: 48px;
+  height: 48px;
+  transform: rotate(-90deg);
+}
+.trip-row .progress-ring .ring-track {
+  fill: none;
+  stroke: rgba(75, 96, 114, 0.15);
+  stroke-width: 3;
+}
+.trip-row .progress-ring .ring-fill {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.trip-row .progress-ring .ring-fill.complete {
+  stroke: var(--success);
+}
+.trip-row .ring-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+}
+.trip-row .ring-text.complete {
+  color: var(--success);
+  display: flex;
+  align-items: center;
+}
+.trip-row .ring-text.complete i { width: 14px; height: 14px; }
+
+.trip-info {
+  flex: 1;
+  min-width: 0;
+}
+.trip-info .trip-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.trip-info .trip-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  margin-top: var(--sp-xxs);
+}
+.trip-info .trip-date {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  letter-spacing: 0.6px;
+}
+.trip-info .meta-sep {
+  width: 1px;
+  height: 10px;
+  background: rgba(68,96,112,0.3);
+  border-radius: 1px;
+}
+.trip-info .trip-count {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  letter-spacing: 0.6px;
+}
+.trip-info .trip-count.complete { color: var(--success); }
+.trip-row .chevron {
+  color: rgba(68,96,112,0.4);
+  display: flex;
+  align-items: center;
+}
+.trip-row .chevron i { width: 14px; height: 14px; }
+
+/* archived row */
+.trip-row.archived { opacity: 0.6; }
+
+/* section header */
+.section-header-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  padding: var(--sp-md) var(--sp-md) var(--sp-xs);
+  padding-left: calc(var(--sp-md) + var(--sp-xxs));
+}
+
+/* --- Empty State --- */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--sp-xxxl) var(--sp-xl);
+  text-align: center;
+}
+.empty-state .halo {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin-bottom: var(--sp-lg);
+}
+.empty-state .halo .circle-outer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(14, 116, 144, 0.06);
+}
+.empty-state .halo .circle-inner {
+  position: absolute;
+  top: 16px; left: 16px; right: 16px; bottom: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(14, 116, 144, 0.12);
+}
+.empty-state .halo .suitcase-icon {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--primary);
+  display: flex;
+}
+.empty-state .halo .suitcase-icon i { width: 42px; height: 42px; }
+.empty-state .empty-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: var(--sp-xs);
+}
+.empty-state .empty-sub {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text2);
+  letter-spacing: 0.6px;
+}
+
+/* --- Progress Bar (Packing List) --- */
+.progress-bar-wrapper {
+  padding: var(--sp-xxs) var(--sp-md) var(--sp-xs);
+}
+.progress-bar {
+  height: 24px;
+  border-radius: var(--r-full);
+  background: rgba(75, 96, 114, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+.progress-bar .fill {
+  height: 100%;
+  border-radius: var(--r-full);
+  background: var(--primary);
+}
+.progress-bar .fill.complete { background: var(--success); }
+.progress-bar .count-label {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  text-shadow: 0 0 3px rgba(240,244,245,0.8);
+}
+.progress-bar .count-label.light { color: #fff; }
+
+/* --- Context pills --- */
+.context-row {
+  display: flex;
+  gap: var(--sp-sm);
+  padding: 0 var(--sp-md);
+  margin-bottom: var(--sp-sm);
+}
+.pill {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xxs);
+  padding: var(--sp-xs) var(--sp-sm);
+  border-radius: var(--r-full);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+.pill i { width: 14px; height: 14px; }
+.pill.active { background: var(--primary); color: #fff; }
+.pill.inactive { background: var(--primary-light); color: var(--primary); }
+.pill.secondary-active { background: var(--secondary); color: #fff; }
+.pill.secondary-inactive { background: rgba(75, 96, 114, 0.12); color: var(--secondary); }
+
+/* --- Trip Settings Card --- */
+.trip-settings-card {
+  margin: 0 var(--sp-md);
+  padding: 14px 16px;
+  background: rgba(240,244,245,0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--r-lg);
+  border: 0.5px solid rgba(12,30,36,0.08);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  margin-bottom: var(--sp-sm);
+}
+.trip-settings-card .date-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.trip-settings-card .date-row i { width: 14px; height: 14px; color: var(--text2); }
+.tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.tag-chip {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px;
+  background: rgba(120,120,128,0.08);
+  border-radius: var(--r-sm);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+}
+.tag-chip i { width: 10px; height: 10px; }
+
+/* --- Category Section --- */
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  padding: var(--sp-xxs) 0;
+  margin: 0 var(--sp-md);
+  cursor: pointer;
+}
+.category-header .cat-icon-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.category-header .cat-icon-circle i { width: 14px; height: 14px; }
+.category-header .cat-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+}
+.category-header .cat-count {
+  font-size: 13px;
+  font-weight: 500;
+  color: #8e8e93;
+}
+.category-header .cat-chevron {
+  margin-left: auto;
+  color: #aeaeb2;
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s ease;
+}
+.category-header .cat-chevron i { width: 14px; height: 14px; }
+.category-header .cat-chevron.expanded { transform: rotate(90deg); }
+
+/* --- Item Row --- */
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: 10px var(--sp-md);
+  border-bottom: 0.5px solid rgba(75, 96, 114, 0.08);
+}
+.item-row:last-of-type { border-bottom: none; }
+.item-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid #c7c7cc;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.item-checkbox.checked {
+  border-color: transparent;
+  color: #fff;
+}
+.item-checkbox.checked i { width: 12px; height: 12px; }
+.item-text {
+  font-size: 17px;
+  color: var(--text);
+}
+.item-text.checked {
+  color: #8e8e93;
+  text-decoration: line-through;
+  text-decoration-color: #c7c7cc;
+}
+
+/* Add item row */
+.add-item-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  padding: 10px var(--sp-md);
+  padding-left: calc(var(--sp-md) + 22px + var(--sp-sm));
+}
+.add-item-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-xxs);
+  padding: 6px 12px;
+  border-radius: var(--r-full);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text2);
+  background: rgba(75, 96, 114, 0.08);
+}
+.add-item-pill i { width: 14px; height: 14px; }
+
+/* --- insetGrouped section --- */
+.list-section {
+  margin: var(--sp-xs) var(--sp-md);
+  background: var(--card-bg);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+/* --- Welcome Sheet --- */
+.welcome-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: flex-end;
+  z-index: 10;
+}
+.welcome-card {
+  width: 100%;
+  background: var(--bg);
+  border-radius: 30px 30px 0 0;
+  padding: 0 var(--sp-lg);
+  box-shadow: 0 -5px 20px rgba(0,0,0,0.15);
+}
+.welcome-card .drag-bar {
+  width: 40px;
+  height: 5px;
+  border-radius: 3px;
+  background: #c7c7cc;
+  margin: 12px auto 0;
+  opacity: 0.3;
+}
+.welcome-logo {
+  text-align: center;
+  padding-top: var(--sp-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.welcome-logo .logo-icon {
+  color: var(--primary);
+  display: flex;
+}
+.welcome-logo .logo-icon i { width: 60px; height: 60px; }
+.welcome-logo .app-name {
+  font-size: 34px;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: var(--sp-sm);
+}
+.welcome-logo .app-desc {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text2);
+  margin-top: var(--sp-xs);
+  line-height: 1.5;
+}
+
+.gender-section {
+  padding-top: var(--sp-md);
+  text-align: center;
+}
+.gender-section .gender-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: var(--sp-sm);
+}
+.gender-cards {
+  display: flex;
+  gap: var(--sp-md);
+}
+.gender-card {
+  flex: 1;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: var(--r-xl);
+  background: var(--card-bg);
+  cursor: pointer;
+  border: 2px solid transparent;
+  color: var(--text);
+}
+.gender-card.selected {
+  background: rgba(14, 116, 144, 0.15);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.gender-card .g-icon { display: flex; }
+.gender-card .g-icon i { width: 36px; height: 36px; }
+.gender-card .g-label {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.welcome-btn-area {
+  padding: var(--sp-md) var(--sp-xs) var(--sp-lg);
+}
+.btn-primary {
+  width: 100%;
+  height: var(--btn-h);
+  border-radius: var(--r-lg);
+  border: none;
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font);
+}
+.btn-primary.enabled { background: var(--primary); }
+.btn-primary.disabled { background: var(--text2); }
+
+/* --- Create Trip Sheet --- */
+.create-trip-bg { background: #f2f2f7; }
+.section-card {
+  margin: 0 0 var(--sp-sm);
+  padding: 16px;
+  background: var(--bg);
+  border-radius: var(--r-lg);
+}
+.section-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  margin-bottom: var(--sp-sm);
+}
+.section-card-header .sc-icon {
+  color: var(--primary);
+  display: flex;
+  width: 20px;
+  justify-content: center;
+}
+.section-card-header .sc-icon i { width: 18px; height: 18px; }
+.section-card-header .sc-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+.form-row + .form-row { border-top: 0.5px solid var(--divider); }
+.form-label { font-size: 17px; color: var(--text); }
+.form-value { font-size: 17px; color: var(--primary); }
+.form-input {
+  width: 100%;
+  border: none;
+  font-size: 17px;
+  font-family: var(--font);
+  color: var(--text);
+  background: transparent;
+  outline: none;
+}
+.form-input::placeholder { color: #c7c7cc; }
+.form-days {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  margin-top: 4px;
+}
+
+/* Tag grid */
+.tag-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-sm);
+}
+.labeled-tag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 4px;
+  min-height: 70px;
+  justify-content: center;
+  border-radius: var(--r-lg);
+  background: var(--card-bg);
+  cursor: pointer;
+  color: var(--text);
+}
+.labeled-tag.selected {
+  background: var(--primary);
+  color: #fff;
+}
+.labeled-tag .lt-icon {
+  display: flex;
+  height: 24px;
+  align-items: center;
+}
+.labeled-tag .lt-icon i { width: 22px; height: 22px; }
+.labeled-tag .lt-text {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.generate-btn { margin-top: var(--sp-xs); }
+.generate-btn .btn-primary {
+  box-shadow: 0 3px 6px rgba(14, 116, 144, 0.25);
+}
+
+/* --- Settings --- */
+.settings-section {
+  margin: var(--sp-xs) var(--sp-md);
+  background: var(--card-bg);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.settings-section-header {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  text-transform: uppercase;
+  padding: var(--sp-lg) var(--sp-md) var(--sp-xs);
+}
+.settings-section-header:first-child { padding-top: var(--sp-sm); }
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: 12px 16px;
+}
+.settings-icon {
+  width: 24px;
+  display: flex;
+  justify-content: center;
+  color: var(--primary);
+}
+.settings-icon i { width: 18px; height: 18px; }
+.settings-label {
+  font-size: 17px;
+  color: var(--text);
+  flex: 1;
+}
+.settings-value {
+  font-size: 17px;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.settings-value i { width: 12px; height: 12px; }
+.settings-footer {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  padding: var(--sp-xs) var(--sp-md) var(--sp-sm);
+}
+
+/* --- Celebration Overlay --- */
+.celebration-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+.celebration-content { text-align: center; }
+.celebration-content .check-icon {
+  color: var(--success);
+  display: flex;
+  justify-content: center;
+}
+.celebration-content .check-icon i { width: 80px; height: 80px; }
+.celebration-content .celeb-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  margin-top: var(--sp-lg);
+}
+/* Confetti pieces */
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  animation: confetti-fall 2s ease-in forwards;
+}
+@keyframes confetti-fall {
+  0%   { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(850px) rotate(720deg); opacity: 0; }
+}
+
+/* --- Weather Card --- */
+.weather-card {
+  margin: 0 var(--sp-md);
+  padding: 14px 16px;
+  background: rgba(240,244,245,0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--r-lg);
+  border: 0.5px solid rgba(12,30,36,0.08);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  margin-bottom: var(--sp-sm);
+}
+.weather-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  margin-bottom: var(--sp-sm);
+}
+.weather-header i { width: 14px; height: 14px; }
+.weather-days {
+  display: flex;
+  gap: var(--sp-sm);
+  overflow-x: auto;
+}
+.weather-day {
+  width: 52px;
+  flex-shrink: 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.weather-day .wd-date {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 6px;
+}
+.weather-day .wd-icon {
+  margin-bottom: 4px;
+  color: var(--text);
+  display: flex;
+}
+.weather-day .wd-icon i { width: 22px; height: 22px; }
+.weather-day .wd-temps {
+  font-size: 12px;
+  font-weight: 600;
+}
+.weather-day .wd-high { color: var(--text); }
+.weather-day .wd-low { color: var(--text2); }
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+.spacer-sm { height: var(--sp-sm); }
+.spacer-md { height: var(--sp-md); }
+.spacer-lg { height: var(--sp-lg); }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">SmartPack - Design Preview</h1>
+<p class="page-sub">All screens rendered from iOS design tokens / Light mode / English</p>
+
+<div class="screen-grid">
+
+<!-- ============================================================
+     SCREEN 1: Welcome (First Launch)
+     ============================================================ -->
+<div class="screen-slot">
+  <span class="screen-label">1 - Welcome</span>
+  <div class="iphone">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="status-icons">
+        <i data-lucide="signal"></i>
+        <i data-lucide="wifi"></i>
+        <i data-lucide="battery-full"></i>
+      </span>
+    </div>
+    <div class="content" style="position:relative;">
+      <!-- Background content (dimmed) -->
+      <div class="nav-bar">
+        <span class="nav-title">My Trips</span>
+      </div>
+      <!-- Welcome overlay -->
+      <div class="welcome-overlay">
+        <div class="welcome-card">
+          <div class="drag-bar"></div>
+          <div class="welcome-logo">
+            <div class="logo-icon"><i data-lucide="luggage"></i></div>
+            <div class="app-name">SmartPack</div>
+            <div class="app-desc">Smart trip packing assistant<br>Never forget essentials again</div>
+          </div>
+          <div class="gender-section">
+            <div class="gender-title">Select your gender</div>
+            <div class="gender-cards">
+              <div class="gender-card selected">
+                <div class="g-icon"><i data-lucide="user"></i></div>
+                <div class="g-label">Male</div>
+              </div>
+              <div class="gender-card">
+                <div class="g-icon"><i data-lucide="user"></i></div>
+                <div class="g-label">Female</div>
+              </div>
+            </div>
+          </div>
+          <div class="welcome-btn-area">
+            <button class="btn-primary enabled">Get Started</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="home-indicator"><div class="bar"></div></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCREEN 2: Home - Empty State
+     ============================================================ -->
+<div class="screen-slot">
+  <span class="screen-label">2 - Home (Empty)</span>
+  <div class="iphone">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="status-icons">
+        <i data-lucide="signal"></i>
+        <i data-lucide="wifi"></i>
+        <i data-lucide="battery-full"></i>
+      </span>
+    </div>
+    <div class="nav-bar">
+      <span class="nav-title">My Trips</span>
+      <div class="nav-bar-icons">
+        <button class="icon-btn"><i data-lucide="plus"></i></button>
+        <button class="icon-btn"><i data-lucide="more-horizontal"></i></button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="empty-state">
+        <div class="halo">
+          <div class="circle-outer"></div>
+          <div class="circle-inner"></div>
+          <div class="suitcase-icon"><i data-lucide="luggage"></i></div>
+        </div>
+        <div class="empty-title">No trips yet</div>
+        <div class="empty-sub">Tap + to start your first trip</div>
+      </div>
+    </div>
+    <div class="home-indicator"><div class="bar"></div></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCREEN 3: Home - With Trips
+     ============================================================ -->
+<div class="screen-slot">
+  <span class="screen-label">3 - Home (Trips)</span>
+  <div class="iphone">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="status-icons">
+        <i data-lucide="signal"></i>
+        <i data-lucide="wifi"></i>
+        <i data-lucide="battery-full"></i>
+      </span>
+    </div>
+    <div class="nav-bar">
+      <span class="nav-title">My Trips</span>
+      <div class="nav-bar-icons">
+        <button class="icon-btn"><i data-lucide="plus"></i></button>
+        <button class="icon-btn"><i data-lucide="more-horizontal"></i></button>
+      </div>
+    </div>
+    <div class="content">
+      <!-- Active trips -->
+      <div class="trip-row">
+        <div class="progress-ring">
+          <svg class="ring-svg" viewBox="0 0 48 48">
+            <circle class="ring-track" cx="24" cy="24" r="22"/>
+            <circle class="ring-fill" cx="24" cy="24" r="22"
+              stroke-dasharray="138.23" stroke-dashoffset="55.29"/>
+          </svg>
+          <span class="ring-text">60</span>
+        </div>
+        <div class="trip-info">
+          <div class="trip-name">Business Trip - Mar 1</div>
+          <div class="trip-meta">
+            <span class="trip-date">Mar 1 - Mar 5</span>
+            <span class="meta-sep"></span>
+            <span class="trip-count">15/25</span>
+          </div>
+        </div>
+        <span class="chevron"><i data-lucide="chevron-right"></i></span>
+      </div>
+
+      <div class="trip-row">
+        <div class="progress-ring">
+          <svg class="ring-svg" viewBox="0 0 48 48">
+            <circle class="ring-track" cx="24" cy="24" r="22"/>
+            <circle class="ring-fill" cx="24" cy="24" r="22"
+              stroke-dasharray="138.23" stroke-dashoffset="96.76"/>
+          </svg>
+          <span class="ring-text">30</span>
+        </div>
+        <div class="trip-info">
+          <div class="trip-name">Beach Vacation - Mar 15</div>
+          <div class="trip-meta">
+            <span class="trip-date">Mar 15 - Mar 20</span>
+            <span class="meta-sep"></span>
+            <span class="trip-count">9/30</span>
+          </div>
+        </div>
+        <span class="chevron"><i data-lucide="chevron-right"></i></span>
+      </div>
+
+      <div class="trip-row">
+        <div class="progress-ring">
+          <svg class="ring-svg" viewBox="0 0 48 48">
+            <circle class="ring-track" cx="24" cy="24" r="22"/>
+            <circle class="ring-fill" cx="24" cy="24" r="22"
+              stroke-dasharray="138.23" stroke-dashoffset="27.65"/>
+          </svg>
+          <span class="ring-text">80</span>
+        </div>
+        <div class="trip-info">
+          <div class="trip-name">Camping Trip - Apr 5</div>
+          <div class="trip-meta">
+            <span class="trip-date">Apr 5 - Apr 8</span>
+            <span class="meta-sep"></span>
+            <span class="trip-count">16/20</span>
+          </div>
+        </div>
+        <span class="chevron"><i data-lucide="chevron-right"></i></span>
+      </div>
+
+      <!-- Archived section -->
+      <div class="section-header-text">Archived</div>
+
+      <div class="trip-row archived">
+        <div class="progress-ring">
+          <svg class="ring-svg" viewBox="0 0 48 48">
+            <circle class="ring-track" cx="24" cy="24" r="22"/>
+            <circle class="ring-fill complete" cx="24" cy="24" r="22"
+              stroke-dasharray="138.23" stroke-dashoffset="0"/>
+          </svg>
+          <span class="ring-text complete"><i data-lucide="check"></i></span>
+        </div>
+        <div class="trip-info">
+          <div class="trip-name" style="color:var(--text2);">Tokyo Trip - Feb 10</div>
+          <div class="trip-meta">
+            <span class="trip-date">Feb 10 - Feb 15</span>
+            <span class="meta-sep"></span>
+            <span class="trip-count complete">22/22</span>
+          </div>
+        </div>
+        <span class="chevron"><i data-lucide="chevron-right"></i></span>
+      </div>
+    </div>
+    <div class="home-indicator"><div class="bar"></div></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCREEN 4: Create Trip
+     ============================================================ -->
+<div class="screen-slot">
+  <span class="screen-label">4 - Create Trip</span>
+  <div class="iphone">
+    <div class="status-bar" style="background:#f2f2f7;">
+      <span class="time">9:41</span>
+      <span class="status-icons">
+        <i data-lucide="signal"></i>
+        <i data-lucide="wifi"></i>
+        <i data-lucide="battery-full"></i>
+      </span>
+    </div>
+    <div class="nav-bar" style="background:#f2f2f7;">
+      <span class="nav-back"><i data-lucide="x"></i></span>
+      <span class="nav-title-inline">New Trip</span>
+      <span style="width:40px;"></span>
+    </div>
+    <div class="content create-trip-bg" style="padding: var(--sp-md);">
+      <!-- Date section -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <span class="sc-icon"><i data-lucide="calendar"></i></span>
+          <span class="sc-title">Trip Dates</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Start Date</span>
+          <span class="form-value">Mar 1, 2026</span>
+        </div>
+        <div class="form-row">
+          <span class="form-label">End Date</span>
+          <span class="form-value">Mar 5, 2026</span>
+        </div>
+        <div class="form-days">5 days</div>
+      </div>
+
+      <!-- Destination -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <span class="sc-icon"><i data-lucide="map-pin"></i></span>
+          <span class="sc-title">Destination</span>
+        </div>
+        <input class="form-input" placeholder="Enter city name" value="Tokyo"/>
+      </div>
+
+      <!-- Activity tags -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <span class="sc-icon"><i data-lucide="activity"></i></span>
+          <span class="sc-title">Travel Activities</span>
+        </div>
+        <div class="tag-grid">
+          <div class="labeled-tag">
+            <span class="lt-icon"><i data-lucide="footprints"></i></span>
+            <span class="lt-text">Running</span>
+          </div>
+          <div class="labeled-tag selected">
+            <span class="lt-icon"><i data-lucide="mountain"></i></span>
+            <span class="lt-text">Climbing</span>
+          </div>
+          <div class="labeled-tag">
+            <span class="lt-icon"><i data-lucide="waves"></i></span>
+            <span class="lt-text">Diving</span>
+          </div>
+          <div class="labeled-tag selected">
+            <span class="lt-icon"><i data-lucide="tent"></i></span>
+            <span class="lt-text">Camping</span>
+          </div>
+          <div class="labeled-tag">
+            <span class="lt-icon"><i data-lucide="mountain-snow"></i></span>
+            <span class="lt-text">Trail Running</span>
+          </div>
+          <div class="labeled-tag">
+            <span class="lt-icon"><i data-lucide="camera"></i></span>
+            <span class="lt-text">Photography</span>
+          </div>
+          <div class="labeled-tag">
+            <span class="lt-icon"><i data-lucide="bike"></i></span>
+            <span class="lt-text">Motorcycle</span>
+          </div>
+          <div class="labeled-tag">
+            <span class="lt-icon"><i data-lucide="snowflake"></i></span>
+            <span class="lt-text">Skiing</span>
+          </div>
+          <div class="labeled-tag">
+            <span class="lt-icon"><i data-lucide="umbrella"></i></span>
+            <span class="lt-text">Beach</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Occasions -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <span class="sc-icon"><i data-lucide="building-2"></i></span>
+          <span class="sc-title">Occasions</span>
+        </div>
+        <div class="tag-grid">
+          <div class="labeled-tag">
+            <span class="lt-icon"><i data-lucide="wine"></i></span>
+            <span class="lt-text">Party</span>
+          </div>
+          <div class="labeled-tag selected">
+            <span class="lt-icon"><i data-lucide="briefcase"></i></span>
+            <span class="lt-text">Business Meeting</span>
+          </div>
+          <div class="labeled-tag">
+            <span class="lt-icon"><i data-lucide="car"></i></span>
+            <span class="lt-text">Self Drive</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Config -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <span class="sc-icon"><i data-lucide="settings"></i></span>
+          <span class="sc-title">Travel Config</span>
+        </div>
+        <div class="tag-grid">
+          <div class="labeled-tag selected">
+            <span class="lt-icon"><i data-lucide="plane-takeoff"></i></span>
+            <span class="lt-text">International Travel</span>
+          </div>
+          <div class="labeled-tag">
+            <span class="lt-icon"><i data-lucide="baby"></i></span>
+            <span class="lt-text">With Kids</span>
+          </div>
+          <div class="labeled-tag">
+            <span class="lt-icon"><i data-lucide="paw-print"></i></span>
+            <span class="lt-text">With Pet</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate button -->
+      <div class="generate-btn">
+        <button class="btn-primary enabled">Generate Trip</button>
+      </div>
+    </div>
+    <div class="home-indicator" style="background:#f2f2f7;"><div class="bar"></div></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCREEN 5: Packing List
+     ============================================================ -->
+<div class="screen-slot">
+  <span class="screen-label">5 - Packing List</span>
+  <div class="iphone">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="status-icons">
+        <i data-lucide="signal"></i>
+        <i data-lucide="wifi"></i>
+        <i data-lucide="battery-full"></i>
+      </span>
+    </div>
+    <div class="nav-bar">
+      <span class="nav-back"><i data-lucide="chevron-left"></i> My Trips</span>
+      <span class="nav-title-inline">Business Trip</span>
+      <button class="icon-btn" style="color:var(--primary);"><i data-lucide="more-horizontal" style="width:20px;height:20px;"></i></button>
+    </div>
+    <div class="content">
+      <!-- Progress bar -->
+      <div class="progress-bar-wrapper">
+        <div class="progress-bar">
+          <div class="fill" style="width:60%;"></div>
+          <span class="count-label light">15/25</span>
+        </div>
+      </div>
+
+      <!-- Context pills -->
+      <div class="context-row">
+        <button class="pill active"><i data-lucide="cloud-sun"></i> Weather</button>
+        <button class="pill secondary-active"><i data-lucide="settings"></i> Settings</button>
+      </div>
+
+      <!-- Weather card -->
+      <div class="weather-card">
+        <div class="weather-header"><i data-lucide="map-pin"></i> Tokyo</div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <div class="wd-date">Today</div>
+            <div class="wd-icon"><i data-lucide="sun"></i></div>
+            <div class="wd-temps"><span class="wd-high">18</span> <span class="wd-low">8</span></div>
+          </div>
+          <div class="weather-day">
+            <div class="wd-date">Tmrw</div>
+            <div class="wd-icon"><i data-lucide="cloud-sun"></i></div>
+            <div class="wd-temps"><span class="wd-high">16</span> <span class="wd-low">7</span></div>
+          </div>
+          <div class="weather-day">
+            <div class="wd-date">3/3</div>
+            <div class="wd-icon"><i data-lucide="cloud-rain"></i></div>
+            <div class="wd-temps"><span class="wd-high">14</span> <span class="wd-low">9</span></div>
+          </div>
+          <div class="weather-day">
+            <div class="wd-date">3/4</div>
+            <div class="wd-icon"><i data-lucide="cloud"></i></div>
+            <div class="wd-temps"><span class="wd-high">15</span> <span class="wd-low">8</span></div>
+          </div>
+          <div class="weather-day">
+            <div class="wd-date">3/5</div>
+            <div class="wd-icon"><i data-lucide="sun"></i></div>
+            <div class="wd-temps"><span class="wd-high">19</span> <span class="wd-low">10</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trip settings card -->
+      <div class="trip-settings-card">
+        <div class="date-row">
+          <i data-lucide="calendar"></i> Mar 1, 2026 - Mar 5
+        </div>
+        <div class="tag-chips">
+          <span class="tag-chip"><i data-lucide="mountain"></i> Climbing</span>
+          <span class="tag-chip"><i data-lucide="tent"></i> Camping</span>
+          <span class="tag-chip"><i data-lucide="briefcase"></i> Business</span>
+          <span class="tag-chip"><i data-lucide="plane-takeoff"></i> International</span>
+        </div>
+      </div>
+
+      <div class="spacer-sm"></div>
+
+      <!-- Category: Documents (expanded) -->
+      <div class="category-header">
+        <div class="cat-icon-circle" style="background:rgba(180,83,9,0.15); color:var(--cat-documents);">
+          <i data-lucide="wallet"></i>
+        </div>
+        <span class="cat-name">Documents</span>
+        <span class="cat-count">2/4</span>
+        <span class="cat-chevron expanded"><i data-lucide="chevron-right"></i></span>
+      </div>
+      <div class="list-section">
+        <div class="item-row">
+          <div class="item-checkbox checked" style="background:var(--cat-documents);"><i data-lucide="check"></i></div>
+          <span class="item-text checked">ID Card</span>
+        </div>
+        <div class="item-row">
+          <div class="item-checkbox checked" style="background:var(--cat-documents);"><i data-lucide="check"></i></div>
+          <span class="item-text checked">Passport</span>
+        </div>
+        <div class="item-row">
+          <div class="item-checkbox" style="border-color:var(--cat-documents);"></div>
+          <span class="item-text">Travel Insurance</span>
+        </div>
+        <div class="item-row">
+          <div class="item-checkbox" style="border-color:var(--cat-documents);"></div>
+          <span class="item-text">Credit Card</span>
+        </div>
+        <div class="add-item-row">
+          <span class="add-item-pill"><i data-lucide="plus"></i> Add Item</span>
+        </div>
+      </div>
+
+      <div class="spacer-sm"></div>
+
+      <!-- Category: Clothing (expanded) -->
+      <div class="category-header">
+        <div class="cat-icon-circle" style="background:rgba(14,116,144,0.15); color:var(--cat-clothing);">
+          <i data-lucide="shirt"></i>
+        </div>
+        <span class="cat-name">Clothing</span>
+        <span class="cat-count">5/8</span>
+        <span class="cat-chevron expanded"><i data-lucide="chevron-right"></i></span>
+      </div>
+      <div class="list-section">
+        <div class="item-row">
+          <div class="item-checkbox checked" style="background:var(--cat-clothing);"><i data-lucide="check"></i></div>
+          <span class="item-text checked">Underwear</span>
+        </div>
+        <div class="item-row">
+          <div class="item-checkbox checked" style="background:var(--cat-clothing);"><i data-lucide="check"></i></div>
+          <span class="item-text checked">Socks</span>
+        </div>
+        <div class="item-row">
+          <div class="item-checkbox checked" style="background:var(--cat-clothing);"><i data-lucide="check"></i></div>
+          <span class="item-text checked">Pajamas</span>
+        </div>
+        <div class="item-row">
+          <div class="item-checkbox checked" style="background:var(--cat-clothing);"><i data-lucide="check"></i></div>
+          <span class="item-text checked">Top</span>
+        </div>
+        <div class="item-row">
+          <div class="item-checkbox checked" style="background:var(--cat-clothing);"><i data-lucide="check"></i></div>
+          <span class="item-text checked">Pants</span>
+        </div>
+        <div class="item-row">
+          <div class="item-checkbox" style="border-color:var(--cat-clothing);"></div>
+          <span class="item-text">Business Shirt</span>
+        </div>
+        <div class="item-row">
+          <div class="item-checkbox" style="border-color:var(--cat-clothing);"></div>
+          <span class="item-text">Formal Suit</span>
+        </div>
+        <div class="item-row">
+          <div class="item-checkbox" style="border-color:var(--cat-clothing);"></div>
+          <span class="item-text">Dress Shoes</span>
+        </div>
+        <div class="add-item-row">
+          <span class="add-item-pill"><i data-lucide="plus"></i> Add Item</span>
+        </div>
+      </div>
+
+      <div class="spacer-sm"></div>
+
+      <!-- Category: Toiletries (collapsed) -->
+      <div class="category-header">
+        <div class="cat-icon-circle" style="background:rgba(64,179,165,0.15); color:var(--cat-toiletries);">
+          <i data-lucide="droplet"></i>
+        </div>
+        <span class="cat-name">Toiletries</span>
+        <span class="cat-count">3/6</span>
+        <span class="cat-chevron"><i data-lucide="chevron-right"></i></span>
+      </div>
+
+      <div class="spacer-sm"></div>
+
+      <!-- Category: Electronics (collapsed) -->
+      <div class="category-header">
+        <div class="cat-icon-circle" style="background:rgba(75,96,114,0.15); color:var(--cat-electronics);">
+          <i data-lucide="laptop"></i>
+        </div>
+        <span class="cat-name">Electronics</span>
+        <span class="cat-count">2/4</span>
+        <span class="cat-chevron"><i data-lucide="chevron-right"></i></span>
+      </div>
+
+      <div class="spacer-sm"></div>
+
+      <!-- Category: Sports Gear (collapsed) -->
+      <div class="category-header">
+        <div class="cat-icon-circle" style="background:rgba(185,28,28,0.15); color:var(--cat-sports);">
+          <i data-lucide="dumbbell"></i>
+        </div>
+        <span class="cat-name">Sports Gear</span>
+        <span class="cat-count">3/5</span>
+        <span class="cat-chevron"><i data-lucide="chevron-right"></i></span>
+      </div>
+
+      <div class="spacer-lg"></div>
+    </div>
+    <div class="home-indicator"><div class="bar"></div></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCREEN 6: Settings
+     ============================================================ -->
+<div class="screen-slot">
+  <span class="screen-label">6 - Settings</span>
+  <div class="iphone">
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span class="status-icons">
+        <i data-lucide="signal"></i>
+        <i data-lucide="wifi"></i>
+        <i data-lucide="battery-full"></i>
+      </span>
+    </div>
+    <div class="nav-bar">
+      <span style="width:60px;"></span>
+      <span class="nav-title" style="font-size:34px;">Settings</span>
+      <span class="nav-back" style="width:60px; justify-content:flex-end;">Done</span>
+    </div>
+    <div class="content">
+      <div class="settings-section-header">Gender</div>
+      <div class="settings-section">
+        <div class="settings-row">
+          <span class="settings-icon"><i data-lucide="user"></i></span>
+          <span class="settings-label">Gender</span>
+          <span class="settings-value">Male <i data-lucide="chevron-right"></i></span>
+        </div>
+      </div>
+      <div class="settings-footer">Changes will affect items in future lists</div>
+
+      <div class="settings-section-header">Language</div>
+      <div class="settings-section">
+        <div class="settings-row">
+          <span class="settings-icon"><i data-lucide="globe"></i></span>
+          <span class="settings-label">Language</span>
+          <span class="settings-value">English <i data-lucide="chevron-right"></i></span>
+        </div>
+      </div>
+
+      <div class="settings-section-header">About</div>
+      <div class="settings-section">
+        <div class="settings-row" style="flex-wrap:wrap;">
+          <span class="settings-icon"><i data-lucide="info"></i></span>
+          <span class="settings-label">SmartPack</span>
+          <span class="settings-value" style="font-size:12px; font-weight:600;">v1.0 (1)</span>
+          <div style="width:100%; padding-left: 36px; margin-top:4px;">
+            <span style="font-size:12px; font-weight:600; color:var(--text2);">Smart packing list assistant based on scenarios</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="home-indicator"><div class="bar"></div></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCREEN 7: Celebration Overlay
+     ============================================================ -->
+<div class="screen-slot">
+  <span class="screen-label">7 - All Packed!</span>
+  <div class="iphone">
+    <div class="status-bar" style="background: transparent; position:relative; z-index:25;">
+      <span class="time" style="color:#fff;">9:41</span>
+      <span class="status-icons" style="color:#fff;">
+        <i data-lucide="signal"></i>
+        <i data-lucide="wifi"></i>
+        <i data-lucide="battery-full"></i>
+      </span>
+    </div>
+    <div class="content" style="position:relative;">
+      <!-- Dimmed packing list behind -->
+      <div class="nav-bar" style="opacity:0.3;">
+        <span class="nav-back"><i data-lucide="chevron-left"></i> Back</span>
+        <span class="nav-title-inline">Camping Trip</span>
+        <button class="icon-btn"><i data-lucide="more-horizontal" style="width:20px;height:20px;"></i></button>
+      </div>
+      <div style="opacity:0.3;">
+        <div class="progress-bar-wrapper">
+          <div class="progress-bar">
+            <div class="fill complete" style="width:100%;"></div>
+            <span class="count-label light">All packed!</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Celebration overlay -->
+      <div class="celebration-overlay">
+        <!-- Confetti -->
+        <div class="confetti" style="left:15%; background:#B91C1C; animation-delay:0.1s;"></div>
+        <div class="confetti" style="left:25%; background:#FBBF24; animation-delay:0.2s;"></div>
+        <div class="confetti" style="left:35%; background:#0E7490; animation-delay:0.05s;"></div>
+        <div class="confetti" style="left:45%; background:#166534; animation-delay:0.3s;"></div>
+        <div class="confetti" style="left:55%; background:#B45309; animation-delay:0.15s;"></div>
+        <div class="confetti" style="left:65%; background:purple; animation-delay:0.25s;"></div>
+        <div class="confetti" style="left:75%; background:#F87171; animation-delay:0.4s;"></div>
+        <div class="confetti" style="left:80%; background:#0E7490; animation-delay:0.1s;"></div>
+        <div class="confetti" style="left:20%; background:#FBBF24; animation-delay:0.35s;"></div>
+        <div class="confetti" style="left:50%; background:#166534; animation-delay:0.0s;"></div>
+        <div class="confetti" style="left:10%; background:pink; animation-delay:0.2s;"></div>
+        <div class="confetti" style="left:90%; background:#B91C1C; animation-delay:0.05s;"></div>
+
+        <div class="celebration-content">
+          <div class="check-icon"><i data-lucide="circle-check-big"></i></div>
+          <div class="celeb-title">All packed!</div>
+        </div>
+      </div>
+    </div>
+    <div class="home-indicator" style="background:transparent;"><div class="bar" style="background:#fff;"></div></div>
+  </div>
+</div>
+
+</div><!-- end screen-grid -->
+
+<!-- ============================================================
+     DESIGN TOKENS REFERENCE
+     ============================================================ -->
+<div style="max-width:900px; margin:64px auto 0; padding:0 20px;">
+  <h2 style="font-size:22px; font-weight:700; margin-bottom:24px; text-align:center; color:rgba(255,255,255,0.8);">Design Tokens Reference</h2>
+
+  <!-- Colors -->
+  <div style="margin-bottom:32px;">
+    <h3 style="font-size:14px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:12px;">Colors (Light Mode)</h3>
+    <div style="display:flex; flex-wrap:wrap; gap:12px;">
+      <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); padding:8px 12px; border-radius:8px;">
+        <div style="width:24px;height:24px;border-radius:6px;background:#0E7490;"></div>
+        <span style="font-size:13px;">primary #0E7490</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); padding:8px 12px; border-radius:8px;">
+        <div style="width:24px;height:24px;border-radius:6px;background:#4B6072;"></div>
+        <span style="font-size:13px;">secondary #4B6072</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); padding:8px 12px; border-radius:8px;">
+        <div style="width:24px;height:24px;border-radius:6px;background:#166534;"></div>
+        <span style="font-size:13px;">success #166534</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); padding:8px 12px; border-radius:8px;">
+        <div style="width:24px;height:24px;border-radius:6px;background:#B45309;"></div>
+        <span style="font-size:13px;">warning #B45309</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); padding:8px 12px; border-radius:8px;">
+        <div style="width:24px;height:24px;border-radius:6px;background:#B91C1C;"></div>
+        <span style="font-size:13px;">error #B91C1C</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); padding:8px 12px; border-radius:8px;">
+        <div style="width:24px;height:24px;border-radius:6px;background:#F0F4F5; border:1px solid rgba(255,255,255,0.2);"></div>
+        <span style="font-size:13px;">background #F0F4F5</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); padding:8px 12px; border-radius:8px;">
+        <div style="width:24px;height:24px;border-radius:6px;background:#F8FAFB; border:1px solid rgba(255,255,255,0.2);"></div>
+        <span style="font-size:13px;">cardBg #F8FAFB</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); padding:8px 12px; border-radius:8px;">
+        <div style="width:24px;height:24px;border-radius:6px;background:#0C1E24;"></div>
+        <span style="font-size:13px;">text #0C1E24</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); padding:8px 12px; border-radius:8px;">
+        <div style="width:24px;height:24px;border-radius:6px;background:#446070;"></div>
+        <span style="font-size:13px;">textSecondary #446070</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Typography -->
+  <div style="margin-bottom:32px;">
+    <h3 style="font-size:14px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:12px;">Typography (SF Rounded)</h3>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+      <div style="background:rgba(255,255,255,0.06); padding:8px 12px; border-radius:8px; font-size:13px;">
+        <strong>largeTitle</strong> -- 34pt Semibold
+      </div>
+      <div style="background:rgba(255,255,255,0.06); padding:8px 12px; border-radius:8px; font-size:13px;">
+        <strong>title1</strong> -- 28pt Semibold
+      </div>
+      <div style="background:rgba(255,255,255,0.06); padding:8px 12px; border-radius:8px; font-size:13px;">
+        <strong>title2</strong> -- 22pt Semibold
+      </div>
+      <div style="background:rgba(255,255,255,0.06); padding:8px 12px; border-radius:8px; font-size:13px;">
+        <strong>title3</strong> -- 20pt Semibold
+      </div>
+      <div style="background:rgba(255,255,255,0.06); padding:8px 12px; border-radius:8px; font-size:13px;">
+        <strong>headline</strong> -- 17pt Bold
+      </div>
+      <div style="background:rgba(255,255,255,0.06); padding:8px 12px; border-radius:8px; font-size:13px;">
+        <strong>body</strong> -- 17pt Regular
+      </div>
+      <div style="background:rgba(255,255,255,0.06); padding:8px 12px; border-radius:8px; font-size:13px;">
+        <strong>subheadline</strong> -- 15pt Medium
+      </div>
+      <div style="background:rgba(255,255,255,0.06); padding:8px 12px; border-radius:8px; font-size:13px;">
+        <strong>caption</strong> -- 12pt Semibold
+      </div>
+      <div style="background:rgba(255,255,255,0.06); padding:8px 12px; border-radius:8px; font-size:13px;">
+        <strong>footnote</strong> -- 13pt Medium
+      </div>
+      <div style="background:rgba(255,255,255,0.06); padding:8px 12px; border-radius:8px; font-size:13px;">
+        <strong>overline</strong> -- 11pt Bold
+      </div>
+    </div>
+  </div>
+
+  <!-- Spacing & Radii -->
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; margin-bottom:32px;">
+    <div>
+      <h3 style="font-size:14px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:12px;">Spacing</h3>
+      <div style="font-size:13px; color:rgba(255,255,255,0.7); line-height:2;">
+        xxs: 4px / xs: 8px / sm: 12px<br>
+        md: 20px / lg: 28px / xl: 36px<br>
+        xxl: 56px / xxxl: 72px<br>
+        buttonHeight: 54px / cardPadding: 24px
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:14px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:12px;">Corner Radius</h3>
+      <div style="font-size:13px; color:rgba(255,255,255,0.7); line-height:2;">
+        sm: 6px / md: 12px / lg: 16px<br>
+        xl: 22px / xxl: 28px / full: 999px
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Colors -->
+  <div style="margin-bottom:32px;">
+    <h3 style="font-size:14px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:12px;">Category Accent Colors</h3>
+    <div style="display:flex; flex-wrap:wrap; gap:12px;">
+      <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); padding:8px 12px; border-radius:8px;">
+        <div style="width:20px;height:20px;border-radius:4px;background:#B45309;"></div>
+        <span style="font-size:13px;">Documents -- warning</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); padding:8px 12px; border-radius:8px;">
+        <div style="width:20px;height:20px;border-radius:4px;background:#0E7490;"></div>
+        <span style="font-size:13px;">Clothing -- primary</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); padding:8px 12px; border-radius:8px;">
+        <div style="width:20px;height:20px;border-radius:4px;background:#40B3A5;"></div>
+        <span style="font-size:13px;">Toiletries -- #40B3A5</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); padding:8px 12px; border-radius:8px;">
+        <div style="width:20px;height:20px;border-radius:4px;background:#4B6072;"></div>
+        <span style="font-size:13px;">Electronics -- secondary</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); padding:8px 12px; border-radius:8px;">
+        <div style="width:20px;height:20px;border-radius:4px;background:#B91C1C;"></div>
+        <span style="font-size:13px;">Sports -- error</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.08); padding:8px 12px; border-radius:8px;">
+        <div style="width:20px;height:20px;border-radius:4px;background:#446070;"></div>
+        <span style="font-size:13px;">Other -- textSecondary</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Initialize Lucide icons -->
+<script>
+  lucide.createIcons();
+</script>
+
+</body>
+</html>

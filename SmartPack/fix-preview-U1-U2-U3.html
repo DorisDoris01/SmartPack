@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartPack — U1 / U2 / U3 / U4 Fix Plan</title>
+<style>
+  :root {
+    --bg: #F0F4F8;
+    --card: #FFFFFF;
+    --primary: #0E7490;
+    --success: #166534;
+    --success-bg: #166534;
+    --text: #1A2B3C;
+    --text-sec: #6B7D8E;
+    --ring-track: rgba(14,116,144,0.12);
+    --shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.02);
+    --radius: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 48px;
+  }
+
+  /* Issue section */
+  .issue {
+    max-width: 900px;
+    margin: 0 auto 64px;
+  }
+
+  .issue-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .issue-tag {
+    background: var(--primary);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  .issue-tag.red { background: #dc2626; }
+
+  .issue-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .issue-desc {
+    font-size: 14px;
+    color: #aaa;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .issue-desc code {
+    background: rgba(255,255,255,0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #7dd3fc;
+  }
+
+  /* Before / After comparison */
+  .comparison {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .panel {
+    flex: 0 0 auto;
+  }
+
+  .panel-label {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  .panel-label.before { color: #f87171; }
+  .panel-label.after  { color: #4ade80; }
+
+  /* iPhone frame */
+  .iphone {
+    width: 300px;
+    background: var(--bg);
+    border-radius: 40px;
+    padding: 48px 16px 32px;
+    position: relative;
+    box-shadow: 0 0 0 3px #333, 0 8px 32px rgba(0,0,0,0.5);
+    min-height: 400px;
+  }
+
+  .iphone .notch {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 24px;
+    background: #222;
+    border-radius: 12px;
+  }
+
+  .nav-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    padding: 8px 8px 16px;
+    letter-spacing: -0.3px;
+  }
+
+  /* Trip card */
+  .trip-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px 22px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: visible;
+  }
+
+  .trip-card.deleting {
+    opacity: 0.4;
+    transform: translateX(60px);
+    transition: all 0.3s ease;
+  }
+
+  .trip-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.2px;
+    padding-right: 48px;
+    line-height: 1.3;
+  }
+
+  .trip-date {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-sec);
+    margin-top: 5px;
+    letter-spacing: 0.3px;
+  }
+
+  /* Ring */
+  .ring-container {
+    position: absolute;
+    top: 16px;
+    right: 22px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .ring-container svg {
+    width: 38px;
+    height: 38px;
+  }
+
+  .ring-center-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-sec);
+    font-family: -apple-system, system-ui, sans-serif;
+  }
+
+  .ring-center-text.check {
+    color: var(--success);
+    font-size: 10px;
+  }
+
+  /* A2 badge */
+  .completion-badge {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    width: 18px;
+    height: 18px;
+    background: var(--success-bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .completion-badge svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  /* Section header */
+  .section-header {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-sec);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 12px 8px 8px;
+  }
+
+  /* Annotation arrow */
+  .annotation {
+    position: absolute;
+    font-size: 11px;
+    font-weight: 600;
+    color: #f87171;
+    white-space: nowrap;
+  }
+
+  .annotation.fix {
+    color: #4ade80;
+  }
+
+  .annotation-line {
+    position: absolute;
+    border: none;
+  }
+
+  /* Fix spec table */
+  .fix-spec {
+    max-width: 900px;
+    margin: 24px auto 0;
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13px;
+  }
+
+  .fix-spec th {
+    text-align: left;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.05);
+    color: #ccc;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .fix-spec td {
+    padding: 8px 12px;
+    color: #aaa;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .fix-spec td code {
+    background: rgba(255,255,255,0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #7dd3fc;
+  }
+
+  /* Divider */
+  .divider {
+    max-width: 900px;
+    margin: 0 auto 64px;
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* Jump animation */
+  @keyframes jumpUp {
+    0%   { transform: translateY(0); }
+    30%  { transform: translateY(-50px); }
+    60%  { transform: translateY(-50px); }
+    100% { transform: translateY(0); }
+  }
+
+  .archived-jump {
+    animation: jumpUp 1.8s ease-in-out infinite;
+  }
+
+  /* Smooth delete animation */
+  @keyframes smoothDelete {
+    0%   { opacity: 1; max-height: 80px; margin-bottom: 12px; }
+    50%  { opacity: 0; max-height: 80px; margin-bottom: 12px; }
+    100% { opacity: 0; max-height: 0; margin-bottom: 0; }
+  }
+
+  .smooth-delete {
+    animation: smoothDelete 2.4s ease-in-out infinite;
+    overflow: hidden;
+  }
+
+  /* Highlight */
+  .highlight-red {
+    outline: 2px dashed #f87171;
+    outline-offset: 4px;
+  }
+
+  .highlight-green {
+    outline: 2px dashed #4ade80;
+    outline-offset: 4px;
+  }
+
+  .strikethrough {
+    text-decoration: line-through;
+    opacity: 0.4;
+  }
+</style>
+</head>
+<body>
+
+<h1>SmartPack — User Feedback Fixes</h1>
+<p class="subtitle">U1 Start Date / U2 Remove A2 Badge / U3 Archive Section Jump / U4 Remove Chevron</p>
+
+<!-- ==================== U1 ==================== -->
+<div class="issue">
+  <div class="issue-header">
+    <span class="issue-tag">U1</span>
+    <span class="issue-title">日期改为出发日期（非创建日期）</span>
+  </div>
+  <p class="issue-desc">
+    TripRowView 目前显示 <code>trip.createdAt</code>（创建日期），用户更关心行程的出发日期。
+    Trip 模型已有 <code>startDate: Date?</code> 属性。
+    <br>改动文件：<code>TripRowView.swift</code> — 日期源改为 <code>trip.startDate</code>；
+    <code>Trip.swift</code> — 新增 <code>formattedStartDate</code> 方法，<code>startDate</code> 为 nil 时显示"未设定"。
+  </p>
+
+  <div class="comparison">
+    <!-- Before -->
+    <div class="panel">
+      <div class="panel-label before">Before — 创建日期</div>
+      <div class="iphone">
+        <div class="notch"></div>
+        <div class="nav-title">我的行程</div>
+
+        <div class="trip-card">
+          <div class="trip-name">东京 5 日自由行</div>
+          <div class="trip-date highlight-red" style="position:relative;">
+            2026-02-20 创建
+            <span class="annotation" style="right:-90px; top:0;">← 创建日期</span>
+          </div>
+          <div class="ring-container">
+            <svg viewBox="0 0 38 38">
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="#0E7490" stroke-width="2.5"
+                stroke-dasharray="62" stroke-dashoffset="22" stroke-linecap="round"
+                transform="rotate(-90 19 19)"/>
+            </svg>
+            <span class="ring-center-text">65</span>
+          </div>
+        </div>
+
+        <div class="trip-card">
+          <div class="trip-name">北海道温泉之旅 7 天</div>
+          <div class="trip-date highlight-red">2026-02-18 创建</div>
+          <div class="ring-container">
+            <svg viewBox="0 0 38 38">
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="#0E7490" stroke-width="2.5"
+                stroke-dasharray="30" stroke-dashoffset="0" stroke-linecap="round"
+                transform="rotate(-90 19 19)"/>
+            </svg>
+            <span class="ring-center-text">29</span>
+          </div>
+        </div>
+
+        <div class="trip-card" style="opacity:0.6;">
+          <div class="trip-name" style="color:var(--text-sec);">大阪 3 日美食</div>
+          <div class="trip-date highlight-red">2026-01-05 创建</div>
+          <div class="ring-container" style="opacity:0.6;">
+            <svg viewBox="0 0 38 38">
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="#166534" stroke-width="2.5"
+                stroke-dasharray="103.7" stroke-dashoffset="0" stroke-linecap="round"
+                transform="rotate(-90 19 19)"/>
+            </svg>
+            <span class="ring-center-text check">✓</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- After -->
+    <div class="panel">
+      <div class="panel-label after">After — 出发日期</div>
+      <div class="iphone">
+        <div class="notch"></div>
+        <div class="nav-title">我的行程</div>
+
+        <div class="trip-card">
+          <div class="trip-name">东京 5 日自由行</div>
+          <div class="trip-date highlight-green" style="position:relative;">
+            出发 3月15日
+            <span class="annotation fix" style="right:-90px; top:0;">← 出发日期</span>
+          </div>
+          <div class="ring-container">
+            <svg viewBox="0 0 38 38">
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="#0E7490" stroke-width="2.5"
+                stroke-dasharray="62" stroke-dashoffset="22" stroke-linecap="round"
+                transform="rotate(-90 19 19)"/>
+            </svg>
+            <span class="ring-center-text">65</span>
+          </div>
+        </div>
+
+        <div class="trip-card">
+          <div class="trip-name">北海道温泉之旅 7 天</div>
+          <div class="trip-date highlight-green">出发 4月1日</div>
+          <div class="ring-container">
+            <svg viewBox="0 0 38 38">
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="#0E7490" stroke-width="2.5"
+                stroke-dasharray="30" stroke-dashoffset="0" stroke-linecap="round"
+                transform="rotate(-90 19 19)"/>
+            </svg>
+            <span class="ring-center-text">29</span>
+          </div>
+        </div>
+
+        <div class="trip-card" style="opacity:0.6;">
+          <div class="trip-name" style="color:var(--text-sec);">大阪 3 日美食</div>
+          <div class="trip-date highlight-green">出发 2月10日</div>
+          <div class="ring-container" style="opacity:0.6;">
+            <svg viewBox="0 0 38 38">
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="#166534" stroke-width="2.5"
+                stroke-dasharray="103.7" stroke-dashoffset="0" stroke-linecap="round"
+                transform="rotate(-90 19 19)"/>
+            </svg>
+            <span class="ring-center-text check">✓</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <table class="fix-spec">
+    <tr><th>属性</th><th>修复前</th><th>修复后</th></tr>
+    <tr><td>日期数据源</td><td><code>trip.createdAt</code></td><td><code>trip.startDate</code>（可选）</td></tr>
+    <tr><td>显示格式</td><td><code>"2026年2月20日"</code></td><td><code>"出发 3月15日"</code> / <code>"Departs Mar 15"</code></td></tr>
+    <tr><td>无出发日期时</td><td>—</td><td><code>"未设定出发日期"</code> / <code>"No departure date"</code></td></tr>
+    <tr><td>影响文件</td><td colspan="2"><code>TripRowView.swift</code>, <code>Trip.swift</code></td></tr>
+  </table>
+</div>
+
+<hr class="divider">
+
+<!-- ==================== U2 ==================== -->
+<div class="issue">
+  <div class="issue-header">
+    <span class="issue-tag">U2</span>
+    <span class="issue-title">双重勾选 — 移除 A2 Badge，保留圆环内 ✓</span>
+  </div>
+  <p class="issue-desc">
+    当行程已完成时，圆环内有 10pt 绿色 ✓，右下角又有 A2 badge 的 18px 白勾。两个勾视觉冗余。
+    <br>修复方案：移除 A2 badge（<code>.overlay(alignment: .bottomTrailing)</code> 整个块），保留圆环内 ✓。
+    <br>改动文件：<code>TripRowView.swift</code>
+  </p>
+
+  <div class="comparison">
+    <!-- Before -->
+    <div class="panel">
+      <div class="panel-label before">Before — 双重 ✓</div>
+      <div class="iphone" style="min-height:260px; padding-bottom: 40px;">
+        <div class="notch"></div>
+        <div style="padding: 60px 40px; display:flex; flex-direction:column; align-items:center; gap: 32px;">
+
+          <!-- Completed ring - before -->
+          <div style="position:relative; width:120px; height:120px;">
+            <svg viewBox="0 0 38 38" style="width:120px; height:120px;">
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="#166534" stroke-width="2.5"
+                stroke-dasharray="103.7" stroke-dashoffset="0" stroke-linecap="round"
+                transform="rotate(-90 19 19)"/>
+            </svg>
+            <!-- Inner checkmark -->
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+              font-size:32px; font-weight:700; color:#166534;">✓</div>
+            <span class="annotation" style="left:130px; top:25px;">← 圆环内 ✓（保留）</span>
+            <!-- A2 badge -->
+            <div style="position:absolute; bottom:6px; right:6px; width:36px; height:36px;
+              background:#166534; border-radius:50%; display:flex; align-items:center; justify-content:center;"
+              class="highlight-red">
+              <span style="color:#fff; font-size:18px; font-weight:700;">✓</span>
+            </div>
+            <span class="annotation" style="left:130px; top:75px;">← A2 badge（移除）</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- After -->
+    <div class="panel">
+      <div class="panel-label after">After — 仅圆环内 ✓</div>
+      <div class="iphone" style="min-height:260px; padding-bottom: 40px;">
+        <div class="notch"></div>
+        <div style="padding: 60px 40px; display:flex; flex-direction:column; align-items:center; gap: 32px;">
+
+          <!-- Completed ring - after -->
+          <div style="position:relative; width:120px; height:120px;">
+            <svg viewBox="0 0 38 38" style="width:120px; height:120px;">
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="#166534" stroke-width="2.5"
+                stroke-dasharray="103.7" stroke-dashoffset="0" stroke-linecap="round"
+                transform="rotate(-90 19 19)"/>
+            </svg>
+            <!-- Inner checkmark only -->
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+              font-size:32px; font-weight:700; color:#166534;" class="highlight-green">✓</div>
+            <span class="annotation fix" style="left:130px; top:25px;">← 唯一 ✓ 指示</span>
+            <!-- No badge -->
+            <span class="annotation fix" style="left:130px; top:75px;">badge 已移除 ✓</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <table class="fix-spec">
+    <tr><th>属性</th><th>修复前</th><th>修复后</th></tr>
+    <tr><td>圆环内（完成）</td><td>10pt 绿色 checkmark</td><td>不变（保留）</td></tr>
+    <tr><td>A2 badge</td><td>18px 白勾 + 绿色圆形 badge</td><td>删除整个 <code>.overlay(alignment: .bottomTrailing)</code></td></tr>
+    <tr><td>视觉勾数量</td><td>2 个</td><td>1 个</td></tr>
+  </table>
+</div>
+
+<hr class="divider">
+
+<!-- ==================== U3 ==================== -->
+<div class="issue">
+  <div class="issue-header">
+    <span class="issue-tag red">U3</span>
+    <span class="issue-title">删除行程时归档分区跳动</span>
+  </div>
+  <p class="issue-desc">
+    当用户滑动删除一个 active 行程后，archived section 立即上移填补空位，然后又下移回原位。
+    <br>原因：<code>deleteTripConfirmed()</code> 直接调用 <code>modelContext.delete()</code> 未包裹在 <code>withAnimation</code> 中，
+    导致 List 更新无动画过渡。
+    <br>修复方案：将删除操作包裹在 <code>withAnimation(.easeInOut(duration: 0.3))</code> 中。
+    <br>改动文件：<code>HomeView.swift</code>
+  </p>
+
+  <div class="comparison">
+    <!-- Before -->
+    <div class="panel">
+      <div class="panel-label before">Before — 跳动</div>
+      <div class="iphone">
+        <div class="notch"></div>
+        <div class="nav-title">我的行程</div>
+
+        <div class="trip-card" style="padding:14px 22px; opacity:0.3;">
+          <div class="trip-name" style="color:#aaa; text-decoration: line-through;">东京 5 日自由行</div>
+          <div style="position:absolute; right:22px; top:14px; font-size:11px; color:#f87171; font-weight:600;">已删除</div>
+        </div>
+
+        <div class="trip-card" style="padding:14px 22px;">
+          <div class="trip-name">北海道温泉之旅 7 天</div>
+          <div class="ring-container" style="top:14px;">
+            <svg viewBox="0 0 38 38">
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="#0E7490" stroke-width="2.5"
+                stroke-dasharray="30" stroke-dashoffset="0" stroke-linecap="round"
+                transform="rotate(-90 19 19)"/>
+            </svg>
+            <span class="ring-center-text">29</span>
+          </div>
+        </div>
+
+        <div class="section-header">已归档</div>
+        <div class="archived-jump">
+          <div class="trip-card" style="padding:14px 22px; opacity:0.6;">
+            <div class="trip-name" style="color:var(--text-sec);">大阪 3 日美食</div>
+            <div class="ring-container" style="top:14px; opacity:0.6;">
+              <svg viewBox="0 0 38 38">
+                <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+                <circle cx="19" cy="19" r="16.5" fill="none" stroke="#166534" stroke-width="2.5"
+                  stroke-dasharray="103.7" stroke-dashoffset="0" stroke-linecap="round"
+                  transform="rotate(-90 19 19)"/>
+              </svg>
+              <span class="ring-center-text check">✓</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align:center; margin-top:16px;">
+          <span style="font-size:11px; color:#f87171; font-weight:600;">↕ 归档区跳动</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- After -->
+    <div class="panel">
+      <div class="panel-label after">After — 平滑过渡</div>
+      <div class="iphone">
+        <div class="notch"></div>
+        <div class="nav-title">我的行程</div>
+
+        <div class="smooth-delete">
+          <div class="trip-card" style="padding:14px 22px;">
+            <div class="trip-name">东京 5 日自由行</div>
+            <div class="ring-container" style="top:14px;">
+              <svg viewBox="0 0 38 38">
+                <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+                <circle cx="19" cy="19" r="16.5" fill="none" stroke="#0E7490" stroke-width="2.5"
+                  stroke-dasharray="62" stroke-dashoffset="22" stroke-linecap="round"
+                  transform="rotate(-90 19 19)"/>
+              </svg>
+              <span class="ring-center-text">65</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="trip-card" style="padding:14px 22px;">
+          <div class="trip-name">北海道温泉之旅 7 天</div>
+          <div class="ring-container" style="top:14px;">
+            <svg viewBox="0 0 38 38">
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="#0E7490" stroke-width="2.5"
+                stroke-dasharray="30" stroke-dashoffset="0" stroke-linecap="round"
+                transform="rotate(-90 19 19)"/>
+            </svg>
+            <span class="ring-center-text">29</span>
+          </div>
+        </div>
+
+        <div class="section-header">已归档</div>
+        <div class="trip-card" style="padding:14px 22px; opacity:0.6;">
+          <div class="trip-name" style="color:var(--text-sec);">大阪 3 日美食</div>
+          <div class="ring-container" style="top:14px; opacity:0.6;">
+            <svg viewBox="0 0 38 38">
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="#166534" stroke-width="2.5"
+                stroke-dasharray="103.7" stroke-dashoffset="0" stroke-linecap="round"
+                transform="rotate(-90 19 19)"/>
+            </svg>
+            <span class="ring-center-text check">✓</span>
+          </div>
+        </div>
+
+        <div style="text-align:center; margin-top:16px;">
+          <span style="font-size:11px; color:#4ade80; font-weight:600;">↕ 归档区平滑上移</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <table class="fix-spec">
+    <tr><th>属性</th><th>修复前</th><th>修复后</th></tr>
+    <tr><td>删除代码</td><td><code>modelContext.delete(trip)</code></td><td><code>withAnimation { modelContext.delete(trip) }</code></td></tr>
+    <tr><td>List 过渡</td><td>无动画，瞬间布局变化</td><td>0.3s easeInOut 平滑过渡</td></tr>
+    <tr><td>归档区行为</td><td>跳上 → 跳回</td><td>平滑上移填补空位</td></tr>
+  </table>
+</div>
+
+<hr class="divider">
+
+<!-- ==================== U4 ==================== -->
+<div class="issue">
+  <div class="issue-header">
+    <span class="issue-tag">U4</span>
+    <span class="issue-title">移除 NavigationLink 系统 Chevron</span>
+  </div>
+  <p class="issue-desc">
+    <code>NavigationLink(value:)</code> 自动在行尾添加系统灰色 chevron（›），与卡片设计冲突。
+    卡片本身已是可点击容器，chevron 是多余的视觉噪音。
+    <br>修复方案：用 <code>ZStack + opacity(0) NavigationLink</code> 隐藏系统 chevron，保留导航功能。
+    <br>改动文件：<code>HomeView.swift</code>
+  </p>
+
+  <div class="comparison">
+    <!-- Before -->
+    <div class="panel">
+      <div class="panel-label before">Before — 系统 Chevron</div>
+      <div class="iphone" style="min-height: 300px;">
+        <div class="notch"></div>
+        <div class="nav-title">我的行程</div>
+
+        <div class="trip-card" style="padding: 14px 22px; display:flex; align-items:center;">
+          <div style="flex:1;">
+            <div class="trip-name" style="padding-right:60px;">东京 5 日自由行</div>
+          </div>
+          <div class="ring-container">
+            <svg viewBox="0 0 38 38">
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="#0E7490" stroke-width="2.5"
+                stroke-dasharray="62" stroke-dashoffset="22" stroke-linecap="round"
+                transform="rotate(-90 19 19)"/>
+            </svg>
+            <span class="ring-center-text">65</span>
+          </div>
+          <!-- System chevron -->
+          <div class="highlight-red" style="position:absolute; right:8px; top:50%; transform:translateY(-50%);
+            color:#C7C7CC; font-size:18px; font-weight:600;">›</div>
+          <span class="annotation" style="right:-60px; top:50%; transform:translateY(-50%);">← 移除</span>
+        </div>
+
+        <div class="trip-card" style="padding: 14px 22px; display:flex; align-items:center;">
+          <div style="flex:1;">
+            <div class="trip-name" style="padding-right:60px;">北海道温泉之旅 7 天</div>
+          </div>
+          <div class="ring-container">
+            <svg viewBox="0 0 38 38">
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="#0E7490" stroke-width="2.5"
+                stroke-dasharray="30" stroke-dashoffset="0" stroke-linecap="round"
+                transform="rotate(-90 19 19)"/>
+            </svg>
+            <span class="ring-center-text">29</span>
+          </div>
+          <div class="highlight-red" style="position:absolute; right:8px; top:50%; transform:translateY(-50%);
+            color:#C7C7CC; font-size:18px; font-weight:600;">›</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- After -->
+    <div class="panel">
+      <div class="panel-label after">After — 无 Chevron</div>
+      <div class="iphone" style="min-height: 300px;">
+        <div class="notch"></div>
+        <div class="nav-title">我的行程</div>
+
+        <div class="trip-card" style="padding: 14px 22px;">
+          <div class="trip-name">东京 5 日自由行</div>
+          <div class="ring-container" style="top:14px;">
+            <svg viewBox="0 0 38 38">
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="#0E7490" stroke-width="2.5"
+                stroke-dasharray="62" stroke-dashoffset="22" stroke-linecap="round"
+                transform="rotate(-90 19 19)"/>
+            </svg>
+            <span class="ring-center-text">65</span>
+          </div>
+        </div>
+
+        <div class="trip-card" style="padding: 14px 22px;">
+          <div class="trip-name">北海道温泉之旅 7 天</div>
+          <div class="ring-container" style="top:14px;">
+            <svg viewBox="0 0 38 38">
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="rgba(14,116,144,0.12)" stroke-width="2.5"/>
+              <circle cx="19" cy="19" r="16.5" fill="none" stroke="#0E7490" stroke-width="2.5"
+                stroke-dasharray="30" stroke-dashoffset="0" stroke-linecap="round"
+                transform="rotate(-90 19 19)"/>
+            </svg>
+            <span class="ring-center-text">29</span>
+          </div>
+        </div>
+
+        <div style="text-align:center; margin-top:24px;">
+          <span style="font-size:11px; color:#4ade80; font-weight:600;">卡片更干净，点击整个卡片即可导航</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <table class="fix-spec">
+    <tr><th>属性</th><th>修复前</th><th>修复后</th></tr>
+    <tr><td>NavigationLink</td><td><code>NavigationLink(value:) { TripRowView }</code></td><td><code>ZStack { NavigationLink(value:) { EmptyView() }.opacity(0)  TripRowView }</code></td></tr>
+    <tr><td>系统 Chevron</td><td>可见（灰色 ›）</td><td>隐藏</td></tr>
+    <tr><td>导航功能</td><td>点击卡片导航</td><td>不变</td></tr>
+    <tr><td>swipeActions</td><td>在 NavigationLink 上</td><td>移到 ZStack 外层</td></tr>
+  </table>
+</div>
+
+<hr class="divider">
+
+<!-- Summary -->
+<div style="max-width:900px; margin:0 auto; text-align:center;">
+  <h2 style="color:#fff; font-size:20px; margin-bottom:16px;">修复总览</h2>
+  <table class="fix-spec">
+    <tr><th>#</th><th>问题</th><th>影响文件</th><th>复杂度</th></tr>
+    <tr><td>U1</td><td>创建日期 → 出发日期</td><td><code>TripRowView.swift</code>, <code>Trip.swift</code></td><td style="color:#4ade80;">低</td></tr>
+    <tr><td>U2</td><td>移除 A2 badge，保留圆环内 ✓</td><td><code>TripRowView.swift</code></td><td style="color:#4ade80;">低</td></tr>
+    <tr><td>U3</td><td>删除跳动 → 平滑动画</td><td><code>HomeView.swift</code></td><td style="color:#4ade80;">低</td></tr>
+    <tr><td>U4</td><td>移除系统 chevron</td><td><code>HomeView.swift</code></td><td style="color:#4ade80;">低</td></tr>
+  </table>
+</div>
+
+</body>
+</html>

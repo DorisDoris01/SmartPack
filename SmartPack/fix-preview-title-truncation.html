@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartPack — Title Truncation Fix Options</title>
+<style>
+:root {
+  --primary:    #0E7490;
+  --secondary:  #4B6072;
+  --success:    #166534;
+  --bg:         #F0F4F5;
+  --card-bg:    #F8FAFB;
+  --text:       #0C1E24;
+  --text2:      #446070;
+  --sp-xxs: 4px; --sp-xs: 8px; --sp-sm: 12px;
+  --sp-md: 20px; --sp-lg: 28px;
+  --card-pad: 24px;
+  --r-lg: 16px;
+  --font: -apple-system, 'SF Pro Rounded', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: #1a1a2e;
+  color: #fff;
+  min-height: 100vh;
+  padding: 40px 20px 80px;
+}
+
+h1 { text-align: center; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+.page-sub { text-align: center; color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 48px; }
+
+/* ============================================================
+   CURRENT (BUG) SECTION
+   ============================================================ */
+.current-section {
+  max-width: 440px;
+  margin: 0 auto 56px;
+  text-align: center;
+}
+.current-label {
+  display: inline-block;
+  background: rgba(239,68,68,0.15);
+  color: #f87171;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 14px;
+  border-radius: 999px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+/* ============================================================
+   OPTIONS GRID
+   ============================================================ */
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.option-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.option-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.option-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+}
+.option-tag.a { background: #0E7490; color: #fff; }
+.option-tag.b { background: #7c3aed; color: #fff; }
+.option-tag.c { background: #d97706; color: #fff; }
+.option-tag.d { background: #059669; color: #fff; }
+.option-title {
+  font-size: 17px;
+  font-weight: 600;
+}
+.option-desc {
+  color: rgba(255,255,255,0.5);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  text-align: center;
+  max-width: 360px;
+}
+.option-pros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.pro-chip {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+.pro-chip.pro { background: rgba(34,197,94,0.12); color: #4ade80; }
+.pro-chip.con { background: rgba(239,68,68,0.12); color: #f87171; }
+
+/* ============================================================
+   iPHONE FRAME (compact 340px)
+   ============================================================ */
+.iphone {
+  width: 340px;
+  border-radius: 36px;
+  border: 3px solid #333;
+  overflow: hidden;
+  background: var(--bg);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+  display: flex;
+  flex-direction: column;
+}
+.status-bar {
+  height: 44px;
+  background: var(--bg);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 24px 5px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px 10px;
+  background: var(--bg);
+  flex-shrink: 0;
+}
+.nav-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.4px;
+}
+.nav-icons {
+  display: flex;
+  gap: 12px;
+  color: var(--primary);
+  font-size: 18px;
+}
+.content {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg);
+  padding-bottom: 16px;
+}
+.home-indicator {
+  height: 28px;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.home-indicator .bar {
+  width: 120px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--text);
+  opacity: 0.15;
+}
+
+/* ============================================================
+   SHARED CARD COMPONENTS
+   ============================================================ */
+.trip-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  padding: var(--card-pad);
+  margin: var(--sp-xs) var(--sp-md);
+  background: var(--card-bg);
+  border-radius: var(--r-lg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.progress-ring {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  flex-shrink: 0;
+}
+.progress-ring svg {
+  width: 48px;
+  height: 48px;
+  transform: rotate(-90deg);
+}
+.ring-track { fill: none; stroke: rgba(75,96,114,0.15); stroke-width: 3; }
+.ring-fill { fill: none; stroke: var(--primary); stroke-width: 3; stroke-linecap: round; }
+.ring-fill.complete { stroke: var(--success); }
+.ring-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+}
+.ring-text.complete { color: var(--success); }
+
+.trip-info { flex: 1; min-width: 0; }
+.trip-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.4px;
+}
+.trip-name.truncated {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.trip-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  margin-top: var(--sp-xxs);
+}
+.trip-date, .trip-count {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  letter-spacing: 0.6px;
+}
+.trip-count.complete { color: var(--success); }
+.meta-sep {
+  width: 1px;
+  height: 10px;
+  background: rgba(68,96,112,0.3);
+  border-radius: 1px;
+}
+.chevron {
+  color: rgba(68,96,112,0.4);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* Bug indicator */
+.bug-badge {
+  position: absolute;
+  background: #ef4444;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+/* Section header */
+.section-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  padding: var(--sp-md) var(--sp-md) var(--sp-xs);
+  padding-left: calc(var(--sp-md) + var(--sp-xxs));
+}
+
+/* ============================================================
+   OPTION-SPECIFIC STYLES
+   ============================================================ */
+
+/* --- Option A: Remove count, 2-line title --- */
+.opt-a .trip-name {
+  line-height: 1.3;
+  /* 2-line wrap allowed */
+}
+
+/* --- Option B: Bottom meta bar --- */
+.opt-b .trip-row {
+  flex-wrap: wrap;
+}
+.opt-b .trip-row-main {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  width: 100%;
+}
+.opt-b .trip-row-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid rgba(75,96,114,0.1);
+}
+.opt-b .trip-name {
+  line-height: 1.3;
+}
+
+/* --- Option C: Ring as corner badge --- */
+.opt-c .trip-row {
+  flex-direction: column;
+  align-items: stretch;
+  position: relative;
+  padding: 20px;
+}
+.opt-c .mini-ring {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+}
+.opt-c .mini-ring svg {
+  width: 36px;
+  height: 36px;
+  transform: rotate(-90deg);
+}
+.opt-c .mini-ring .ring-track { stroke-width: 2.5; }
+.opt-c .mini-ring .ring-fill { stroke-width: 2.5; }
+.opt-c .mini-ring-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text2);
+}
+.opt-c .trip-name {
+  font-size: 20px;
+  line-height: 1.3;
+  padding-right: 44px; /* space for mini-ring */
+}
+.opt-c .trip-meta {
+  margin-top: 6px;
+}
+
+/* --- Option D: Two-line with split layout --- */
+.opt-d .trip-row {
+  padding: 16px 20px;
+  gap: 14px;
+}
+.opt-d .progress-ring {
+  width: 42px;
+  height: 42px;
+}
+.opt-d .progress-ring svg {
+  width: 42px;
+  height: 42px;
+}
+.opt-d .trip-name {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.opt-d .trip-meta {
+  margin-top: 3px;
+}
+.opt-d .trip-date, .opt-d .trip-count {
+  font-size: 12px;
+}
+
+/* ============================================================
+   ANNOTATION
+   ============================================================ */
+.annotation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 20px 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.annotation.problem { color: #f87171; }
+.annotation.fix { color: #4ade80; }
+.annotation .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.annotation.problem .dot { background: #ef4444; }
+.annotation.fix .dot { background: #22c55e; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 820px) {
+  .options-grid {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}
+</style>
+</head>
+<body>
+
+<h1>Trip Title Truncation — Fix Options</h1>
+<p class="page-sub">4 layout approaches compared against the current bug</p>
+
+<!-- ============================================================
+     CURRENT STATE (BUG)
+     ============================================================ -->
+<div class="current-section">
+  <span class="current-label">Current — Bug</span>
+  <div class="iphone">
+    <div class="status-bar"><span>9:41</span><span>...</span></div>
+    <div class="nav-bar">
+      <span class="nav-title">My Trips</span>
+      <div class="nav-icons">+ &bull;&bull;&bull;</div>
+    </div>
+    <div class="content">
+      <div class="trip-row" style="position:relative;">
+        <div class="progress-ring">
+          <svg viewBox="0 0 48 48">
+            <circle class="ring-track" cx="24" cy="24" r="22"/>
+            <circle class="ring-fill" cx="24" cy="24" r="22" stroke-dasharray="138.23" stroke-dashoffset="55.29"/>
+          </svg>
+          <span class="ring-text">60</span>
+        </div>
+        <div class="trip-info">
+          <div class="trip-name truncated">Shanghai Business Trip - ...</div>
+          <div class="trip-meta">
+            <span class="trip-date">Mar 1 - Mar 5</span>
+            <span class="meta-sep"></span>
+            <span class="trip-count">15/25</span>
+          </div>
+        </div>
+        <span class="chevron">&#x203A;</span>
+        <span class="bug-badge" style="top:-8px; right:40px;">Truncated!</span>
+      </div>
+
+      <div class="trip-row" style="position:relative;">
+        <div class="progress-ring">
+          <svg viewBox="0 0 48 48">
+            <circle class="ring-track" cx="24" cy="24" r="22"/>
+            <circle class="ring-fill" cx="24" cy="24" r="22" stroke-dasharray="138.23" stroke-dashoffset="96.76"/>
+          </svg>
+          <span class="ring-text">30</span>
+        </div>
+        <div class="trip-info">
+          <div class="trip-name truncated">Family Camping &amp; Hi...</div>
+          <div class="trip-meta">
+            <span class="trip-date">Mar 15 - Mar 20</span>
+            <span class="meta-sep"></span>
+            <span class="trip-count">9/30</span>
+          </div>
+        </div>
+        <span class="chevron">&#x203A;</span>
+        <span class="bug-badge" style="top:-8px; right:40px;">Truncated!</span>
+      </div>
+
+      <div class="trip-row" style="position:relative;">
+        <div class="progress-ring">
+          <svg viewBox="0 0 48 48">
+            <circle class="ring-track" cx="24" cy="24" r="22"/>
+            <circle class="ring-fill complete" cx="24" cy="24" r="22" stroke-dasharray="138.23" stroke-dashoffset="0"/>
+          </svg>
+          <span class="ring-text complete" style="font-size:14px;">&#x2713;</span>
+        </div>
+        <div class="trip-info">
+          <div class="trip-name truncated" style="color:var(--text2);">Bali Diving &amp; Beach ...</div>
+          <div class="trip-meta">
+            <span class="trip-date">Feb 10 - Feb 18</span>
+            <span class="meta-sep"></span>
+            <span class="trip-count complete">30/30</span>
+          </div>
+        </div>
+        <span class="chevron">&#x203A;</span>
+        <span class="bug-badge" style="top:-8px; right:40px;">Truncated!</span>
+      </div>
+
+      <div class="annotation problem" style="margin-top:8px;">
+        <span class="dot"></span>
+        Ring (48px) + padding (24px x2) + count text eat ~50% of card width
+      </div>
+      <div class="annotation problem">
+        <span class="dot"></span>
+        lineLimit(1) forces truncation on any name > ~16 chars
+      </div>
+    </div>
+    <div class="home-indicator"><div class="bar"></div></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     OPTIONS GRID
+     ============================================================ -->
+<div class="options-grid">
+
+  <!-- ============================================================
+       OPTION A: Remove X/X, allow 2-line title
+       ============================================================ -->
+  <div class="option-slot opt-a">
+    <div class="option-header">
+      <span class="option-tag a">Option A</span>
+      <span class="option-title">Remove Count + 2-Line Title</span>
+    </div>
+    <p class="option-desc">
+      Remove the redundant X/X count (ring already shows %).
+      Allow title to wrap to 2 lines. Minimal layout change.
+    </p>
+    <div class="option-pros">
+      <span class="pro-chip pro">Smallest code change</span>
+      <span class="pro-chip pro">No info loss (ring has %)</span>
+      <span class="pro-chip con">Taller rows if title wraps</span>
+    </div>
+    <div class="iphone">
+      <div class="status-bar"><span>9:41</span><span>...</span></div>
+      <div class="nav-bar">
+        <span class="nav-title">My Trips</span>
+        <div class="nav-icons">+ &bull;&bull;&bull;</div>
+      </div>
+      <div class="content">
+        <div class="trip-row">
+          <div class="progress-ring">
+            <svg viewBox="0 0 48 48">
+              <circle class="ring-track" cx="24" cy="24" r="22"/>
+              <circle class="ring-fill" cx="24" cy="24" r="22" stroke-dasharray="138.23" stroke-dashoffset="55.29"/>
+            </svg>
+            <span class="ring-text">60</span>
+          </div>
+          <div class="trip-info">
+            <div class="trip-name">Shanghai Business Trip - Mar 1</div>
+            <div class="trip-meta">
+              <span class="trip-date">Mar 1 - Mar 5</span>
+            </div>
+          </div>
+          <span class="chevron">&#x203A;</span>
+        </div>
+
+        <div class="trip-row">
+          <div class="progress-ring">
+            <svg viewBox="0 0 48 48">
+              <circle class="ring-track" cx="24" cy="24" r="22"/>
+              <circle class="ring-fill" cx="24" cy="24" r="22" stroke-dasharray="138.23" stroke-dashoffset="96.76"/>
+            </svg>
+            <span class="ring-text">30</span>
+          </div>
+          <div class="trip-info">
+            <div class="trip-name">Family Camping &amp; Hiking Adventure</div>
+            <div class="trip-meta">
+              <span class="trip-date">Mar 15 - Mar 20</span>
+            </div>
+          </div>
+          <span class="chevron">&#x203A;</span>
+        </div>
+
+        <div class="trip-row">
+          <div class="progress-ring">
+            <svg viewBox="0 0 48 48">
+              <circle class="ring-track" cx="24" cy="24" r="22"/>
+              <circle class="ring-fill complete" cx="24" cy="24" r="22" stroke-dasharray="138.23" stroke-dashoffset="0"/>
+            </svg>
+            <span class="ring-text complete" style="font-size:14px;">&#x2713;</span>
+          </div>
+          <div class="trip-info">
+            <div class="trip-name" style="color:var(--text2);">Bali Diving &amp; Beach Retreat</div>
+            <div class="trip-meta">
+              <span class="trip-date">Feb 10 - Feb 18</span>
+            </div>
+          </div>
+          <span class="chevron">&#x203A;</span>
+        </div>
+
+        <div class="annotation fix" style="margin-top:8px;">
+          <span class="dot"></span>
+          X/X removed — ring already shows progress %
+        </div>
+        <div class="annotation fix">
+          <span class="dot"></span>
+          Title wraps naturally to 2 lines when needed
+        </div>
+      </div>
+      <div class="home-indicator"><div class="bar"></div></div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       OPTION B: Bottom meta footer row
+       ============================================================ -->
+  <div class="option-slot opt-b">
+    <div class="option-header">
+      <span class="option-tag b">Option B</span>
+      <span class="option-title">Bottom Meta Bar</span>
+    </div>
+    <p class="option-desc">
+      Move date + count to a footer row below the title.
+      Title gets the full width of the info area. Clear hierarchy.
+    </p>
+    <div class="option-pros">
+      <span class="pro-chip pro">Title gets max width</span>
+      <span class="pro-chip pro">Clean visual hierarchy</span>
+      <span class="pro-chip con">Cards taller overall</span>
+    </div>
+    <div class="iphone">
+      <div class="status-bar"><span>9:41</span><span>...</span></div>
+      <div class="nav-bar">
+        <span class="nav-title">My Trips</span>
+        <div class="nav-icons">+ &bull;&bull;&bull;</div>
+      </div>
+      <div class="content">
+        <!-- Card with bottom meta -->
+        <div style="margin:var(--sp-xs) var(--sp-md); background:var(--card-bg); border-radius:var(--r-lg); box-shadow:0 2px 8px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.02); padding:var(--card-pad);">
+          <div style="display:flex; align-items:center; gap:var(--sp-md);">
+            <div class="progress-ring">
+              <svg viewBox="0 0 48 48">
+                <circle class="ring-track" cx="24" cy="24" r="22"/>
+                <circle class="ring-fill" cx="24" cy="24" r="22" stroke-dasharray="138.23" stroke-dashoffset="55.29"/>
+              </svg>
+              <span class="ring-text">60</span>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div class="trip-name">Shanghai Business Trip - Mar 1</div>
+            </div>
+            <span class="chevron">&#x203A;</span>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding-top:12px; border-top:1px solid rgba(75,96,114,0.08);">
+            <span class="trip-date">Mar 1 - Mar 5</span>
+            <span class="trip-count">15/25 packed</span>
+          </div>
+        </div>
+
+        <div style="margin:var(--sp-xs) var(--sp-md); background:var(--card-bg); border-radius:var(--r-lg); box-shadow:0 2px 8px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.02); padding:var(--card-pad);">
+          <div style="display:flex; align-items:center; gap:var(--sp-md);">
+            <div class="progress-ring">
+              <svg viewBox="0 0 48 48">
+                <circle class="ring-track" cx="24" cy="24" r="22"/>
+                <circle class="ring-fill" cx="24" cy="24" r="22" stroke-dasharray="138.23" stroke-dashoffset="96.76"/>
+              </svg>
+              <span class="ring-text">30</span>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div class="trip-name">Family Camping &amp; Hiking Adventure</div>
+            </div>
+            <span class="chevron">&#x203A;</span>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding-top:12px; border-top:1px solid rgba(75,96,114,0.08);">
+            <span class="trip-date">Mar 15 - Mar 20</span>
+            <span class="trip-count">9/30 packed</span>
+          </div>
+        </div>
+
+        <div style="margin:var(--sp-xs) var(--sp-md); background:var(--card-bg); border-radius:var(--r-lg); box-shadow:0 2px 8px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.02); padding:var(--card-pad);">
+          <div style="display:flex; align-items:center; gap:var(--sp-md);">
+            <div class="progress-ring">
+              <svg viewBox="0 0 48 48">
+                <circle class="ring-track" cx="24" cy="24" r="22"/>
+                <circle class="ring-fill complete" cx="24" cy="24" r="22" stroke-dasharray="138.23" stroke-dashoffset="0"/>
+              </svg>
+              <span class="ring-text complete" style="font-size:14px;">&#x2713;</span>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div class="trip-name" style="color:var(--text2);">Bali Diving &amp; Beach Retreat</div>
+            </div>
+            <span class="chevron">&#x203A;</span>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding-top:12px; border-top:1px solid rgba(75,96,114,0.08);">
+            <span class="trip-date">Feb 10 - Feb 18</span>
+            <span class="trip-count complete">30/30 packed &#x2713;</span>
+          </div>
+        </div>
+
+        <div class="annotation fix" style="margin-top:8px;">
+          <span class="dot"></span>
+          Title row: ring + full-width name + chevron only
+        </div>
+        <div class="annotation fix">
+          <span class="dot"></span>
+          Footer row: date left, count right — no crowding
+        </div>
+      </div>
+      <div class="home-indicator"><div class="bar"></div></div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       OPTION C: Mini ring as corner badge
+       ============================================================ -->
+  <div class="option-slot opt-c">
+    <div class="option-header">
+      <span class="option-tag c">Option C</span>
+      <span class="option-title">Corner Ring Badge</span>
+    </div>
+    <p class="option-desc">
+      Shrink the ring to a 36px badge in the top-right corner.
+      Title spans the full card width. Most space-efficient.
+    </p>
+    <div class="option-pros">
+      <span class="pro-chip pro">Title gets full card width</span>
+      <span class="pro-chip pro">Compact density</span>
+      <span class="pro-chip con">Ring less prominent</span>
+      <span class="pro-chip con">Bigger layout change</span>
+    </div>
+    <div class="iphone">
+      <div class="status-bar"><span>9:41</span><span>...</span></div>
+      <div class="nav-bar">
+        <span class="nav-title">My Trips</span>
+        <div class="nav-icons">+ &bull;&bull;&bull;</div>
+      </div>
+      <div class="content">
+        <!-- Card with corner ring -->
+        <div style="margin:var(--sp-xs) var(--sp-md); background:var(--card-bg); border-radius:var(--r-lg); box-shadow:0 2px 8px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.02); padding:20px; position:relative;">
+          <!-- Mini ring top-right -->
+          <div style="position:absolute; top:14px; right:14px; width:36px; height:36px;">
+            <svg viewBox="0 0 36 36" style="width:36px; height:36px; transform:rotate(-90deg);">
+              <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(75,96,114,0.15)" stroke-width="2.5"/>
+              <circle cx="18" cy="18" r="16" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"
+                stroke-dasharray="100.53" stroke-dashoffset="40.21"/>
+            </svg>
+            <span style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:10px; font-weight:700; color:var(--text2);">60</span>
+          </div>
+          <div class="trip-name" style="padding-right:44px; line-height:1.3;">Shanghai Business Trip - Mar 1</div>
+          <div class="trip-meta" style="margin-top:6px;">
+            <span class="trip-date">Mar 1 - Mar 5</span>
+            <span class="meta-sep"></span>
+            <span class="trip-count">15/25</span>
+          </div>
+        </div>
+
+        <div style="margin:var(--sp-xs) var(--sp-md); background:var(--card-bg); border-radius:var(--r-lg); box-shadow:0 2px 8px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.02); padding:20px; position:relative;">
+          <div style="position:absolute; top:14px; right:14px; width:36px; height:36px;">
+            <svg viewBox="0 0 36 36" style="width:36px; height:36px; transform:rotate(-90deg);">
+              <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(75,96,114,0.15)" stroke-width="2.5"/>
+              <circle cx="18" cy="18" r="16" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"
+                stroke-dasharray="100.53" stroke-dashoffset="70.37"/>
+            </svg>
+            <span style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:10px; font-weight:700; color:var(--text2);">30</span>
+          </div>
+          <div class="trip-name" style="padding-right:44px; line-height:1.3;">Family Camping &amp; Hiking Adventure</div>
+          <div class="trip-meta" style="margin-top:6px;">
+            <span class="trip-date">Mar 15 - Mar 20</span>
+            <span class="meta-sep"></span>
+            <span class="trip-count">9/30</span>
+          </div>
+        </div>
+
+        <div style="margin:var(--sp-xs) var(--sp-md); background:var(--card-bg); border-radius:var(--r-lg); box-shadow:0 2px 8px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.02); padding:20px; position:relative;">
+          <div style="position:absolute; top:14px; right:14px; width:36px; height:36px;">
+            <svg viewBox="0 0 36 36" style="width:36px; height:36px; transform:rotate(-90deg);">
+              <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(75,96,114,0.15)" stroke-width="2.5"/>
+              <circle cx="18" cy="18" r="16" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round"
+                stroke-dasharray="100.53" stroke-dashoffset="0"/>
+            </svg>
+            <span style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:12px; font-weight:700; color:var(--success);">&#x2713;</span>
+          </div>
+          <div class="trip-name" style="padding-right:44px; line-height:1.3; color:var(--text2);">Bali Diving &amp; Beach Retreat</div>
+          <div class="trip-meta" style="margin-top:6px;">
+            <span class="trip-date">Feb 10 - Feb 18</span>
+            <span class="meta-sep"></span>
+            <span class="trip-count complete">30/30</span>
+          </div>
+        </div>
+
+        <div class="annotation fix" style="margin-top:8px;">
+          <span class="dot"></span>
+          Title spans full width minus tiny 36px ring
+        </div>
+        <div class="annotation fix">
+          <span class="dot"></span>
+          Vertical card layout — no horizontal squeeze
+        </div>
+      </div>
+      <div class="home-indicator"><div class="bar"></div></div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       OPTION D: Compact row — smaller ring + smaller font
+       ============================================================ -->
+  <div class="option-slot opt-d">
+    <div class="option-header">
+      <span class="option-tag d">Option D</span>
+      <span class="option-title">Compact Row + 2-Line</span>
+    </div>
+    <p class="option-desc">
+      Reduce ring to 42px, font to 17px, card padding to 16px.
+      Allow 2-line title. Fits more trips on screen.
+    </p>
+    <div class="option-pros">
+      <span class="pro-chip pro">More trips visible</span>
+      <span class="pro-chip pro">Keeps familiar layout</span>
+      <span class="pro-chip con">Less visual impact</span>
+    </div>
+    <div class="iphone">
+      <div class="status-bar"><span>9:41</span><span>...</span></div>
+      <div class="nav-bar">
+        <span class="nav-title">My Trips</span>
+        <div class="nav-icons">+ &bull;&bull;&bull;</div>
+      </div>
+      <div class="content">
+        <div class="trip-row" style="padding:16px 20px; gap:14px;">
+          <div class="progress-ring" style="width:42px; height:42px;">
+            <svg viewBox="0 0 42 42" style="width:42px; height:42px; transform:rotate(-90deg);">
+              <circle cx="21" cy="21" r="19" fill="none" stroke="rgba(75,96,114,0.15)" stroke-width="2.5"/>
+              <circle cx="21" cy="21" r="19" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"
+                stroke-dasharray="119.38" stroke-dashoffset="47.75"/>
+            </svg>
+            <span class="ring-text">60</span>
+          </div>
+          <div class="trip-info">
+            <div class="trip-name" style="font-size:17px; line-height:1.35;">Shanghai Business Trip - Mar 1</div>
+            <div class="trip-meta" style="margin-top:3px;">
+              <span class="trip-date" style="font-size:12px;">Mar 1 - Mar 5</span>
+              <span class="meta-sep"></span>
+              <span class="trip-count" style="font-size:12px;">15/25</span>
+            </div>
+          </div>
+          <span class="chevron">&#x203A;</span>
+        </div>
+
+        <div class="trip-row" style="padding:16px 20px; gap:14px;">
+          <div class="progress-ring" style="width:42px; height:42px;">
+            <svg viewBox="0 0 42 42" style="width:42px; height:42px; transform:rotate(-90deg);">
+              <circle cx="21" cy="21" r="19" fill="none" stroke="rgba(75,96,114,0.15)" stroke-width="2.5"/>
+              <circle cx="21" cy="21" r="19" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"
+                stroke-dasharray="119.38" stroke-dashoffset="83.57"/>
+            </svg>
+            <span class="ring-text">30</span>
+          </div>
+          <div class="trip-info">
+            <div class="trip-name" style="font-size:17px; line-height:1.35;">Family Camping &amp; Hiking Adventure</div>
+            <div class="trip-meta" style="margin-top:3px;">
+              <span class="trip-date" style="font-size:12px;">Mar 15 - Mar 20</span>
+              <span class="meta-sep"></span>
+              <span class="trip-count" style="font-size:12px;">9/30</span>
+            </div>
+          </div>
+          <span class="chevron">&#x203A;</span>
+        </div>
+
+        <div class="trip-row" style="padding:16px 20px; gap:14px;">
+          <div class="progress-ring" style="width:42px; height:42px;">
+            <svg viewBox="0 0 42 42" style="width:42px; height:42px; transform:rotate(-90deg);">
+              <circle cx="21" cy="21" r="19" fill="none" stroke="rgba(75,96,114,0.15)" stroke-width="2.5"/>
+              <circle cx="21" cy="21" r="19" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round"
+                stroke-dasharray="119.38" stroke-dashoffset="0"/>
+            </svg>
+            <span class="ring-text complete" style="font-size:13px;">&#x2713;</span>
+          </div>
+          <div class="trip-info">
+            <div class="trip-name" style="font-size:17px; line-height:1.35; color:var(--text2);">Bali Diving &amp; Beach Retreat</div>
+            <div class="trip-meta" style="margin-top:3px;">
+              <span class="trip-date" style="font-size:12px;">Feb 10 - Feb 18</span>
+              <span class="meta-sep"></span>
+              <span class="trip-count complete" style="font-size:12px;">30/30</span>
+            </div>
+          </div>
+          <span class="chevron">&#x203A;</span>
+        </div>
+
+        <!-- Extra row to show density -->
+        <div class="trip-row" style="padding:16px 20px; gap:14px;">
+          <div class="progress-ring" style="width:42px; height:42px;">
+            <svg viewBox="0 0 42 42" style="width:42px; height:42px; transform:rotate(-90deg);">
+              <circle cx="21" cy="21" r="19" fill="none" stroke="rgba(75,96,114,0.15)" stroke-width="2.5"/>
+              <circle cx="21" cy="21" r="19" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"
+                stroke-dasharray="119.38" stroke-dashoffset="107.44"/>
+            </svg>
+            <span class="ring-text">10</span>
+          </div>
+          <div class="trip-info">
+            <div class="trip-name" style="font-size:17px; line-height:1.35;">Tokyo Cherry Blossom</div>
+            <div class="trip-meta" style="margin-top:3px;">
+              <span class="trip-date" style="font-size:12px;">Apr 1 - Apr 7</span>
+              <span class="meta-sep"></span>
+              <span class="trip-count" style="font-size:12px;">3/28</span>
+            </div>
+          </div>
+          <span class="chevron">&#x203A;</span>
+        </div>
+
+        <div class="annotation fix" style="margin-top:8px;">
+          <span class="dot"></span>
+          42px ring + 17px font + 16px padding = ~30% more title space
+        </div>
+        <div class="annotation fix">
+          <span class="dot"></span>
+          Fits 4+ trips on one screen vs current 3
+        </div>
+      </div>
+      <div class="home-indicator"><div class="bar"></div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================
+     COMPARISON SUMMARY TABLE
+     ============================================================ -->
+<div style="max-width:800px; margin:64px auto 0; padding:32px; background:rgba(255,255,255,0.04); border-radius:16px; border:1px solid rgba(255,255,255,0.08);">
+  <h2 style="font-size:18px; margin-bottom:16px; text-align:center;">Comparison Summary / 对比总结</h2>
+  <table style="width:100%; border-collapse:collapse; font-size:13px;">
+    <thead>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+        <th style="text-align:left; padding:8px 12px; color:rgba(255,255,255,0.5); font-weight:600;">Option</th>
+        <th style="text-align:left; padding:8px 12px; color:rgba(255,255,255,0.5); font-weight:600;">Title Space</th>
+        <th style="text-align:left; padding:8px 12px; color:rgba(255,255,255,0.5); font-weight:600;">Info Kept</th>
+        <th style="text-align:left; padding:8px 12px; color:rgba(255,255,255,0.5); font-weight:600;">Code Change</th>
+        <th style="text-align:left; padding:8px 12px; color:rgba(255,255,255,0.5); font-weight:600;">Card Height</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+        <td style="padding:8px 12px;"><span style="color:#0EA5E9; font-weight:600;">A</span> Remove Count</td>
+        <td style="padding:8px 12px;">+50px wider</td>
+        <td style="padding:8px 12px;">Date + Ring %</td>
+        <td style="padding:8px 12px; color:#4ade80;">Small</td>
+        <td style="padding:8px 12px;">Same / +1 line</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+        <td style="padding:8px 12px;"><span style="color:#7c3aed; font-weight:600;">B</span> Bottom Meta</td>
+        <td style="padding:8px 12px;">+80px wider</td>
+        <td style="padding:8px 12px;">All info kept</td>
+        <td style="padding:8px 12px; color:#fbbf24;">Medium</td>
+        <td style="padding:8px 12px;">+24px taller</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+        <td style="padding:8px 12px;"><span style="color:#d97706; font-weight:600;">C</span> Corner Badge</td>
+        <td style="padding:8px 12px;">Full width</td>
+        <td style="padding:8px 12px;">All info kept</td>
+        <td style="padding:8px 12px; color:#f87171;">Large</td>
+        <td style="padding:8px 12px;">Similar</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 12px;"><span style="color:#059669; font-weight:600;">D</span> Compact Row</td>
+        <td style="padding:8px 12px;">+40px wider</td>
+        <td style="padding:8px 12px;">All info kept</td>
+        <td style="padding:8px 12px; color:#4ade80;">Small</td>
+        <td style="padding:8px 12px;">-12px shorter</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

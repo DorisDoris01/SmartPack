@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ItemManagement U1/U2/U3 Fix Preview</title>
+<style>
+  :root {
+    --primary: #0E7490;
+    --primary-light: #22D3EE;
+    --bg: #F0F4F5;
+    --card: #F8FAFB;
+    --text: #0C1E24;
+    --text-secondary: #446070;
+    --divider: rgba(75,96,114,0.15);
+    --red: #B91C1C;
+    --red-bg: #FEE2E2;
+    --orange: #EA580C;
+    --green: #166534;
+    --green-bg: #DCFCE7;
+    --system-gray5: #E5E5EA;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(12,30,36,0.08), 0 4px 12px rgba(12,30,36,0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, 'SF Pro Rounded', BlinkMacSystemFont, system-ui, sans-serif;
+    background: #1a1a2e;
+    color: var(--text);
+    padding: 32px 24px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    color: #fff;
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .issue-section {
+    max-width: 800px;
+    margin: 0 auto 48px;
+  }
+
+  .issue-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .issue-badge {
+    background: var(--primary);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  .issue-badge.high { background: var(--red); }
+
+  .issue-title {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .issue-desc {
+    color: rgba(255,255,255,0.6);
+    font-size: 14px;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .compare-row {
+    display: flex;
+    gap: 20px;
+  }
+
+  .compare-col {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .compare-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-left: 4px;
+  }
+
+  .compare-label.before { color: #f87171; }
+  .compare-label.after { color: #4ade80; }
+
+  /* Phone frame */
+  .phone {
+    background: var(--bg);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    position: relative;
+  }
+
+  .phone-header {
+    background: var(--card);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--divider);
+  }
+
+  .phone-header .title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .phone-header .action {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--primary);
+  }
+
+  .phone-body {
+    padding: 0;
+  }
+
+  /* List styles */
+  .section-header {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    padding: 20px 16px 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .list-group {
+    background: var(--card);
+    margin: 0 16px 12px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .tag-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    gap: 12px;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .tag-row:hover { background: rgba(14,116,144,0.04); }
+
+  .tag-icon {
+    width: 24px;
+    text-align: center;
+    color: var(--primary);
+    font-size: 16px;
+  }
+
+  .tag-name {
+    font-size: 17px;
+    flex: 1;
+  }
+
+  .tag-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .disclosure {
+    color: var(--text-secondary);
+    font-size: 12px;
+    transition: transform 0.2s;
+  }
+
+  .disclosure.open { transform: rotate(90deg); }
+
+  .divider {
+    height: 1px;
+    background: var(--divider);
+    margin-left: 52px;
+  }
+
+  /* Item rows */
+  .item-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px 12px 52px;
+    gap: 8px;
+    min-height: 44px;
+    position: relative;
+    transition: transform 0.3s ease;
+  }
+
+  .item-name {
+    font-size: 17px;
+    flex: 1;
+  }
+
+  .item-name.deleted {
+    color: var(--text-secondary);
+    text-decoration: line-through;
+    text-decoration-color: var(--orange);
+  }
+
+  .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .badge.preset {
+    background: var(--system-gray5);
+    color: var(--text-secondary);
+  }
+
+  .badge.preset-ds {
+    background: rgba(14,116,144,0.1);
+    color: var(--primary);
+  }
+
+  .badge.custom {
+    background: rgba(234,88,12,0.1);
+    color: var(--orange);
+  }
+
+  .minus-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--red);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .add-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px 12px 52px;
+    gap: 8px;
+    color: var(--primary);
+    cursor: pointer;
+    min-height: 44px;
+  }
+
+  .add-row:hover { background: rgba(14,116,144,0.04); }
+
+  .add-icon {
+    font-size: 18px;
+  }
+
+  .add-text {
+    font-size: 17px;
+  }
+
+  /* Swipe action indicator */
+  .swipe-hint {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .swipe-hint.delete { background: var(--red); }
+  .swipe-hint.restore { background: var(--primary); }
+
+  .item-row.swiped { transform: translateX(-80px); }
+
+  /* Alert overlay */
+  .alert-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    backdrop-filter: blur(4px);
+  }
+
+  .alert-box {
+    background: var(--card);
+    border-radius: 14px;
+    width: 270px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+  }
+
+  .alert-body {
+    padding: 20px 16px 16px;
+    text-align: center;
+  }
+
+  .alert-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .alert-msg {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  .alert-btn {
+    border-top: 1px solid var(--divider);
+    padding: 12px;
+    text-align: center;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--primary);
+    cursor: pointer;
+  }
+
+  .alert-btn:hover { background: rgba(14,116,144,0.06); }
+
+  /* Haptic indicator */
+  .haptic-indicator {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(14,116,144,0.9);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 5;
+    animation: haptic-pulse 0.6s ease-out;
+  }
+
+  .haptic-indicator.warning {
+    background: rgba(234,88,12,0.9);
+  }
+
+  .haptic-indicator.error {
+    background: rgba(185,28,28,0.9);
+  }
+
+  @keyframes haptic-pulse {
+    0% { transform: scale(0.8); opacity: 0; }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Annotation arrows */
+  .annotation {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-top: 12px;
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .annotation-icon {
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+
+  .annotation strong {
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* Highlight ring for changed rows */
+  .highlight-ring {
+    outline: 2px solid var(--primary-light);
+    outline-offset: -2px;
+    border-radius: 4px;
+  }
+
+  /* Plan section */
+  .plan-section {
+    max-width: 800px;
+    margin: 60px auto 0;
+    padding-top: 40px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .plan-title {
+    color: #fff;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+  }
+
+  .plan-step {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .step-num {
+    background: var(--primary);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .step-title {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .step-file {
+    font-size: 12px;
+    font-family: 'SF Mono', monospace;
+    color: var(--primary-light);
+    margin-bottom: 8px;
+    padding-left: 34px;
+  }
+
+  .step-detail {
+    color: rgba(255,255,255,0.6);
+    font-size: 14px;
+    line-height: 1.6;
+    padding-left: 34px;
+  }
+
+  .step-detail ul {
+    padding-left: 18px;
+  }
+
+  .step-detail li {
+    margin-bottom: 4px;
+  }
+
+  .step-detail code {
+    background: rgba(255,255,255,0.08);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'SF Mono', monospace;
+    font-size: 13px;
+    color: var(--primary-light);
+  }
+
+  .file-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+  }
+
+  .file-table th {
+    text-align: left;
+    color: rgba(255,255,255,0.4);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .file-table td {
+    color: rgba(255,255,255,0.7);
+    font-size: 14px;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .file-table td:first-child {
+    font-family: 'SF Mono', monospace;
+    font-size: 13px;
+    color: var(--primary-light);
+  }
+
+  .action-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  .action-badge.modify { background: rgba(234,179,8,0.15); color: #FACC15; }
+
+  @media (max-width: 700px) {
+    .compare-row { flex-direction: column; }
+    body { padding: 20px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>ItemManagementView — U1 / U2 / U3 Fix Preview</h1>
+<p class="subtitle">Before → After comparison for high-priority UI/UX issues</p>
+
+<!-- ============================================================ -->
+<!-- U1: Silent failure on last-item delete -->
+<!-- ============================================================ -->
+<div class="issue-section">
+  <div class="issue-header">
+    <span class="issue-badge high">U1 · HIGH</span>
+    <span class="issue-title">Silent failure on last-item delete</span>
+  </div>
+  <p class="issue-desc">
+    When the user tries to delete the last remaining item in a tag, <strong>nothing happens</strong> — no alert, no haptic, no visual cue. The user thinks the swipe didn't register or the app is frozen.
+  </p>
+
+  <div class="compare-row">
+    <!-- BEFORE -->
+    <div class="compare-col">
+      <div class="compare-label before">BEFORE</div>
+      <div class="phone">
+        <div class="phone-header">
+          <span class="title">Item Management</span>
+          <span class="action">Done</span>
+        </div>
+        <div class="phone-body">
+          <div class="section-header">Travel Activities</div>
+          <div class="list-group">
+            <div class="tag-row">
+              <span class="tag-icon">🏖️</span>
+              <span class="tag-name">Beach</span>
+              <span class="tag-count">1</span>
+              <span class="disclosure open">▶</span>
+            </div>
+            <div class="divider"></div>
+            <!-- Last remaining item — swiped but nothing happens -->
+            <div class="item-row swiped" style="background: #fff5f5;">
+              <span class="item-name">Swimsuit</span>
+              <span class="badge preset">Preset</span>
+            </div>
+            <div class="divider"></div>
+            <div class="add-row">
+              <span class="add-icon">⊕</span>
+              <span class="add-text">Add Item</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="annotation" style="margin: 12px 16px 16px;">
+          <span class="annotation-icon">😐</span>
+          <span>User swipes the last item → <strong>nothing happens</strong>. No error, no explanation. Feels like a bug.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFTER -->
+    <div class="compare-col">
+      <div class="compare-label after">AFTER</div>
+      <div class="phone" style="position: relative;">
+        <div class="phone-header">
+          <span class="title">Item Management</span>
+          <span class="action">Done</span>
+        </div>
+        <div class="phone-body">
+          <div class="section-header">Travel Activities</div>
+          <div class="list-group">
+            <div class="tag-row">
+              <span class="tag-icon">🏖️</span>
+              <span class="tag-name">Beach</span>
+              <span class="tag-count">1</span>
+              <span class="disclosure open">▶</span>
+            </div>
+            <div class="divider"></div>
+            <div class="item-row">
+              <span class="item-name">Swimsuit</span>
+              <span class="badge preset-ds">Preset</span>
+            </div>
+            <div class="divider"></div>
+            <div class="add-row">
+              <span class="add-icon">⊕</span>
+              <span class="add-text">Add Item</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alert overlay -->
+        <div class="alert-overlay">
+          <div class="alert-box">
+            <div class="alert-body">
+              <div class="alert-title">Cannot Delete</div>
+              <div class="alert-msg">Each tag must have at least one item. Add another item first, then delete this one.</div>
+            </div>
+            <div class="alert-btn">OK</div>
+          </div>
+        </div>
+
+        <div class="haptic-indicator warning">⊘ warning()</div>
+
+        <div class="annotation" style="margin: 12px 16px 16px;">
+          <span class="annotation-icon">✅</span>
+          <span>Alert explains <strong>why</strong> deletion was blocked + haptic <code>warning()</code> reinforces the error state.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- U2: No haptic feedback -->
+<!-- ============================================================ -->
+<div class="issue-section">
+  <div class="issue-header">
+    <span class="issue-badge high">U2 · HIGH</span>
+    <span class="issue-title">No haptic feedback on any action</span>
+  </div>
+  <p class="issue-desc">
+    Every other view in SmartPack uses haptics: <code>light()</code> on taps, <code>warning()</code> on delete, <code>success()</code> on creation, <code>error()</code> on invalid input. This entire view is silent — feels unresponsive compared to the rest of the app.
+  </p>
+
+  <div class="compare-row">
+    <!-- BEFORE -->
+    <div class="compare-col">
+      <div class="compare-label before">BEFORE — No haptics</div>
+      <div class="phone">
+        <div class="phone-header">
+          <span class="title">Item Management</span>
+          <span class="action">Done</span>
+        </div>
+        <div class="phone-body">
+          <div class="section-header">Travel Activities</div>
+          <div class="list-group">
+            <div class="tag-row">
+              <span class="tag-icon">🏖️</span>
+              <span class="tag-name">Beach</span>
+              <span class="tag-count">3</span>
+              <span class="disclosure open">▶</span>
+            </div>
+            <div class="divider"></div>
+            <div class="item-row" style="opacity: 0.5;">
+              <span class="item-name">Swimsuit</span>
+              <span class="badge preset">Preset</span>
+              <span style="position:absolute; right:16px; font-size:11px; color:#999;">← tap: silent</span>
+            </div>
+            <div class="divider"></div>
+            <div class="item-row" style="opacity: 0.5;">
+              <span class="item-name">Sunglasses</span>
+              <span class="badge preset">Preset</span>
+              <span style="position:absolute; right:16px; font-size:11px; color:#999;">← swipe: silent</span>
+            </div>
+            <div class="divider"></div>
+            <div class="item-row" style="opacity: 0.5;">
+              <span class="item-name">Beach towel</span>
+              <span style="flex:1;"></span>
+              <div class="minus-btn">−</div>
+              <span style="position:absolute; right:48px; font-size:11px; color:#999;">delete: silent →</span>
+            </div>
+            <div class="divider"></div>
+            <div class="add-row" style="opacity: 0.5;">
+              <span class="add-icon">⊕</span>
+              <span class="add-text">Add Item</span>
+              <span style="font-size:11px; color:#999; margin-left:auto;">← tap: silent</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFTER -->
+    <div class="compare-col">
+      <div class="compare-label after">AFTER — Full haptic map</div>
+      <div class="phone">
+        <div class="phone-header">
+          <span class="title">Item Management</span>
+          <span class="action">Done</span>
+        </div>
+        <div class="phone-body">
+          <div class="section-header">Travel Activities</div>
+          <div class="list-group">
+            <div class="tag-row">
+              <span class="tag-icon">🏖️</span>
+              <span class="tag-name">Beach</span>
+              <span class="tag-count">3</span>
+              <span class="disclosure open">▶</span>
+            </div>
+            <div class="divider"></div>
+            <div class="item-row">
+              <span class="item-name" style="text-decoration: line-through; text-decoration-color: orange; color: var(--text-secondary);">Swimsuit</span>
+              <span class="badge preset-ds">Preset</span>
+              <span style="position:absolute; right:12px;">
+                <span style="background:rgba(14,116,144,0.12); color:var(--primary); font-size:10px; font-weight:700; padding:2px 7px; border-radius:8px;">⟲ light()</span>
+              </span>
+            </div>
+            <div class="divider"></div>
+            <div class="item-row swiped">
+              <span class="item-name">Sunglasses</span>
+              <span class="badge preset-ds">Preset</span>
+              <span style="position:absolute; right:-68px;">
+                <span style="background:rgba(185,28,28,0.15); color:#f87171; font-size:10px; font-weight:700; padding:2px 7px; border-radius:8px;">🗑 warning()</span>
+              </span>
+              <div class="swipe-hint delete" style="width:80px; justify-content:center;">🗑</div>
+            </div>
+            <div class="divider"></div>
+            <div class="item-row">
+              <span class="item-name">Beach towel</span>
+              <span style="flex:1;"></span>
+              <span style="position:absolute; right:12px;">
+                <span style="background:rgba(185,28,28,0.15); color:#f87171; font-size:10px; font-weight:700; padding:2px 7px; border-radius:8px;">🗑 warning()</span>
+              </span>
+            </div>
+            <div class="divider"></div>
+            <div class="add-row">
+              <span class="add-icon">⊕</span>
+              <span class="add-text">Add Item</span>
+              <span style="font-size:10px; font-weight:700; margin-left:auto; background:rgba(22,101,52,0.12); color:var(--green); padding:2px 7px; border-radius:8px;">✓ success()</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="annotation" style="margin: 12px 16px 16px;">
+          <span class="annotation-icon">📳</span>
+          <span>
+            <strong>Haptic map:</strong><br>
+            Expand/collapse tag → <code>light()</code><br>
+            Delete item → <code>warning()</code><br>
+            Restore preset → <code>light()</code><br>
+            Add item success → <code>success()</code><br>
+            Add item duplicate → <code>error()</code><br>
+            Last-item blocked → <code>warning()</code>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- U3: Inconsistent delete UX -->
+<!-- ============================================================ -->
+<div class="issue-section">
+  <div class="issue-header">
+    <span class="issue-badge high">U3 · HIGH</span>
+    <span class="issue-title">Inconsistent delete UX — swipe vs minus button</span>
+  </div>
+  <p class="issue-desc">
+    Preset items delete via <strong>swipe gesture</strong> (hidden action). Custom items show a <strong>visible minus button</strong>. Two different interaction patterns for the same conceptual action confuses the user and breaks muscle memory.
+  </p>
+
+  <div class="compare-row">
+    <!-- BEFORE -->
+    <div class="compare-col">
+      <div class="compare-label before">BEFORE — Mixed patterns</div>
+      <div class="phone">
+        <div class="phone-header">
+          <span class="title">Item Management</span>
+          <span class="action">Done</span>
+        </div>
+        <div class="phone-body">
+          <div class="section-header">Travel Activities</div>
+          <div class="list-group">
+            <div class="tag-row">
+              <span class="tag-icon">🏖️</span>
+              <span class="tag-name">Beach</span>
+              <span class="tag-count">4</span>
+              <span class="disclosure open">▶</span>
+            </div>
+            <div class="divider"></div>
+
+            <!-- Preset: swipe only -->
+            <div class="item-row">
+              <span class="item-name">Swimsuit</span>
+              <span class="badge preset">Preset</span>
+            </div>
+            <div class="divider"></div>
+            <div class="item-row">
+              <span class="item-name">Sunglasses</span>
+              <span class="badge preset">Preset</span>
+            </div>
+            <div class="divider"></div>
+
+            <!-- Custom: minus button -->
+            <div class="item-row" style="position: relative;">
+              <span class="item-name">Beach towel</span>
+              <span style="flex:1;"></span>
+              <div class="minus-btn">−</div>
+            </div>
+            <div class="divider"></div>
+            <div class="item-row" style="position: relative;">
+              <span class="item-name">Flip flops</span>
+              <span style="flex:1;"></span>
+              <div class="minus-btn">−</div>
+            </div>
+            <div class="divider"></div>
+            <div class="add-row">
+              <span class="add-icon">⊕</span>
+              <span class="add-text">Add Item</span>
+            </div>
+          </div>
+
+          <div class="annotation" style="margin: 12px 16px 16px;">
+            <span class="annotation-icon">❌</span>
+            <span>
+              Presets → swipe (hidden affordance, discoverable only by accident)<br>
+              Custom → minus button (always visible)<br>
+              <strong>Same action, two patterns</strong>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFTER -->
+    <div class="compare-col">
+      <div class="compare-label after">AFTER — Unified swipe-to-delete</div>
+      <div class="phone">
+        <div class="phone-header">
+          <span class="title">Item Management</span>
+          <span class="action">Done</span>
+        </div>
+        <div class="phone-body">
+          <div class="section-header">Travel Activities</div>
+          <div class="list-group">
+            <div class="tag-row">
+              <span class="tag-icon">🏖️</span>
+              <span class="tag-name">Beach</span>
+              <span class="tag-count">4</span>
+              <span class="disclosure open">▶</span>
+            </div>
+            <div class="divider"></div>
+
+            <!-- All items: same style, swipe-to-delete -->
+            <div class="item-row">
+              <span class="item-name">Swimsuit</span>
+              <span class="badge preset-ds">Preset</span>
+            </div>
+            <div class="divider"></div>
+            <div class="item-row swiped" style="position:relative;">
+              <span class="item-name">Sunglasses</span>
+              <span class="badge preset-ds">Preset</span>
+              <div class="swipe-hint delete" style="width:80px; justify-content:center;">🗑</div>
+            </div>
+            <div class="divider"></div>
+            <div class="item-row highlight-ring">
+              <span class="item-name">Beach towel</span>
+              <span class="badge custom">Custom</span>
+            </div>
+            <div class="divider"></div>
+            <div class="item-row swiped" style="position:relative;">
+              <span class="item-name">Flip flops</span>
+              <span class="badge custom">Custom</span>
+              <div class="swipe-hint delete" style="width:80px; justify-content:center;">🗑</div>
+            </div>
+            <div class="divider"></div>
+            <div class="add-row">
+              <span class="add-icon">⊕</span>
+              <span class="add-text">Add Item</span>
+            </div>
+          </div>
+
+          <div class="annotation" style="margin: 12px 16px 16px;">
+            <span class="annotation-icon">✅</span>
+            <span>
+              <strong>All items</strong> use swipe-to-delete<br>
+              Badge distinguishes type: <span style="color:var(--primary);">Preset</span> vs <span style="color:var(--orange);">Custom</span><br>
+              No visible minus button clutter
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- IMPLEMENTATION PLAN -->
+<!-- ============================================================ -->
+<div class="plan-section">
+  <h2 class="plan-title">Implementation Plan</h2>
+
+  <table class="file-table">
+    <thead>
+      <tr>
+        <th>File</th>
+        <th>Action</th>
+        <th>Changes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Views/Settings/ItemManagementView.swift</td>
+        <td><span class="action-badge modify">MODIFY</span></td>
+        <td>All three fixes live in this single file</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Step 1 -->
+  <div class="plan-step">
+    <div class="step-header">
+      <span class="step-num">1</span>
+      <span class="step-title">U1 — Add alert for last-item delete guard</span>
+    </div>
+    <div class="step-file">ItemManagementView.swift</div>
+    <div class="step-detail">
+      <ul>
+        <li>Add <code>@State private var showDeleteBlockedAlert = false</code></li>
+        <li>In both <code>deletePresetItem()</code> and <code>deleteCustomItem()</code>, when <code>canDeleteItem()</code> returns false: set the alert flag + call <code>HapticFeedback.warning()</code></li>
+        <li>Add <code>.alert()</code> modifier to the List with bilingual title "Cannot Delete" / "无法删除" and message explaining at least 1 item is required</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="plan-step">
+    <div class="step-header">
+      <span class="step-num">2</span>
+      <span class="step-title">U2 — Wire haptic feedback on all interactions</span>
+    </div>
+    <div class="step-file">ItemManagementView.swift + AddCustomItemSheet</div>
+    <div class="step-detail">
+      <ul>
+        <li><strong>Expand/collapse tag</strong> (DisclosureGroup set binding): <code>HapticFeedback.light()</code></li>
+        <li><strong>Delete preset item</strong>: <code>HapticFeedback.warning()</code> before calling <code>deletePresetItem()</code></li>
+        <li><strong>Restore preset item</strong>: <code>HapticFeedback.light()</code> before calling <code>restorePresetItem()</code></li>
+        <li><strong>Delete custom item</strong>: <code>HapticFeedback.warning()</code> before calling <code>removeCustomItem()</code></li>
+        <li><strong>Add item success</strong> (in <code>AddCustomItemSheet.addItem()</code>): <code>HapticFeedback.success()</code> before <code>dismiss()</code></li>
+        <li><strong>Add item failure</strong>: <code>HapticFeedback.error()</code> before showing error alert</li>
+        <li><strong>Last-item blocked</strong> (from Step 1): already has <code>warning()</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="plan-step">
+    <div class="step-header">
+      <span class="step-num">3</span>
+      <span class="step-title">U3 — Unify delete pattern to swipe-only + add Custom badge</span>
+    </div>
+    <div class="step-file">ItemManagementView.swift</div>
+    <div class="step-detail">
+      <ul>
+        <li>Remove the visible <code>minus.circle.fill</code> button from <code>customItemRow()</code></li>
+        <li>Add <code>.swipeActions(edge: .trailing, allowsFullSwipe: false)</code> to custom item rows — same pattern as preset rows</li>
+        <li>Add a "Custom" / "自定义" badge to custom item rows (orange tint: <code>rgba(orange, 0.1)</code> background)</li>
+        <li>Change "Preset" badge from <code>Color(.systemGray5)</code> to <code>AppColors.primary.opacity(0.1)</code> with <code>AppColors.primary</code> text</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="plan-step">
+    <div class="step-header">
+      <span class="step-num">4</span>
+      <span class="step-title">Wrap mutations in withAnimation</span>
+    </div>
+    <div class="step-file">ItemManagementView.swift</div>
+    <div class="step-detail">
+      <ul>
+        <li>Wrap <code>deletePresetItem()</code>, <code>restorePresetItem()</code>, <code>removeCustomItem()</code> calls inside <code>withAnimation(PremiumAnimation.snappy)</code></li>
+        <li>This gives smooth row removal/insertion matching the rest of the app</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Step 5 -->
+  <div class="plan-step">
+    <div class="step-header">
+      <span class="step-num">5</span>
+      <span class="step-title">Build & verify</span>
+    </div>
+    <div class="step-detail">
+      <ul>
+        <li>Run <code>xcodebuild</code> — confirm zero errors</li>
+        <li>Verify: swipe last item → alert appears</li>
+        <li>Verify: all actions trigger correct haptic type</li>
+        <li>Verify: preset and custom items both use swipe-to-delete</li>
+        <li>Verify: badges show "Preset" (teal) and "Custom" (orange)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

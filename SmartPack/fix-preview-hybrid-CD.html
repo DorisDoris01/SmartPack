@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartPack — Hybrid C+D: Compact Corner Ring</title>
+<style>
+:root {
+  --primary:    #0E7490;
+  --secondary:  #4B6072;
+  --success:    #166534;
+  --bg:         #F0F4F5;
+  --card-bg:    #F8FAFB;
+  --text:       #0C1E24;
+  --text2:      #446070;
+  --sp-xxs: 4px; --sp-xs: 8px; --sp-sm: 12px;
+  --sp-md: 20px; --sp-lg: 28px;
+  --r-lg: 16px;
+  --font: -apple-system, 'SF Pro Rounded', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: #1a1a2e;
+  color: #fff;
+  min-height: 100vh;
+  padding: 40px 20px 80px;
+}
+
+h1 { text-align: center; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+.page-sub { text-align: center; color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 48px; }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.comparison {
+  display: flex;
+  gap: 36px;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.side-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 4px 14px;
+  border-radius: 999px;
+}
+.side-label.before { background: rgba(239,68,68,0.15); color: #f87171; }
+.side-label.after { background: rgba(34,197,94,0.15); color: #4ade80; }
+
+.arrow-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 48px;
+  font-size: 28px;
+  color: rgba(255,255,255,0.3);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   iPHONE FRAME
+   ============================================================ */
+.iphone {
+  width: 340px;
+  border-radius: 36px;
+  border: 3px solid #333;
+  overflow: hidden;
+  background: var(--bg);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+  display: flex;
+  flex-direction: column;
+}
+.status-bar {
+  height: 44px;
+  background: var(--bg);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 24px 5px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px 10px;
+  background: var(--bg);
+  flex-shrink: 0;
+}
+.nav-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.4px;
+}
+.nav-icons {
+  display: flex;
+  gap: 12px;
+  color: var(--primary);
+  font-size: 18px;
+}
+.content {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg);
+  padding-bottom: 16px;
+}
+.home-indicator {
+  height: 28px;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.home-indicator .bar {
+  width: 120px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--text);
+  opacity: 0.15;
+}
+
+/* ============================================================
+   OLD TRIP ROW (for "before")
+   ============================================================ */
+.trip-row-old {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  padding: 24px;
+  margin: var(--sp-xs) var(--sp-md);
+  background: var(--card-bg);
+  border-radius: var(--r-lg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.02);
+}
+.old-ring {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  flex-shrink: 0;
+}
+.old-ring svg {
+  width: 48px;
+  height: 48px;
+  transform: rotate(-90deg);
+}
+.old-ring-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+}
+.old-ring-text.complete { color: var(--success); }
+.old-info { flex: 1; min-width: 0; }
+.old-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.old-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  margin-top: var(--sp-xxs);
+}
+.old-date, .old-count {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  letter-spacing: 0.6px;
+}
+.old-count.complete { color: var(--success); }
+.old-sep {
+  width: 1px;
+  height: 10px;
+  background: rgba(68,96,112,0.3);
+  border-radius: 1px;
+}
+.old-chevron {
+  color: rgba(68,96,112,0.4);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.ring-track { fill: none; stroke: rgba(75,96,114,0.15); stroke-width: 3; }
+.ring-fill { fill: none; stroke: var(--primary); stroke-width: 3; stroke-linecap: round; }
+.ring-fill.complete { stroke: var(--success); }
+
+/* Bug badge */
+.bug-badge {
+  position: absolute;
+  background: #ef4444;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+/* ============================================================
+   HYBRID C+D CARD
+   ============================================================ */
+.card-hybrid {
+  position: relative;
+  margin: 6px var(--sp-md);
+  background: var(--card-bg);
+  border-radius: var(--r-lg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.02);
+  padding: 16px 22px;
+}
+
+/* Corner ring */
+.corner-ring {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  width: 38px;
+  height: 38px;
+}
+.corner-ring svg {
+  width: 38px;
+  height: 38px;
+  transform: rotate(-90deg);
+}
+.corner-ring .cr-track {
+  fill: none;
+  stroke: rgba(75,96,114,0.12);
+  stroke-width: 2.5;
+}
+.corner-ring .cr-fill {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.corner-ring .cr-fill.complete {
+  stroke: var(--success);
+}
+.corner-ring-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text2);
+}
+.corner-ring-text.complete {
+  color: var(--success);
+}
+
+/* Card content */
+.hybrid-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  line-height: 1.35;
+  padding-right: 48px; /* room for ring */
+}
+.hybrid-name.archived { color: var(--text2); }
+
+.hybrid-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+}
+.hybrid-date {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  letter-spacing: 0.5px;
+}
+.hybrid-sep {
+  width: 1px;
+  height: 9px;
+  background: rgba(68,96,112,0.25);
+  border-radius: 1px;
+}
+.hybrid-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  letter-spacing: 0.5px;
+}
+.hybrid-count.complete { color: var(--success); }
+
+/* Archived card */
+.card-hybrid.archived {
+  opacity: 0.65;
+}
+
+/* Section header */
+.section-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  padding: 16px 20px 6px 24px;
+}
+
+/* Annotation */
+.annotation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 5px 20px 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.annotation.problem { color: #f87171; }
+.annotation.fix { color: #4ade80; }
+.annotation .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.annotation.problem .dot { background: #ef4444; }
+.annotation.fix .dot { background: #22c55e; }
+
+/* ============================================================
+   SUMMARY BOX
+   ============================================================ */
+.summary-box {
+  max-width: 600px;
+  margin: 48px auto 0;
+  padding: 28px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.summary-box h2 {
+  font-size: 17px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.summary-table th {
+  text-align: left;
+  padding: 6px 10px;
+  color: rgba(255,255,255,0.45);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.summary-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.val-good { color: #4ade80; }
+.val-neutral { color: #fbbf24; }
+
+@media (max-width: 800px) {
+  .comparison { flex-direction: column; align-items: center; }
+  .arrow-col { transform: rotate(90deg); padding: 0; }
+}
+</style>
+</head>
+<body>
+
+<h1>Hybrid C + D: Compact Corner Ring</h1>
+<p class="page-sub">Option C's corner ring placement + Option D's compact density</p>
+
+<div class="comparison">
+
+  <!-- ============================================================
+       BEFORE: Current truncation bug
+       ============================================================ -->
+  <div class="side">
+    <span class="side-label before">CURRENT</span>
+    <div class="iphone">
+      <div class="status-bar"><span>9:41</span><span>...</span></div>
+      <div class="nav-bar">
+        <span class="nav-title">My Trips</span>
+        <div class="nav-icons">+ &bull;&bull;&bull;</div>
+      </div>
+      <div class="content">
+        <div class="trip-row-old" style="position:relative;">
+          <div class="old-ring">
+            <svg viewBox="0 0 48 48">
+              <circle class="ring-track" cx="24" cy="24" r="22"/>
+              <circle class="ring-fill" cx="24" cy="24" r="22" stroke-dasharray="138.23" stroke-dashoffset="55.29"/>
+            </svg>
+            <span class="old-ring-text">60</span>
+          </div>
+          <div class="old-info">
+            <div class="old-name">Shanghai Business Tri...</div>
+            <div class="old-meta">
+              <span class="old-date">Mar 1 - Mar 5</span>
+              <span class="old-sep"></span>
+              <span class="old-count">15/25</span>
+            </div>
+          </div>
+          <span class="old-chevron">&#x203A;</span>
+          <span class="bug-badge" style="top:-8px; right:30px;">Truncated</span>
+        </div>
+
+        <div class="trip-row-old" style="position:relative;">
+          <div class="old-ring">
+            <svg viewBox="0 0 48 48">
+              <circle class="ring-track" cx="24" cy="24" r="22"/>
+              <circle class="ring-fill" cx="24" cy="24" r="22" stroke-dasharray="138.23" stroke-dashoffset="96.76"/>
+            </svg>
+            <span class="old-ring-text">30</span>
+          </div>
+          <div class="old-info">
+            <div class="old-name">Family Camping &amp; H...</div>
+            <div class="old-meta">
+              <span class="old-date">Mar 15 - Mar 20</span>
+              <span class="old-sep"></span>
+              <span class="old-count">9/30</span>
+            </div>
+          </div>
+          <span class="old-chevron">&#x203A;</span>
+          <span class="bug-badge" style="top:-8px; right:30px;">Truncated</span>
+        </div>
+
+        <div class="trip-row-old" style="position:relative;">
+          <div class="old-ring">
+            <svg viewBox="0 0 48 48">
+              <circle class="ring-track" cx="24" cy="24" r="22"/>
+              <circle class="ring-fill" cx="24" cy="24" r="22" stroke-dasharray="138.23" stroke-dashoffset="27.65"/>
+            </svg>
+            <span class="old-ring-text">80</span>
+          </div>
+          <div class="old-info">
+            <div class="old-name">Bali Diving &amp; Beach ...</div>
+            <div class="old-meta">
+              <span class="old-date">Feb 10 - Feb 18</span>
+              <span class="old-sep"></span>
+              <span class="old-count">24/30</span>
+            </div>
+          </div>
+          <span class="old-chevron">&#x203A;</span>
+          <span class="bug-badge" style="top:-8px; right:30px;">Truncated</span>
+        </div>
+
+        <div class="section-header">Archived</div>
+        <div class="trip-row-old" style="opacity:0.6; position:relative;">
+          <div class="old-ring">
+            <svg viewBox="0 0 48 48">
+              <circle class="ring-track" cx="24" cy="24" r="22"/>
+              <circle class="ring-fill complete" cx="24" cy="24" r="22" stroke-dasharray="138.23" stroke-dashoffset="0"/>
+            </svg>
+            <span class="old-ring-text complete" style="font-size:14px;">&#x2713;</span>
+          </div>
+          <div class="old-info">
+            <div class="old-name" style="color:var(--text2);">Tokyo Cherry Blossom ...</div>
+            <div class="old-meta">
+              <span class="old-date">Jan 5 - Jan 12</span>
+              <span class="old-sep"></span>
+              <span class="old-count complete">22/22</span>
+            </div>
+          </div>
+          <span class="old-chevron">&#x203A;</span>
+          <span class="bug-badge" style="top:-8px; right:30px;">Truncated</span>
+        </div>
+
+        <div class="annotation problem" style="margin-top:10px;">
+          <span class="dot"></span>
+          48px ring + 24px padding + count = only ~150px for title
+        </div>
+        <div class="annotation problem">
+          <span class="dot"></span>
+          lineLimit(1) truncates all long trip names
+        </div>
+        <div class="annotation problem">
+          <span class="dot"></span>
+          Only 3 cards visible before scrolling
+        </div>
+      </div>
+      <div class="home-indicator"><div class="bar"></div></div>
+    </div>
+  </div>
+
+  <div class="arrow-col">&rarr;</div>
+
+  <!-- ============================================================
+       AFTER: Hybrid C+D
+       ============================================================ -->
+  <div class="side">
+    <span class="side-label after">HYBRID C + D</span>
+    <div class="iphone">
+      <div class="status-bar"><span>9:41</span><span>...</span></div>
+      <div class="nav-bar">
+        <span class="nav-title">My Trips</span>
+        <div class="nav-icons">+ &bull;&bull;&bull;</div>
+      </div>
+      <div class="content">
+
+        <!-- Card 1: 60% -->
+        <div class="card-hybrid">
+          <div class="corner-ring">
+            <svg viewBox="0 0 38 38">
+              <circle class="cr-track" cx="19" cy="19" r="16.5"/>
+              <circle class="cr-fill" cx="19" cy="19" r="16.5"
+                stroke-dasharray="103.67" stroke-dashoffset="41.47"/>
+            </svg>
+            <span class="corner-ring-text">60</span>
+          </div>
+          <div class="hybrid-name">Shanghai Business Trip - Mar 1</div>
+          <div class="hybrid-meta">
+            <span class="hybrid-date">Mar 1 - Mar 5</span>
+          </div>
+        </div>
+
+        <!-- Card 2: 30% — long name wraps -->
+        <div class="card-hybrid">
+          <div class="corner-ring">
+            <svg viewBox="0 0 38 38">
+              <circle class="cr-track" cx="19" cy="19" r="16.5"/>
+              <circle class="cr-fill" cx="19" cy="19" r="16.5"
+                stroke-dasharray="103.67" stroke-dashoffset="72.57"/>
+            </svg>
+            <span class="corner-ring-text">30</span>
+          </div>
+          <div class="hybrid-name">Family Camping &amp; Hiking Adventure</div>
+          <div class="hybrid-meta">
+            <span class="hybrid-date">Mar 15 - Mar 20</span>
+          </div>
+        </div>
+
+        <!-- Card 3: 80% -->
+        <div class="card-hybrid">
+          <div class="corner-ring">
+            <svg viewBox="0 0 38 38">
+              <circle class="cr-track" cx="19" cy="19" r="16.5"/>
+              <circle class="cr-fill" cx="19" cy="19" r="16.5"
+                stroke-dasharray="103.67" stroke-dashoffset="20.73"/>
+            </svg>
+            <span class="corner-ring-text">80</span>
+          </div>
+          <div class="hybrid-name">Bali Diving &amp; Beach Retreat</div>
+          <div class="hybrid-meta">
+            <span class="hybrid-date">Feb 10 - Feb 18</span>
+          </div>
+        </div>
+
+        <!-- Archived section -->
+        <div class="section-header">Archived</div>
+
+        <!-- Card 4: Completed + archived -->
+        <div class="card-hybrid archived">
+          <div class="corner-ring">
+            <svg viewBox="0 0 38 38">
+              <circle class="cr-track" cx="19" cy="19" r="16.5"/>
+              <circle class="cr-fill complete" cx="19" cy="19" r="16.5"
+                stroke-dasharray="103.67" stroke-dashoffset="0"/>
+            </svg>
+            <span class="corner-ring-text complete" style="font-size:12px;">&#x2713;</span>
+          </div>
+          <div class="hybrid-name archived">Tokyo Cherry Blossom Festival</div>
+          <div class="hybrid-meta">
+            <span class="hybrid-date">Jan 5 - Jan 12</span>
+          </div>
+        </div>
+
+        <!-- Card 5: Short name — shows compact benefit -->
+        <div class="card-hybrid archived">
+          <div class="corner-ring">
+            <svg viewBox="0 0 38 38">
+              <circle class="cr-track" cx="19" cy="19" r="16.5"/>
+              <circle class="cr-fill complete" cx="19" cy="19" r="16.5"
+                stroke-dasharray="103.67" stroke-dashoffset="0"/>
+            </svg>
+            <span class="corner-ring-text complete" style="font-size:12px;">&#x2713;</span>
+          </div>
+          <div class="hybrid-name archived">Seoul Weekend</div>
+          <div class="hybrid-meta">
+            <span class="hybrid-date">Dec 20 - Dec 22</span>
+          </div>
+        </div>
+
+        <div class="annotation fix" style="margin-top:10px;">
+          <span class="dot"></span>
+          38px corner ring — visually prominent without eating width
+        </div>
+        <div class="annotation fix">
+          <span class="dot"></span>
+          X/X removed — ring % is the single progress indicator
+        </div>
+        <div class="annotation fix">
+          <span class="dot"></span>
+          Title wraps to 2 lines naturally (lineLimit 2)
+        </div>
+        <div class="annotation fix">
+          <span class="dot"></span>
+          22px horizontal padding — comfortable card feel
+        </div>
+        <div class="annotation fix">
+          <span class="dot"></span>
+          5 cards visible on screen — compact density
+        </div>
+      </div>
+      <div class="home-indicator"><div class="bar"></div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================
+     SPEC SUMMARY
+     ============================================================ -->
+<div class="summary-box">
+  <h2>Hybrid C+D Spec / 混合方案规格</h2>
+  <table class="summary-table">
+    <tr>
+      <th>Property</th>
+      <th>Current</th>
+      <th>Hybrid C+D</th>
+    </tr>
+    <tr>
+      <td>Ring size</td>
+      <td>48px (inline left)</td>
+      <td class="val-good">38px (corner top-right)</td>
+    </tr>
+    <tr>
+      <td>Ring stroke</td>
+      <td>3pt</td>
+      <td class="val-neutral">2.5pt</td>
+    </tr>
+    <tr>
+      <td>Card padding</td>
+      <td>24px</td>
+      <td class="val-good">16px vertical, 22px horizontal</td>
+    </tr>
+    <tr>
+      <td>Title font</td>
+      <td>20px Semibold (title3)</td>
+      <td class="val-good">17px Semibold (headline-ish)</td>
+    </tr>
+    <tr>
+      <td>Title lines</td>
+      <td>1 (truncates)</td>
+      <td class="val-good">Up to 2 (wraps naturally)</td>
+    </tr>
+    <tr>
+      <td>Title available width</td>
+      <td>~150px (48+20+24+24+chevron)</td>
+      <td class="val-good">~230px (full card minus 48px ring)</td>
+    </tr>
+    <tr>
+      <td>Meta font</td>
+      <td>13px</td>
+      <td class="val-neutral">12px</td>
+    </tr>
+    <tr>
+      <td>Card row gap</td>
+      <td>16px (xs top + xs bottom)</td>
+      <td class="val-good">12px (6px top + 6px bottom)</td>
+    </tr>
+    <tr>
+      <td>Visible cards (375px screen)</td>
+      <td>~3</td>
+      <td class="val-good">~5</td>
+    </tr>
+    <tr>
+      <td>Layout</td>
+      <td>HStack (ring | info | chevron)</td>
+      <td class="val-good">VStack card + absolute ring</td>
+    </tr>
+    <tr>
+      <td>Meta info</td>
+      <td>%, date, X/X</td>
+      <td class="val-good">Ring % + date only (X/X removed)</td>
+    </tr>
+  </table>
+</div>
+
+</body>
+</html>

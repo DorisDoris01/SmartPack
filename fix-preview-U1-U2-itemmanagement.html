@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartPack — U1 & U2 Fix Preview</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --teal: #0E7490;
+    --teal-light: rgba(14, 116, 144, 0.08);
+    --red: #FF3B30;
+    --red-light: rgba(255, 59, 48, 0.06);
+    --bg: #F2F2F7;
+    --card: #FFFFFF;
+    --text: #1C1C1E;
+    --text2: #8E8E93;
+    --text3: #AEAEB2;
+    --sep: rgba(60, 60, 67, 0.12);
+    --badge-bg: #E5E5EA;
+    --radius: 10px;
+    --overlay: rgba(0,0,0,0.32);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, 'SF Pro Rounded', 'Inter', system-ui, sans-serif;
+    background: #E8EAED;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+    color: #1a1a1a;
+  }
+
+  .subtitle {
+    font-size: 15px;
+    color: var(--text2);
+    margin-bottom: 40px;
+    font-weight: 500;
+  }
+
+  /* ── Issue Section ── */
+  .issue-section {
+    width: 100%;
+    max-width: 860px;
+    margin-bottom: 48px;
+  }
+
+  .issue-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .issue-id {
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+    background: var(--red);
+    padding: 3px 8px;
+    border-radius: 5px;
+    letter-spacing: 0.5px;
+  }
+
+  .issue-id.medium {
+    background: #FF9500;
+  }
+
+  .issue-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  .issue-desc {
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 20px;
+    line-height: 1.5;
+    padding-left: 2px;
+  }
+
+  /* ── Comparison Layout ── */
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .panel {
+    position: relative;
+  }
+
+  .panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 10px;
+    padding-left: 2px;
+  }
+
+  .panel-label.before { color: var(--text3); }
+  .panel-label.after { color: var(--teal); }
+
+  /* ── iPhone Frame ── */
+  .iphone {
+    background: var(--bg);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow:
+      0 1px 3px rgba(0,0,0,0.08),
+      0 8px 24px rgba(0,0,0,0.06),
+      inset 0 0 0 1px rgba(0,0,0,0.06);
+    position: relative;
+  }
+
+  .iphone.dimmed .iphone-content {
+    filter: brightness(0.7);
+    pointer-events: none;
+  }
+
+  /* Nav bar */
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--bg);
+  }
+
+  .nav-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .nav-btn {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--teal);
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .nav-placeholder { width: 44px; }
+
+  /* Content area */
+  .iphone-content {
+    padding: 0;
+    transition: filter 0.2s ease;
+  }
+
+  /* ── List Styles ── */
+  .list-section-header {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    padding: 24px 16px 6px;
+    letter-spacing: 0.3px;
+  }
+
+  .list-group {
+    background: var(--card);
+    margin: 0 16px 2px;
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .list-row {
+    display: flex;
+    align-items: center;
+    padding: 11px 16px;
+    min-height: 44px;
+    position: relative;
+  }
+
+  .list-row + .list-row {
+    border-top: 1px solid var(--sep);
+    margin-left: 0;
+  }
+
+  .list-row.indented {
+    padding-left: 52px;
+  }
+
+  .list-row.indented + .list-row.indented {
+    border-top: 1px solid var(--sep);
+  }
+
+  /* Tag row */
+  .tag-icon {
+    font-size: 16px;
+    width: 24px;
+    text-align: center;
+    color: var(--teal);
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+
+  .tag-name {
+    font-size: 17px;
+    font-weight: 400;
+    flex: 1;
+  }
+
+  .tag-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text2);
+    margin-right: 8px;
+  }
+
+  .chevron {
+    font-size: 13px;
+    color: var(--text3);
+    font-weight: 600;
+    transition: transform 0.2s ease;
+  }
+
+  .chevron.open { transform: rotate(90deg); }
+
+  /* Item row */
+  .item-name {
+    font-size: 17px;
+    flex: 1;
+  }
+
+  .item-name.deleted {
+    color: var(--text2);
+    text-decoration: line-through;
+    text-decoration-color: #FF9500;
+  }
+
+  .preset-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text2);
+    background: var(--badge-bg);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    flex-shrink: 0;
+  }
+
+  /* Delete button — BEFORE (small) */
+  .delete-btn-small {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--red);
+    font-size: 17px;
+    line-height: 1;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .delete-btn-small svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  /* Delete button — AFTER (44pt) */
+  .delete-btn-large {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--red);
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-radius: 22px;
+    transition: background 0.15s ease;
+    margin: -10px -10px -10px 0;
+    flex-shrink: 0;
+  }
+
+  .delete-btn-large:hover {
+    background: var(--red-light);
+  }
+
+  .delete-btn-large svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Touch target indicator */
+  .touch-target-ring {
+    position: absolute;
+    inset: 0;
+    border: 2px dashed rgba(14, 116, 144, 0.4);
+    border-radius: 22px;
+    pointer-events: none;
+    opacity: 0;
+    animation: pulse-ring 2s ease-in-out infinite;
+  }
+
+  .delete-btn-large .touch-target-ring {
+    opacity: 1;
+  }
+
+  @keyframes pulse-ring {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+  }
+
+  /* Touch target label */
+  .touch-label {
+    position: absolute;
+    top: -22px;
+    right: -4px;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--teal);
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    opacity: 0;
+    animation: fade-in 0.6s 0.5s ease forwards;
+  }
+
+  .delete-btn-large .touch-label {
+    opacity: 0;
+    animation: fade-in 0.6s 0.5s ease forwards;
+  }
+
+  @keyframes fade-in {
+    to { opacity: 1; }
+  }
+
+  /* Add item button */
+  .add-item-row {
+    display: flex;
+    align-items: center;
+    padding: 11px 16px 11px 52px;
+    border-top: 1px solid var(--sep);
+    cursor: pointer;
+    min-height: 44px;
+  }
+
+  .add-icon {
+    color: var(--teal);
+    margin-right: 8px;
+    font-size: 18px;
+  }
+
+  .add-text {
+    font-size: 17px;
+    color: var(--teal);
+  }
+
+  /* ── Swipe hint (for BEFORE U1) ── */
+  .swipe-hint {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: var(--red);
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 0;
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  .last-item-row {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .last-item-row.swiped .swipe-hint {
+    opacity: 1;
+    transform: translateX(0);
+    transition: all 0.25s ease;
+  }
+
+  .last-item-row.swiped .item-content-wrap {
+    transform: translateX(-72px);
+    transition: transform 0.25s ease;
+  }
+
+  .item-content-wrap {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    transition: transform 0.25s ease;
+  }
+
+  /* "Nothing happens" label */
+  .nothing-label {
+    position: absolute;
+    bottom: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--red);
+    white-space: nowrap;
+    opacity: 0;
+    letter-spacing: 0.3px;
+    background: rgba(255, 59, 48, 0.08);
+    padding: 3px 10px;
+    border-radius: 6px;
+    transition: opacity 0.3s ease;
+    z-index: 5;
+  }
+
+  .last-item-row.swiped .nothing-label {
+    opacity: 1;
+    transition-delay: 0.6s;
+  }
+
+  /* ── iOS Alert Overlay ── */
+  .alert-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--overlay);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    border-radius: 24px;
+  }
+
+  .alert-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .alert-box {
+    background: rgba(242, 242, 247, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 14px;
+    width: 270px;
+    text-align: center;
+    overflow: hidden;
+    transform: scale(0.9);
+    transition: transform 0.2s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  }
+
+  .alert-overlay.visible .alert-box {
+    transform: scale(1);
+  }
+
+  .alert-content {
+    padding: 20px 16px 16px;
+  }
+
+  .alert-title {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+
+  .alert-message {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.4;
+  }
+
+  .alert-btn {
+    display: block;
+    width: 100%;
+    padding: 11px;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--teal);
+    background: none;
+    border: none;
+    border-top: 1px solid var(--sep);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .alert-btn:active {
+    background: rgba(0,0,0,0.05);
+  }
+
+  /* ── Annotations ── */
+  .annotation {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--teal);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .annotation-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--teal);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    .comparison {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    body { padding: 24px 12px 40px; }
+  }
+
+  /* ── Interactive cursor hint ── */
+  .clickable {
+    cursor: pointer;
+  }
+
+  .swipe-trigger {
+    cursor: grab;
+  }
+
+  /* Bottom padding for iphone content */
+  .iphone-bottom-pad {
+    height: 16px;
+  }
+</style>
+</head>
+<body>
+
+<h1>ItemManagement — Fix Preview</h1>
+<p class="subtitle">U1 & U2 proposed changes</p>
+
+<!-- ════════════ U1 ════════════ -->
+<div class="issue-section">
+  <div class="issue-header">
+    <span class="issue-id">HIGH</span>
+    <span class="issue-title">U1: Silent failure on last-item delete</span>
+  </div>
+  <p class="issue-desc">When only 1 item remains in a tag, attempting to delete it silently does nothing. The fix adds an iOS alert explaining the constraint.</p>
+
+  <div class="comparison">
+    <!-- BEFORE -->
+    <div class="panel">
+      <div class="panel-label before">Before</div>
+      <div class="iphone" id="u1-before">
+        <div class="nav-bar">
+          <div class="nav-placeholder"></div>
+          <span class="nav-title">Item Management</span>
+          <button class="nav-btn">Done</button>
+        </div>
+        <div class="iphone-content">
+          <div class="list-section-header">Travel Activities</div>
+          <div class="list-group">
+            <!-- Running tag - expanded, 1 item left -->
+            <div class="list-row clickable" onclick="toggleU1Before()">
+              <span class="tag-icon">🏃</span>
+              <span class="tag-name">Running</span>
+              <span class="tag-count">1</span>
+              <span class="chevron open" id="u1b-chevron">›</span>
+            </div>
+            <div id="u1b-items">
+              <div class="list-row indented last-item-row" id="u1b-last-item" onclick="swipeU1Before()">
+                <div class="item-content-wrap">
+                  <span class="item-name">Running Shoes</span>
+                  <span class="preset-badge">Preset</span>
+                </div>
+                <div class="swipe-hint">Delete</div>
+                <div class="nothing-label">Nothing happens. No feedback.</div>
+              </div>
+            </div>
+
+            <!-- Camping tag - collapsed -->
+            <div class="list-row">
+              <span class="tag-icon">🏕️</span>
+              <span class="tag-name">Camping</span>
+              <span class="tag-count">4</span>
+              <span class="chevron">›</span>
+            </div>
+          </div>
+
+          <div class="list-section-header">Occasions</div>
+          <div class="list-group">
+            <div class="list-row">
+              <span class="tag-icon">💼</span>
+              <span class="tag-name">Business</span>
+              <span class="tag-count">3</span>
+              <span class="chevron">›</span>
+            </div>
+          </div>
+          <div class="iphone-bottom-pad"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFTER -->
+    <div class="panel">
+      <div class="panel-label after">After</div>
+      <div class="iphone" id="u1-after">
+        <div class="nav-bar">
+          <div class="nav-placeholder"></div>
+          <span class="nav-title">Item Management</span>
+          <button class="nav-btn">Done</button>
+        </div>
+        <div class="iphone-content">
+          <div class="list-section-header">Travel Activities</div>
+          <div class="list-group">
+            <div class="list-row clickable">
+              <span class="tag-icon">🏃</span>
+              <span class="tag-name">Running</span>
+              <span class="tag-count">1</span>
+              <span class="chevron open">›</span>
+            </div>
+            <div class="list-row indented last-item-row" id="u1a-last-item" onclick="triggerU1Alert()">
+              <div class="item-content-wrap">
+                <span class="item-name">Running Shoes</span>
+                <span class="preset-badge">Preset</span>
+              </div>
+              <div class="swipe-hint">Delete</div>
+            </div>
+            <div class="list-row">
+              <span class="tag-icon">🏕️</span>
+              <span class="tag-name">Camping</span>
+              <span class="tag-count">4</span>
+              <span class="chevron">›</span>
+            </div>
+          </div>
+
+          <div class="list-section-header">Occasions</div>
+          <div class="list-group">
+            <div class="list-row">
+              <span class="tag-icon">💼</span>
+              <span class="tag-name">Business</span>
+              <span class="tag-count">3</span>
+              <span class="chevron">›</span>
+            </div>
+          </div>
+          <div class="iphone-bottom-pad"></div>
+        </div>
+
+        <!-- Alert overlay -->
+        <div class="alert-overlay" id="u1-alert">
+          <div class="alert-box">
+            <div class="alert-content">
+              <div class="alert-title">Cannot Delete</div>
+              <div class="alert-message">Each tag must have at least one item.</div>
+            </div>
+            <button class="alert-btn" onclick="dismissU1Alert()">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ U2 ════════════ -->
+<div class="issue-section">
+  <div class="issue-header">
+    <span class="issue-id">HIGH</span>
+    <span class="issue-title">U2: Custom item delete button — tiny touch target</span>
+  </div>
+  <p class="issue-desc">The red minus button is only ~17pt with no padding. Apple HIG requires 44x44pt minimum. The fix adds proper touch area.</p>
+
+  <div class="comparison">
+    <!-- BEFORE -->
+    <div class="panel">
+      <div class="panel-label before">Before</div>
+      <div class="iphone">
+        <div class="nav-bar">
+          <div class="nav-placeholder"></div>
+          <span class="nav-title">Item Management</span>
+          <button class="nav-btn">Done</button>
+        </div>
+        <div class="iphone-content">
+          <div class="list-section-header">Travel Activities</div>
+          <div class="list-group">
+            <div class="list-row clickable">
+              <span class="tag-icon">🏃</span>
+              <span class="tag-name">Running</span>
+              <span class="tag-count">3</span>
+              <span class="chevron open">›</span>
+            </div>
+
+            <!-- Preset items -->
+            <div class="list-row indented">
+              <span class="item-name">Running Shoes</span>
+              <span class="preset-badge">Preset</span>
+            </div>
+            <div class="list-row indented">
+              <span class="item-name">Sports Watch</span>
+              <span class="preset-badge">Preset</span>
+            </div>
+
+            <!-- Custom item — SMALL button -->
+            <div class="list-row indented">
+              <span class="item-name">Energy Gels</span>
+              <button class="delete-btn-small" title="17pt target — too small!">
+                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/><rect x="7" y="11" width="10" height="2" rx="1" fill="white"/></svg>
+              </button>
+            </div>
+
+            <div class="add-item-row">
+              <span class="add-icon">+</span>
+              <span class="add-text">Add Item</span>
+            </div>
+          </div>
+
+          <div class="list-section-header">Occasions</div>
+          <div class="list-group">
+            <div class="list-row">
+              <span class="tag-icon">💼</span>
+              <span class="tag-name">Business</span>
+              <span class="tag-count">3</span>
+              <span class="chevron">›</span>
+            </div>
+          </div>
+          <div class="iphone-bottom-pad"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFTER -->
+    <div class="panel">
+      <div class="panel-label after">After</div>
+      <div class="iphone">
+        <div class="nav-bar">
+          <div class="nav-placeholder"></div>
+          <span class="nav-title">Item Management</span>
+          <button class="nav-btn">Done</button>
+        </div>
+        <div class="iphone-content">
+          <div class="list-section-header">Travel Activities</div>
+          <div class="list-group">
+            <div class="list-row clickable">
+              <span class="tag-icon">🏃</span>
+              <span class="tag-name">Running</span>
+              <span class="tag-count">3</span>
+              <span class="chevron open">›</span>
+            </div>
+
+            <div class="list-row indented">
+              <span class="item-name">Running Shoes</span>
+              <span class="preset-badge">Preset</span>
+            </div>
+            <div class="list-row indented">
+              <span class="item-name">Sports Watch</span>
+              <span class="preset-badge">Preset</span>
+            </div>
+
+            <!-- Custom item — LARGE 44pt button -->
+            <div class="list-row indented">
+              <span class="item-name">Energy Gels</span>
+              <button class="delete-btn-large" title="44pt touch target">
+                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/><rect x="7" y="11" width="10" height="2" rx="1" fill="white"/></svg>
+                <div class="touch-target-ring"></div>
+                <div class="touch-label">44 x 44 pt</div>
+              </button>
+            </div>
+
+            <div class="add-item-row">
+              <span class="add-icon">+</span>
+              <span class="add-text">Add Item</span>
+            </div>
+          </div>
+
+          <div class="list-section-header">Occasions</div>
+          <div class="list-group">
+            <div class="list-row">
+              <span class="tag-icon">💼</span>
+              <span class="tag-name">Business</span>
+              <span class="tag-count">3</span>
+              <span class="chevron">›</span>
+            </div>
+          </div>
+          <div class="iphone-bottom-pad"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top: 8px; font-size: 12px; color: #AEAEB2;">Click the last item in U1 to see the interaction. Hover the delete button in U2 to see the touch area.</p>
+
+<script>
+  // ── U1 BEFORE: simulate swipe with nothing happening ──
+  let u1bSwiped = false;
+  function swipeU1Before() {
+    const row = document.getElementById('u1b-last-item');
+    if (!u1bSwiped) {
+      row.classList.add('swiped');
+      u1bSwiped = true;
+      // Auto-reset after 3s
+      setTimeout(() => {
+        row.classList.remove('swiped');
+        u1bSwiped = false;
+      }, 3500);
+    } else {
+      row.classList.remove('swiped');
+      u1bSwiped = false;
+    }
+  }
+
+  function toggleU1Before() {
+    // no-op for this demo
+  }
+
+  // ── U1 AFTER: show alert ──
+  function triggerU1Alert() {
+    const row = document.getElementById('u1a-last-item');
+    const phone = document.getElementById('u1-after');
+
+    // Brief swipe animation
+    row.classList.add('swiped');
+
+    setTimeout(() => {
+      row.classList.remove('swiped');
+      // Show alert
+      phone.classList.add('dimmed');
+      document.getElementById('u1-alert').classList.add('visible');
+    }, 400);
+  }
+
+  function dismissU1Alert() {
+    const phone = document.getElementById('u1-after');
+    phone.classList.remove('dimmed');
+    document.getElementById('u1-alert').classList.remove('visible');
+  }
+</script>
+
+</body>
+</html>

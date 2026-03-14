@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>U8 Archive Animation — Before / After</title>
+<style>
+  :root {
+    --bg: #F5F5F0;
+    --card: #FFFFFF;
+    --primary: #2A9D8F;
+    --text: #1A1A2E;
+    --muted: #6B7280;
+    --success: #43A047;
+    --purple: #8B5CF6;
+    --red: #EF4444;
+    --shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.02);
+    --radius: 14px;
+    --card-h: 62px;
+    --card-gap: 10px;
+    --header-h: 30px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'SF Pro Display', system-ui, sans-serif;
+    background: var(--bg); color: var(--text);
+    padding: 20px; max-width: 960px; margin: 0 auto;
+  }
+  h1 { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 4px; letter-spacing: -0.3px; }
+  .subtitle { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+
+  /* Tabs */
+  .tab-row { display: flex; justify-content: center; gap: 6px; margin-bottom: 20px; }
+  .tab-btn {
+    padding: 7px 16px; border: 2px solid #E5E7EB; border-radius: 10px;
+    background: white; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+  }
+  .tab-btn.active { border-color: var(--primary); background: rgba(42,157,143,0.08); color: var(--primary); }
+
+  /* Layout */
+  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+  @media (max-width: 680px) { .comparison { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--card); border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .panel-header {
+    padding: 12px 16px; font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .panel-header.before { background: #FEE2E2; color: #991B1B; }
+  .panel-header.after { background: #D1FAE5; color: #065F46; }
+
+  .phone {
+    background: var(--bg); margin: 10px; border-radius: 12px;
+    padding: 12px; position: relative; min-height: 340px;
+  }
+
+  /* Trip card */
+  .card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 14px 18px; box-shadow: var(--shadow);
+    position: relative; height: var(--card-h);
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .card .name { font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: -0.2px; }
+  .card .date { font-size: 10.5px; color: var(--muted); margin-top: 2px; letter-spacing: 0.3px; }
+  .card .ring {
+    position: absolute; top: 10px; right: 14px; width: 32px; height: 32px;
+  }
+  .card .ring svg { width: 32px; height: 32px; }
+  .ring-bg { stroke: rgba(42,157,143,0.12); fill: none; stroke-width: 2.5; }
+  .ring-fg { fill: none; stroke-width: 2.5; stroke-linecap: round; transform: rotate(-90deg); transform-origin: center; }
+  .ring-txt { font-size: 8.5px; font-weight: 700; fill: var(--muted); text-anchor: middle; dominant-baseline: central; font-family: -apple-system, system-ui; }
+
+  .card.archived .name { color: var(--muted); }
+  .card.archived .ring { opacity: 0.6; }
+
+  /* Section header */
+  .sec-hdr {
+    font-size: 11px; font-weight: 600; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.8px;
+    padding: 6px 4px 4px; height: var(--header-h);
+    display: flex; align-items: center;
+  }
+
+  /* Slot system for animation */
+  .slot-container {
+    display: flex; flex-direction: column; gap: var(--card-gap);
+    position: relative;
+  }
+
+  /* Buttons */
+  .btn-row { display: flex; justify-content: center; gap: 8px; margin: 14px 10px 10px; }
+  .act-btn {
+    padding: 8px 20px; border: none; border-radius: 10px;
+    font-size: 12px; font-weight: 600; cursor: pointer; transition: transform 0.12s;
+  }
+  .act-btn:active { transform: scale(0.96); }
+  .act-btn.go { background: var(--purple); color: white; }
+  .act-btn.rst { background: #E5E7EB; color: var(--text); }
+
+  /* Timeline */
+  .steps {
+    margin: 0 10px 10px; padding: 10px 12px; background: #F9FAFB;
+    border-radius: 10px; font-size: 10.5px; line-height: 1.7; color: var(--muted);
+  }
+  .steps .s { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 1px; }
+  .steps .n {
+    font-weight: 700; font-size: 8px; width: 15px; height: 15px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 2px;
+  }
+  .n.bad { background: #FEE2E2; color: #991B1B; }
+  .n.good { background: #D1FAE5; color: #065F46; }
+
+  /* Divider */
+  .divider { height: 1px; background: #E5E7EB; margin: 24px 0; }
+
+  /* Code comparison */
+  .arch-title { font-size: 15px; font-weight: 700; text-align: center; margin-bottom: 12px; }
+  .code-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  @media (max-width: 680px) { .code-grid { grid-template-columns: 1fr; } }
+  .code-box {
+    background: var(--card); border-radius: 12px; padding: 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    font-size: 11.5px; font-family: 'SF Mono', Menlo, monospace; line-height: 1.65;
+  }
+  .code-box .lbl {
+    font-family: -apple-system, system-ui; font-weight: 700; font-size: 10.5px;
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; display: block;
+  }
+  .lbl.bad { color: #991B1B; }
+  .lbl.good { color: #065F46; }
+  .cl { color: var(--muted); }
+  .ch { color: var(--text); font-weight: 600; }
+  .cr { color: #DC2626; }
+  .cg { color: #059669; }
+  .cp { color: #7C3AED; }
+
+  /* Highlight pulse */
+  @keyframes highlight-pulse {
+    0% { box-shadow: var(--shadow); }
+    50% { box-shadow: 0 0 0 2px var(--purple), 0 2px 8px rgba(139,92,246,0.25); }
+    100% { box-shadow: var(--shadow); }
+  }
+  .card.hl { animation: highlight-pulse 0.8s ease; }
+</style>
+</head>
+<body>
+
+<h1>U8 归档动画修复</h1>
+<p class="subtitle">当前问题 vs 两种修复方案</p>
+
+<!-- Mode toggle -->
+<div class="tab-row" id="mode-tabs">
+  <button class="tab-btn active" onclick="setMode('archive')">归档 Archive</button>
+  <button class="tab-btn" onclick="setMode('unarchive')">取消归档 Unarchive</button>
+</div>
+
+<!-- ===== ARCHIVE ===== -->
+<div id="mode-archive">
+
+<!-- Before vs Fix A -->
+<p style="text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;letter-spacing:0.5px;">FIX A — 单 ForEach（平滑移动）</p>
+<div class="comparison">
+  <!-- BEFORE -->
+  <div class="panel">
+    <div class="panel-header before">Before — 双 ForEach</div>
+    <div class="phone" id="arc-bef-phone">
+      <div class="slot-container" id="arc-bef"></div>
+    </div>
+    <div class="steps">
+      <div class="s"><span class="n bad">1</span><span>"东京" 从 active 区<b>淡出消失</b></span></div>
+      <div class="s"><span class="n bad">2</span><span>archived 区<b>独立淡入</b> "东京"</span></div>
+      <div class="s"><span class="n bad">3</span><span>两段动画断开 → 卡片消失再出现</span></div>
+    </div>
+    <div class="btn-row">
+      <button class="act-btn go" onclick="arcBefRun()">归档 "东京"</button>
+      <button class="act-btn rst" onclick="arcBefReset()">Reset</button>
+    </div>
+  </div>
+
+  <!-- FIX A -->
+  <div class="panel">
+    <div class="panel-header after">After — 单 ForEach</div>
+    <div class="phone" id="arc-fixa-phone">
+      <div class="slot-container" id="arc-fixa"></div>
+    </div>
+    <div class="steps">
+      <div class="s"><span class="n good">1</span><span>同一 ForEach，"东京" <b>滑到</b>归档位置</span></div>
+      <div class="s"><span class="n good">2</span><span>"大阪" 同步上移，header 上移</span></div>
+      <div class="s"><span class="n good">3</span><span>所有元素一帧完成，无断裂</span></div>
+    </div>
+    <div class="btn-row">
+      <button class="act-btn go" onclick="arcFixaRun()">归档 "东京"</button>
+      <button class="act-btn rst" onclick="arcFixaReset()">Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- Before vs Fix B -->
+<p style="text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;letter-spacing:0.5px;">FIX B — 移除 withAnimation（默认 List 过渡）</p>
+<div class="comparison">
+  <!-- BEFORE (duplicate for side-by-side) -->
+  <div class="panel">
+    <div class="panel-header before">Before — withAnimation 冲突</div>
+    <div class="phone">
+      <div class="slot-container" id="arc-bef2"></div>
+    </div>
+    <div class="steps">
+      <div class="s"><span class="n bad">1</span><span>withAnimation 强制 .easeInOut 0.3s</span></div>
+      <div class="s"><span class="n bad">2</span><span>与 swipe dismiss 隐式动画冲突</span></div>
+      <div class="s"><span class="n bad">3</span><span>跨 ForEach → remove + insert 不同步</span></div>
+    </div>
+    <div class="btn-row">
+      <button class="act-btn go" onclick="arcBef2Run()">归档 "东京"</button>
+      <button class="act-btn rst" onclick="arcBef2Reset()">Reset</button>
+    </div>
+  </div>
+
+  <!-- FIX B -->
+  <div class="panel">
+    <div class="panel-header after">After — 移除 withAnimation</div>
+    <div class="phone">
+      <div class="slot-container" id="arc-fixb"></div>
+    </div>
+    <div class="steps">
+      <div class="s"><span class="n good">1</span><span>无 withAnimation，SwiftUI 用默认过渡</span></div>
+      <div class="s"><span class="n good">2</span><span>卡片<b>滑出</b>（标准 iOS 行移除）</span></div>
+      <div class="s"><span class="n good">3</span><span>归档区卡片<b>滑入</b>（标准 iOS 行插入）</span></div>
+    </div>
+    <div class="btn-row">
+      <button class="act-btn go" onclick="arcFixbRun()">归档 "东京"</button>
+      <button class="act-btn rst" onclick="arcFixbReset()">Reset</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== UNARCHIVE ===== -->
+<div id="mode-unarchive" style="display:none;">
+
+<p style="text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;letter-spacing:0.5px;">FIX A — 单 ForEach（平滑移动）</p>
+<div class="comparison">
+  <div class="panel">
+    <div class="panel-header before">Before — 双 ForEach</div>
+    <div class="phone"><div class="slot-container" id="una-bef"></div></div>
+    <div class="steps">
+      <div class="s"><span class="n bad">1</span><span>"东京" 从 archived 区<b>淡出</b></span></div>
+      <div class="s"><span class="n bad">2</span><span>active 区<b>独立淡入</b> → 可能重叠</span></div>
+    </div>
+    <div class="btn-row">
+      <button class="act-btn go" onclick="unaBefRun()">取消归档 "东京"</button>
+      <button class="act-btn rst" onclick="unaBefReset()">Reset</button>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header after">After — 单 ForEach</div>
+    <div class="phone"><div class="slot-container" id="una-fixa"></div></div>
+    <div class="steps">
+      <div class="s"><span class="n good">1</span><span>"东京" <b>滑到</b> active 位置</span></div>
+      <div class="s"><span class="n good">2</span><span>header + "首尔" 同步下移</span></div>
+    </div>
+    <div class="btn-row">
+      <button class="act-btn go" onclick="unaFixaRun()">取消归档 "东京"</button>
+      <button class="act-btn rst" onclick="unaFixaReset()">Reset</button>
+    </div>
+  </div>
+</div>
+
+<p style="text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;letter-spacing:0.5px;">FIX B — 移除 withAnimation（默认 List 过渡）</p>
+<div class="comparison">
+  <div class="panel">
+    <div class="panel-header before">Before — withAnimation 冲突</div>
+    <div class="phone"><div class="slot-container" id="una-bef2"></div></div>
+    <div class="steps">
+      <div class="s"><span class="n bad">1</span><span>withAnimation + swipe 动画冲突</span></div>
+      <div class="s"><span class="n bad">2</span><span>跨 ForEach → 重叠 / 闪烁</span></div>
+    </div>
+    <div class="btn-row">
+      <button class="act-btn go" onclick="unaBef2Run()">取消归档 "东京"</button>
+      <button class="act-btn rst" onclick="unaBef2Reset()">Reset</button>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header after">After — 移除 withAnimation</div>
+    <div class="phone"><div class="slot-container" id="una-fixb"></div></div>
+    <div class="steps">
+      <div class="s"><span class="n good">1</span><span>卡片从归档区<b>滑出</b></span></div>
+      <div class="s"><span class="n good">2</span><span>active 区卡片<b>滑入</b>，无重叠</span></div>
+    </div>
+    <div class="btn-row">
+      <button class="act-btn go" onclick="unaFixbRun()">取消归档 "东京"</button>
+      <button class="act-btn rst" onclick="unaFixbReset()">Reset</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Code comparison -->
+<div class="arch-title">代码对比</div>
+<div class="code-grid">
+  <div class="code-box">
+    <span class="lbl bad">Fix A — 单 ForEach</span>
+    <div class="cl">List {</div>
+    <div class="cl">&nbsp;&nbsp;<span class="cg">ForEach(listItems)</span> { item in</div>
+    <div class="cl">&nbsp;&nbsp;&nbsp;&nbsp;switch item {</div>
+    <div class="cl">&nbsp;&nbsp;&nbsp;&nbsp;case .<span class="cp">trip</span>(let trip): TripRowView</div>
+    <div class="cl">&nbsp;&nbsp;&nbsp;&nbsp;case .<span class="cp">archiveHeader</span>: Header</div>
+    <div class="cl">&nbsp;&nbsp;&nbsp;&nbsp;}</div>
+    <div class="cl">&nbsp;&nbsp;}</div>
+    <div class="cl">}</div>
+    <br>
+    <div class="cl" style="font-size:10px"><span class="cg">// 同一 identity pool → move animation</span></div>
+    <div class="cl" style="font-size:10px"><span class="cr">// 需要重构 List 结构</span></div>
+  </div>
+  <div class="code-box">
+    <span class="lbl good">Fix B — 移除 withAnimation</span>
+    <div class="cl">func archiveTrip(_ trip: Trip) {</div>
+    <div class="cl">&nbsp;&nbsp;<span class="cr" style="text-decoration:line-through">withAnimation(.easeInOut(0.3)) {</span></div>
+    <div class="cl">&nbsp;&nbsp;&nbsp;&nbsp;trip.archive()</div>
+    <div class="cl">&nbsp;&nbsp;&nbsp;&nbsp;try? modelContext.save()</div>
+    <div class="cl">&nbsp;&nbsp;<span class="cr" style="text-decoration:line-through">}</span></div>
+    <div class="cl">}</div>
+    <br>
+    <div class="cl" style="font-size:10px"><span class="cg">// 最小改动，仅删除 withAnimation</span></div>
+    <div class="cl" style="font-size:10px"><span class="cg">// SwiftUI 默认 List 过渡接管</span></div>
+  </div>
+</div>
+
+<script>
+// ===== Card templates =====
+const TOKYO = { id:'tokyo', name:'东京 - 商务', date:'3月15日 出发', pct:70, color:'var(--primary)' };
+const OSAKA = { id:'osaka', name:'大阪 - 温泉', date:'4月2日 出发', pct:40, color:'var(--primary)' };
+const SEOUL = { id:'seoul', name:'首尔 - 购物', date:'1月20日 出发', pct:100, color:'var(--success)', done:true };
+
+function makeCard(t, isArchived) {
+  const arc = isArchived ? ' archived' : '';
+  const dashoff = 87.96 * (1 - t.pct/100);
+  const inner = t.done
+    ? `<text class="ring-txt" x="17" y="17" fill="var(--success)">&#10003;</text>`
+    : `<text class="ring-txt" x="17" y="17">${t.pct}</text>`;
+  return `<div class="card${arc}" data-id="${t.id}">
+    <div class="name">${t.name}</div><div class="date">${t.date}</div>
+    <div class="ring"><svg viewBox="0 0 34 34">
+      <circle class="ring-bg" cx="17" cy="17" r="14"/>
+      <circle class="ring-fg" cx="17" cy="17" r="14" stroke="${t.color}" stroke-dasharray="87.96" stroke-dashoffset="${dashoff}"/>
+      ${inner}
+    </svg></div>
+  </div>`;
+}
+
+function makeHeader() {
+  return `<div class="sec-hdr" data-id="header">已归档</div>`;
+}
+
+// ===== State builders =====
+function buildArchiveBefore(containerId) {
+  document.getElementById(containerId).innerHTML =
+    makeCard(TOKYO, false) + makeCard(OSAKA, false) + makeHeader() + makeCard(SEOUL, true);
+}
+
+function buildArchiveAfter(containerId) {
+  document.getElementById(containerId).innerHTML =
+    makeCard(OSAKA, false) + makeHeader() + makeCard(TOKYO, true) + makeCard(SEOUL, true);
+}
+
+function buildUnarchiveBefore(containerId) {
+  document.getElementById(containerId).innerHTML =
+    makeCard(OSAKA, false) + makeHeader() + makeCard(TOKYO, true) + makeCard(SEOUL, true);
+}
+
+function buildUnarchiveAfter(containerId) {
+  document.getElementById(containerId).innerHTML =
+    makeCard(TOKYO, false) + makeCard(OSAKA, false) + makeHeader() + makeCard(SEOUL, true);
+}
+
+// ===== FLIP Animation Engine =====
+function flipAnimate(containerId, buildAfterFn, duration, easing) {
+  const container = document.getElementById(containerId);
+  const oldEls = Array.from(container.children);
+
+  // FIRST: snapshot positions
+  const firstMap = {};
+  oldEls.forEach(el => {
+    const id = el.dataset.id;
+    const r = el.getBoundingClientRect();
+    firstMap[id] = { top: r.top, left: r.left, width: r.width, height: r.height };
+  });
+
+  // CHANGE: rebuild DOM
+  buildAfterFn(containerId);
+
+  // LAST: snapshot new positions + INVERT + PLAY
+  const newEls = Array.from(container.children);
+  newEls.forEach(el => {
+    const id = el.dataset.id;
+    const last = el.getBoundingClientRect();
+    const first = firstMap[id];
+
+    if (first) {
+      const dx = first.left - last.left;
+      const dy = first.top - last.top;
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+        el.animate([
+          { transform: `translate(${dx}px, ${dy}px)` },
+          { transform: 'translate(0,0)' }
+        ], { duration, easing, fill: 'forwards' });
+      }
+    } else {
+      // New element: fade in
+      el.animate([
+        { opacity: 0, transform: 'translateX(20px)' },
+        { opacity: 1, transform: 'translateX(0)' }
+      ], { duration: duration * 0.6, delay: duration * 0.3, easing, fill: 'forwards' });
+      el.style.opacity = '0';
+      setTimeout(() => { el.style.opacity = ''; }, duration);
+    }
+  });
+}
+
+// ===== "Before" animation: fade-out then delayed fade-in =====
+function beforeAnimate(containerId, buildAfterFn, targetId) {
+  const container = document.getElementById(containerId);
+  const target = container.querySelector(`[data-id="${targetId}"]`);
+  if (!target) return;
+
+  // Phase 1: fade out the target card
+  target.style.transition = 'all 0.3s ease-out';
+  target.style.opacity = '0';
+  target.style.transform = 'scale(0.92)';
+
+  // Phase 2: after fade-out, rebuild and fade-in the moved card
+  setTimeout(() => {
+    buildAfterFn(containerId);
+    const moved = container.querySelector(`[data-id="${targetId}"]`);
+    if (moved) {
+      moved.style.opacity = '0';
+      moved.style.transform = 'scale(0.92)';
+      // Small gap before fade-in to show the disconnected feel
+      setTimeout(() => {
+        moved.style.transition = 'all 0.3s ease-out';
+        moved.style.opacity = '1';
+        moved.style.transform = 'scale(1)';
+      }, 120);
+    }
+  }, 350);
+}
+
+// ===== "Fix B" animation: slide-out then slide-in (iOS default List style) =====
+function fixbAnimate(containerId, buildAfterFn, targetId) {
+  const container = document.getElementById(containerId);
+  const target = container.querySelector(`[data-id="${targetId}"]`);
+  if (!target) return;
+
+  // Snapshot neighbors for shift animation
+  const allEls = Array.from(container.children);
+  const firstMap = {};
+  allEls.forEach(el => {
+    firstMap[el.dataset.id] = el.getBoundingClientRect();
+  });
+
+  // Phase 1: slide target card out to the left (standard iOS row removal)
+  target.style.transition = 'all 0.28s ease-in';
+  target.style.opacity = '0';
+  target.style.transform = 'translateX(-100%)';
+
+  setTimeout(() => {
+    // Rebuild to after state
+    buildAfterFn(containerId);
+
+    const newEls = Array.from(container.children);
+    newEls.forEach(el => {
+      const id = el.dataset.id;
+      if (id === targetId) {
+        // The moved card: slide in from right
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(40px)';
+        requestAnimationFrame(() => {
+          el.style.transition = 'all 0.3s cubic-bezier(0.4,0,0.2,1)';
+          el.style.opacity = '1';
+          el.style.transform = 'translateX(0)';
+        });
+      } else if (firstMap[id]) {
+        // Existing cards: animate position shift
+        const oldR = firstMap[id];
+        const newR = el.getBoundingClientRect();
+        const dy = oldR.top - newR.top;
+        if (Math.abs(dy) > 1) {
+          el.animate([
+            { transform: `translateY(${dy}px)` },
+            { transform: 'translateY(0)' }
+          ], { duration: 280, easing: 'cubic-bezier(0.4,0,0.2,1)' });
+        }
+      }
+    });
+  }, 300);
+}
+
+// ===== Archive: Before =====
+function arcBefRun() { beforeAnimate('arc-bef', buildArchiveAfter, 'tokyo'); }
+function arcBefReset() { buildArchiveBefore('arc-bef'); }
+
+// ===== Archive: Fix A =====
+function arcFixaRun() {
+  flipAnimate('arc-fixa', buildArchiveAfter, 400, 'cubic-bezier(0.4,0,0.2,1)');
+}
+function arcFixaReset() { buildArchiveBefore('arc-fixa'); }
+
+// ===== Archive: Before 2 =====
+function arcBef2Run() { beforeAnimate('arc-bef2', buildArchiveAfter, 'tokyo'); }
+function arcBef2Reset() { buildArchiveBefore('arc-bef2'); }
+
+// ===== Archive: Fix B =====
+function arcFixbRun() { fixbAnimate('arc-fixb', buildArchiveAfter, 'tokyo'); }
+function arcFixbReset() { buildArchiveBefore('arc-fixb'); }
+
+// ===== Unarchive: Before =====
+function unaBefRun() { beforeAnimate('una-bef', buildUnarchiveAfter, 'tokyo'); }
+function unaBefReset() { buildUnarchiveBefore('una-bef'); }
+
+// ===== Unarchive: Fix A =====
+function unaFixaRun() {
+  flipAnimate('una-fixa', buildUnarchiveAfter, 400, 'cubic-bezier(0.4,0,0.2,1)');
+}
+function unaFixaReset() { buildUnarchiveBefore('una-fixa'); }
+
+// ===== Unarchive: Before 2 =====
+function unaBef2Run() { beforeAnimate('una-bef2', buildUnarchiveAfter, 'tokyo'); }
+function unaBef2Reset() { buildUnarchiveBefore('una-bef2'); }
+
+// ===== Unarchive: Fix B =====
+function unaFixbRun() { fixbAnimate('una-fixb', buildUnarchiveAfter, 'tokyo'); }
+function unaFixbReset() { buildUnarchiveBefore('una-fixb'); }
+
+// ===== Mode toggle =====
+function setMode(mode) {
+  document.getElementById('mode-archive').style.display = mode === 'archive' ? 'block' : 'none';
+  document.getElementById('mode-unarchive').style.display = mode === 'unarchive' ? 'block' : 'none';
+  document.querySelectorAll('#mode-tabs .tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', (mode === 'archive' && i === 0) || (mode === 'unarchive' && i === 1));
+  });
+}
+
+// ===== Init =====
+function init() {
+  // Archive demos
+  buildArchiveBefore('arc-bef');
+  buildArchiveBefore('arc-fixa');
+  buildArchiveBefore('arc-bef2');
+  buildArchiveBefore('arc-fixb');
+  // Unarchive demos
+  buildUnarchiveBefore('una-bef');
+  buildUnarchiveBefore('una-fixa');
+  buildUnarchiveBefore('una-bef2');
+  buildUnarchiveBefore('una-fixb');
+}
+init();
+</script>
+</body>
+</html>

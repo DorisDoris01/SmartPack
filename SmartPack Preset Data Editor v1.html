@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartPack Preset Data Editor</title>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --surface: #16213e;
+    --surface2: #0f3460;
+    --accent: #e94560;
+    --accent2: #533483;
+    --text: #eee;
+    --text2: #aab;
+    --border: #2a2a4a;
+    --green: #4ade80;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --radius: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header h1 { font-size: 20px; font-weight: 600; }
+  header h1 span { color: var(--accent); }
+  .header-actions { display: flex; gap: 8px; }
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #d63a52; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--accent2); }
+  .btn-small { padding: 4px 10px; font-size: 12px; }
+  .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); }
+  .btn-danger:hover { background: var(--red); color: white; }
+  .btn-green { background: var(--green); color: #000; }
+  .btn-green:hover { opacity: 0.9; }
+
+  .tabs {
+    display: flex;
+    gap: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab .badge {
+    background: var(--surface2);
+    color: var(--text2);
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+  }
+  .tab.active .badge { background: var(--accent); color: white; }
+
+  .content { padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .section-header h2 { font-size: 16px; color: var(--text2); }
+
+  .tag-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .tag-header {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .tag-header:hover { background: var(--surface2); }
+  .tag-header-left { display: flex; align-items: center; gap: 12px; }
+  .tag-header-left .tag-icon { font-size: 18px; width: 28px; text-align: center; }
+  .tag-header-left .tag-name { font-weight: 600; font-size: 14px; }
+  .tag-header-left .tag-name-en { color: var(--text2); font-size: 12px; margin-left: 8px; }
+  .tag-header-left .tag-group-badge {
+    font-size: 10px; padding: 2px 8px; border-radius: 10px;
+    background: var(--accent2); color: var(--text);
+  }
+  .tag-header-right { display: flex; align-items: center; gap: 8px; }
+  .tag-header-right .item-count { color: var(--text2); font-size: 12px; }
+  .chevron { transition: transform 0.2s; color: var(--text2); }
+  .chevron.open { transform: rotate(90deg); }
+
+  .tag-body { padding: 0; display: none; }
+  .tag-body.open { display: block; }
+
+  .tag-meta {
+    padding: 12px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.15);
+  }
+  .tag-meta label { font-size: 11px; color: var(--text2); display: block; margin-bottom: 4px; }
+  .tag-meta input, .tag-meta select {
+    width: 100%;
+    padding: 6px 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    font-size: 12px;
+  }
+
+  .item-table { width: 100%; }
+  .item-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    color: var(--text2);
+    font-weight: 500;
+    background: rgba(0,0,0,0.2);
+    border-bottom: 1px solid var(--border);
+  }
+  .item-row {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .item-row:hover { background: rgba(255,255,255,0.03); }
+  .item-row:last-child { border-bottom: none; }
+  .item-row td { padding: 6px 12px; vertical-align: middle; }
+  .item-row input, .item-row select {
+    width: 100%;
+    padding: 5px 7px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    font-size: 12px;
+  }
+  .item-row input:focus, .item-row select:focus, .tag-meta input:focus, .tag-meta select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .item-row .id-cell { font-family: 'SF Mono', monospace; font-size: 11px; color: var(--text2); min-width: 130px; }
+  .delete-btn {
+    background: none;
+    border: none;
+    color: var(--red);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+  }
+  .delete-btn:hover { opacity: 1; }
+
+  .add-item-row {
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+    background: rgba(0,0,0,0.1);
+  }
+  .add-item-row button {
+    background: none;
+    border: 1px dashed var(--border);
+    color: var(--text2);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    width: 100%;
+    transition: all 0.2s;
+  }
+  .add-item-row button:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Code output */
+  .code-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 200;
+    padding: 40px;
+    overflow-y: auto;
+  }
+  .code-modal.open { display: flex; justify-content: center; }
+  .code-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .code-header {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .code-header h3 { font-size: 15px; }
+  .code-body {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .code-body pre {
+    font-family: 'SF Mono', 'Menlo', monospace;
+    font-size: 11.5px;
+    line-height: 1.5;
+    white-space: pre;
+    color: var(--text);
+    overflow-x: auto;
+  }
+  .copy-feedback {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--green);
+    color: #000;
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 13px;
+    display: none;
+    z-index: 300;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    gap: 24px;
+    padding: 12px 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .stats-bar .stat-value { color: var(--text); font-weight: 600; }
+
+  /* Base items section */
+  .base-section { margin-bottom: 24px; }
+  .base-section h3 {
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    background: var(--surface);
+    border-radius: var(--radius) var(--radius) 0 0;
+    border: 1px solid var(--border);
+    border-bottom: none;
+  }
+  .base-table-wrap {
+    border: 1px solid var(--border);
+    border-radius: 0 0 var(--radius) var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .drag-over { border-top: 2px solid var(--accent) !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span>SmartPack</span> Preset Data Editor</h1>
+  <div class="header-actions">
+    <button class="btn btn-secondary" onclick="importFromSwift()">Import Swift</button>
+    <button class="btn btn-primary" onclick="generateCode()">Generate Swift Code</button>
+  </div>
+</header>
+
+<div class="stats-bar" id="statsBar"></div>
+
+<div class="tabs" id="tabBar">
+  <div class="tab active" data-tab="base" onclick="switchTab('base')">Base Items <span class="badge" id="badge-base">0</span></div>
+  <div class="tab" data-tab="activity" onclick="switchTab('activity')">Activities <span class="badge" id="badge-activity">0</span></div>
+  <div class="tab" data-tab="occasion" onclick="switchTab('occasion')">Occasions <span class="badge" id="badge-occasion">0</span></div>
+  <div class="tab" data-tab="config" onclick="switchTab('config')">Configs <span class="badge" id="badge-config">0</span></div>
+</div>
+
+<div class="content" id="content"></div>
+
+<div class="code-modal" id="codeModal">
+  <div class="code-container">
+    <div class="code-header">
+      <h3>Generated Swift Code</h3>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-green btn-small" onclick="copyCode()">Copy All</button>
+        <button class="btn btn-secondary btn-small" onclick="closeCode()">Close</button>
+      </div>
+    </div>
+    <div class="code-body"><pre id="codeOutput"></pre></div>
+  </div>
+</div>
+
+<div class="copy-feedback" id="copyFeedback">Copied!</div>
+
+<script>
+// ============ DATA MODEL ============
+const CATEGORIES = [
+  { value: 'documents', label: '证件/钱财 Documents' },
+  { value: 'clothing', label: '衣物 Clothing' },
+  { value: 'toiletries', label: '洗漱用品 Toiletries' },
+  { value: 'electronics', label: '电子产品 Electronics' },
+  { value: 'sports', label: '运动装备 Sports' },
+  { value: 'other', label: '其他 Other' },
+];
+
+const GENDERS = [
+  { value: 'nil', label: 'Unisex' },
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+];
+
+const GROUPS = [
+  { value: 'activity', label: '旅行活动 Activity' },
+  { value: 'occasion', label: '特定场合 Occasion' },
+  { value: 'config', label: '出行配置 Config' },
+];
+
+// State
+const state = {
+  activeTab: 'base',
+  baseCommon: [],
+  baseMale: [],
+  baseFemale: [],
+  tags: [],
+};
+
+// ============ INITIAL DATA ============
+function loadInitialData() {
+  state.baseCommon = [
+    { id: "base_doc_001", name: "身份证", nameEn: "ID Card", category: "documents", gender: "nil" },
+    { id: "base_ele_001", name: "数据线", nameEn: "Data & Charging Cable", category: "electronics", gender: "nil" },
+    { id: "base_ele_002", name: "充电宝", nameEn: "Power Bank", category: "electronics", gender: "nil" },
+    { id: "base_ele_003", name: "耳机", nameEn: "Headphone", category: "electronics", gender: "nil" },
+    { id: "base_hyg_001", name: "纸巾", nameEn: "Tissues", category: "toiletries", gender: "nil" },
+    { id: "base_hyg_002", name: "墨镜", nameEn: "Sunglasses", category: "clothing", gender: "nil" },
+    { id: "base_hyg_003", name: "洗面奶", nameEn: "Facial Cleanser", category: "toiletries", gender: "nil" },
+    { id: "base_hyg_004", name: "牙刷/牙膏", nameEn: "Toothbrush/Toothpaste", category: "toiletries", gender: "nil" },
+    { id: "base_hyg_005", name: "防晒霜", nameEn: "Sunscreen", category: "toiletries", gender: "nil" },
+    { id: "base_hyg_006", name: "面霜", nameEn: "Face Cream", category: "toiletries", gender: "nil" },
+    { id: "base_hyg_007", name: "唇膏", nameEn: "Lip Balm", category: "toiletries", gender: "nil" },
+    { id: "base_clo_001", name: "内裤", nameEn: "Underwear", category: "clothing", gender: "nil" },
+    { id: "base_clo_002", name: "袜子", nameEn: "Socks", category: "clothing", gender: "nil" },
+    { id: "base_clo_003", name: "睡衣", nameEn: "Pajamas", category: "clothing", gender: "nil" },
+    { id: "base_clo_004", name: "上衣", nameEn: "Top", category: "clothing", gender: "nil" },
+    { id: "base_clo_005", name: "裤子", nameEn: "Pants", category: "clothing", gender: "nil" },
+  ];
+  state.baseMale = [
+    { id: "male_001", name: "剃须刀", nameEn: "Razor", category: "toiletries", gender: "male" },
+    { id: "male_002", name: "发胶", nameEn: "Hair Gel", category: "toiletries", gender: "male" },
+  ];
+  state.baseFemale = [
+    { id: "female_001", name: "卸妆油", nameEn: "Makeup Remover", category: "toiletries", gender: "female" },
+    { id: "female_002", name: "护发素", nameEn: "Hair Conditioner", category: "toiletries", gender: "female" },
+    { id: "female_003", name: "化妆品", nameEn: "Makeup", category: "toiletries", gender: "female" },
+    { id: "female_004", name: "面膜", nameEn: "Face Mask", category: "toiletries", gender: "female" },
+    { id: "female_005", name: "护肤品", nameEn: "Skincare Kit", category: "toiletries", gender: "female" },
+    { id: "female_006", name: "发圈", nameEn: "Hair Tie", category: "toiletries", gender: "female" },
+    { id: "female_007", name: "卫生巾/棉条", nameEn: "Sanitary Pads/Tampons", category: "toiletries", gender: "female" },
+    { id: "female_008", name: "内衣", nameEn: "Bra", category: "clothing", gender: "female" },
+    { id: "female_009", name: "裙子", nameEn: "Dress", category: "clothing", gender: "female" },
+    { id: "female_010", name: "配饰", nameEn: "Accessories", category: "clothing", gender: "female" },
+  ];
+
+  state.tags = [
+    { id: "running", name: "跑步", nameEn: "Running", group: "activity", icon: "figure.run", items: [
+      { id: "act_run_001", name: "跑鞋", nameEn: "Running Shoes", category: "sports", gender: "nil" },
+      { id: "act_run_002", name: "速干衣裤", nameEn: "Moisture-Wicking Clothes", category: "sports", gender: "nil" },
+      { id: "act_run_003", name: "运动袜", nameEn: "Sports Socks", category: "sports", gender: "nil" },
+      { id: "act_run_004", name: "导汗带", nameEn: "Sweatband", category: "sports", gender: "nil" },
+      { id: "act_run_005", name: "运动补给（能量胶）", nameEn: "Energy Gels", category: "sports", gender: "nil" },
+      { id: "act_run_006", name: "运动手表", nameEn: "Sports Watch", category: "electronics", gender: "nil" },
+    ]},
+    { id: "climbing", name: "攀岩", nameEn: "Climbing", group: "activity", icon: "figure.climbing", items: [
+      { id: "act_climb_001", name: "攀岩鞋", nameEn: "Climbing Shoes", category: "sports", gender: "nil" },
+      { id: "act_climb_002", name: "镁粉", nameEn: "Chalk", category: "sports", gender: "nil" },
+      { id: "act_climb_003", name: "安全带", nameEn: "Harness", category: "sports", gender: "nil" },
+      { id: "act_climb_004", name: "头盔", nameEn: "Helmet", category: "sports", gender: "nil" },
+      { id: "act_climb_005", name: "主锁", nameEn: "Carabiner", category: "sports", gender: "nil" },
+      { id: "act_climb_006", name: "快挂", nameEn: "Quickdraw", category: "sports", gender: "nil" },
+    ]},
+    { id: "diving", name: "潜水", nameEn: "Diving", group: "activity", icon: "figure.pool.swim", items: [
+      { id: "act_dive_001", name: "面镜", nameEn: "Diving Mask", category: "sports", gender: "nil" },
+      { id: "act_dive_002", name: "呼吸管", nameEn: "Snorkel", category: "sports", gender: "nil" },
+      { id: "act_dive_003", name: "潜水电脑表", nameEn: "Dive Computer", category: "sports", gender: "nil" },
+      { id: "act_dive_004", name: "水母衣", nameEn: "Rash Guard", category: "sports", gender: "nil" },
+      { id: "act_dive_005", name: "防水袋", nameEn: "Waterproof Bag", category: "sports", gender: "nil" },
+    ]},
+    { id: "camping", name: "露营", nameEn: "Camping", group: "activity", icon: "tent", items: [
+      { id: "act_camp_001", name: "帐篷", nameEn: "Tent", category: "sports", gender: "nil" },
+      { id: "act_camp_002", name: "睡袋", nameEn: "Sleeping Bag", category: "sports", gender: "nil" },
+      { id: "act_camp_003", name: "防潮垫", nameEn: "Sleeping Pad", category: "sports", gender: "nil" },
+      { id: "act_camp_004", name: "睡垫", nameEn: "Sleeping Mat", category: "sports", gender: "nil" },
+      { id: "act_camp_005", name: "头灯", nameEn: "Headlamp", category: "sports", gender: "nil" },
+      { id: "act_camp_006", name: "营地灯", nameEn: "Camp Light", category: "sports", gender: "nil" },
+      { id: "act_camp_007", name: "驱蚊水", nameEn: "Mosquito Repellent", category: "toiletries", gender: "nil" },
+      { id: "act_camp_008", name: "急救毯", nameEn: "Emergency Blanket", category: "sports", gender: "nil" },
+    ]},
+    { id: "trail_running", name: "越野", nameEn: "Trail Running", group: "activity", icon: "figure.run.circle", items: [
+      { id: "act_trail_001", name: "越野跑鞋", nameEn: "Trail Running Shoes", category: "sports", gender: "nil" },
+      { id: "act_trail_002", name: "越野跑背包", nameEn: "Trail Running Pack", category: "sports", gender: "nil" },
+      { id: "act_trail_003", name: "软水壶", nameEn: "Soft Water Bottle", category: "sports", gender: "nil" },
+      { id: "act_trail_004", name: "救生哨", nameEn: "Whistle", category: "sports", gender: "nil" },
+      { id: "act_trail_005", name: "急救毯", nameEn: "Emergency Blanket", category: "sports", gender: "nil" },
+      { id: "act_trail_006", name: "凡士林", nameEn: "Vaseline", category: "sports", gender: "nil" },
+      { id: "act_trail_007", name: "头灯", nameEn: "Headlamp", category: "sports", gender: "nil" },
+      { id: "act_trail_008", name: "运动补给（能量胶）", nameEn: "Energy Gels", category: "sports", gender: "nil" },
+      { id: "act_trail_009", name: "运动手表", nameEn: "Sports Watch", category: "electronics", gender: "nil" },
+      { id: "act_trail_010", name: "GPX", nameEn: "GPX", category: "electronics", gender: "nil" },
+    ]},
+    { id: "photography", name: "摄影", nameEn: "Photography", group: "activity", icon: "camera", items: [
+      { id: "act_photo_001", name: "相机机身", nameEn: "Camera Body", category: "electronics", gender: "nil" },
+      { id: "act_photo_002", name: "镜头群", nameEn: "Lenses", category: "electronics", gender: "nil" },
+      { id: "act_photo_003", name: "备用电池", nameEn: "Spare Batteries", category: "electronics", gender: "nil" },
+      { id: "act_photo_004", name: "存储卡", nameEn: "Memory Cards", category: "electronics", gender: "nil" },
+      { id: "act_photo_005", name: "三脚架", nameEn: "Tripod", category: "electronics", gender: "nil" },
+      { id: "act_photo_006", name: "清洁套装", nameEn: "Cleaning Kit", category: "electronics", gender: "nil" },
+      { id: "act_photo_007", name: "排插", nameEn: "Power Strip", category: "electronics", gender: "nil" },
+      { id: "act_photo_008", name: "无人机", nameEn: "Drone", category: "electronics", gender: "nil" },
+    ]},
+    { id: "motorcycle", name: "摩旅", nameEn: "Motorcycle Tour", group: "activity", icon: "motorcycle", items: [
+      { id: "act_moto_001", name: "头盔", nameEn: "Helmet", category: "sports", gender: "nil" },
+      { id: "act_moto_002", name: "骑行服/护具", nameEn: "Riding Gear/Armor", category: "sports", gender: "nil" },
+      { id: "act_moto_003", name: "雨衣", nameEn: "Rain Gear", category: "sports", gender: "nil" },
+      { id: "act_moto_004", name: "维修工具", nameEn: "Repair Tools", category: "sports", gender: "nil" },
+      { id: "act_moto_005", name: "蓝牙耳机（对讲）", nameEn: "Bluetooth Headset (Intercom)", category: "electronics", gender: "nil" },
+    ]},
+    { id: "skiing", name: "滑雪", nameEn: "Skiing", group: "activity", icon: "snowflake", items: [
+      { id: "act_ski_001", name: "雪服", nameEn: "Ski Suit", category: "sports", gender: "nil" },
+      { id: "act_ski_002", name: "雪镜", nameEn: "Ski Goggles", category: "sports", gender: "nil" },
+      { id: "act_ski_003", name: "护脸", nameEn: "Face Mask", category: "sports", gender: "nil" },
+      { id: "act_ski_004", name: "速干内衣", nameEn: "Moisture-Wicking Underwear", category: "clothing", gender: "nil" },
+      { id: "act_ski_005", name: "护具", nameEn: "Protective Gear", category: "sports", gender: "nil" },
+      { id: "act_ski_006", name: "暖宝宝", nameEn: "Hand Warmers", category: "other", gender: "nil" },
+      { id: "act_ski_007", name: "滑雪袜", nameEn: "Ski Socks", category: "clothing", gender: "nil" },
+    ]},
+    { id: "beach", name: "海滩", nameEn: "Beach", group: "activity", icon: "beach.umbrella", items: [
+      { id: "act_beach_001", name: "泳衣", nameEn: "Swimsuit", category: "clothing", gender: "nil" },
+      { id: "act_beach_002", name: "沙滩鞋", nameEn: "Beach Sandals", category: "clothing", gender: "nil" },
+      { id: "act_beach_003", name: "防水手机袋", nameEn: "Waterproof Phone Pouch", category: "electronics", gender: "nil" },
+      { id: "act_beach_004", name: "沙滩浴巾", nameEn: "Beach Towel", category: "other", gender: "nil" },
+      { id: "act_beach_005", name: "晒后修复", nameEn: "After-Sun Care", category: "toiletries", gender: "nil" },
+    ]},
+    { id: "gym", name: "健身", nameEn: "Gym", group: "activity", icon: "dumbbell", items: [
+      { id: "act_gym_001", name: "运动鞋", nameEn: "Athletic Shoes", category: "sports", gender: "nil" },
+      { id: "act_gym_002", name: "运动服", nameEn: "Workout Clothes", category: "sports", gender: "nil" },
+      { id: "act_gym_003", name: "弹力带", nameEn: "Resistance Bands", category: "sports", gender: "nil" },
+      { id: "act_gym_004", name: "运动毛巾", nameEn: "Gym Towel", category: "sports", gender: "nil" },
+      { id: "act_gym_005", name: "摇摇杯", nameEn: "Shaker Bottle", category: "sports", gender: "nil" },
+    ]},
+    { id: "party", name: "宴会", nameEn: "Party", group: "occasion", icon: "wineglass", items: [
+      { id: "occ_party_001", name: "礼服/西装", nameEn: "Formal Dress/Suit", category: "clothing", gender: "nil" },
+      { id: "occ_party_002", name: "皮鞋/高跟鞋", nameEn: "Leather Shoes/High Heels", category: "clothing", gender: "nil" },
+      { id: "occ_party_003", name: "配饰", nameEn: "Accessories", category: "clothing", gender: "nil" },
+      { id: "occ_party_004", name: "发胶", nameEn: "Hair Gel", category: "toiletries", gender: "male" },
+    ]},
+    { id: "business_meeting", name: "商务会议", nameEn: "Business Meeting", group: "occasion", icon: "briefcase", items: [
+      { id: "occ_biz_001", name: "正装", nameEn: "Business Attire", category: "clothing", gender: "nil" },
+      { id: "occ_biz_002", name: "皮鞋/高跟鞋", nameEn: "Leather Shoes/High Heels", category: "clothing", gender: "nil" },
+      { id: "occ_biz_003", name: "配饰", nameEn: "Accessories", category: "clothing", gender: "nil" },
+      { id: "occ_biz_004", name: "发胶", nameEn: "Hair Gel", category: "toiletries", gender: "male" },
+      { id: "occ_biz_005", name: "笔记本电脑", nameEn: "Laptop", category: "electronics", gender: "nil" },
+      { id: "occ_biz_006", name: "演示翻页笔", nameEn: "Presentation Remote", category: "electronics", gender: "nil" },
+      { id: "occ_biz_007", name: "名片", nameEn: "Business Cards", category: "other", gender: "nil" },
+      { id: "occ_biz_008", name: "文件夹/笔", nameEn: "Folder/Pen", category: "other", gender: "nil" },
+    ]},
+    { id: "international", name: "国际旅行", nameEn: "International Travel", group: "config", icon: "airplane.departure", items: [
+      { id: "cfg_intl_001", name: "护照", nameEn: "Passport", category: "documents", gender: "nil" },
+      { id: "cfg_intl_002", name: "签证", nameEn: "Visa", category: "documents", gender: "nil" },
+      { id: "cfg_intl_003", name: "转换插头", nameEn: "Adapter", category: "electronics", gender: "nil" },
+      { id: "cfg_intl_004", name: "SIM卡", nameEn: "SIM Card", category: "electronics", gender: "nil" },
+      { id: "cfg_intl_005", name: "外币", nameEn: "Foreign Currency", category: "documents", gender: "nil" },
+      { id: "cfg_intl_006", name: "常备急救药", nameEn: "First Aid Kit", category: "other", gender: "nil" },
+      { id: "cfg_intl_007", name: "洗发水", nameEn: "Shampoo", category: "toiletries", gender: "nil" },
+      { id: "cfg_intl_008", name: "沐浴露", nameEn: "Body Wash", category: "toiletries", gender: "nil" },
+      { id: "cfg_intl_009", name: "身体乳", nameEn: "Body Lotion", category: "toiletries", gender: "nil" },
+    ]},
+    { id: "with_kids", name: "带娃", nameEn: "With Kids", group: "config", icon: "figure.child", items: [
+      { id: "cfg_kids_001", name: "尿布", nameEn: "Diapers", category: "other", gender: "nil" },
+      { id: "cfg_kids_002", name: "奶瓶/奶粉", nameEn: "Bottle/Formula", category: "other", gender: "nil" },
+      { id: "cfg_kids_003", name: "湿巾", nameEn: "Wet Wipes", category: "other", gender: "nil" },
+      { id: "cfg_kids_004", name: "折叠推车", nameEn: "Stroller", category: "other", gender: "nil" },
+      { id: "cfg_kids_005", name: "玩具", nameEn: "Toy", category: "other", gender: "nil" },
+      { id: "cfg_kids_006", name: "儿童药品", nameEn: "Children's Medicine", category: "other", gender: "nil" },
+    ]},
+    { id: "with_pet", name: "带宠物", nameEn: "With Pet", group: "config", icon: "pawprint", items: [
+      { id: "cfg_pet_001", name: "牵引绳", nameEn: "Leash", category: "other", gender: "nil" },
+      { id: "cfg_pet_002", name: "便便袋", nameEn: "Poop Bags", category: "other", gender: "nil" },
+      { id: "cfg_pet_003", name: "折叠碗", nameEn: "Collapsible Bowl", category: "other", gender: "nil" },
+      { id: "cfg_pet_004", name: "宠物口粮", nameEn: "Pet Food", category: "other", gender: "nil" },
+      { id: "cfg_pet_005", name: "疫苗证明", nameEn: "Vaccination Certificate", category: "documents", gender: "nil" },
+      { id: "cfg_pet_006", name: "航空箱", nameEn: "Pet Carrier", category: "other", gender: "nil" },
+    ]},
+    { id: "self_drive", name: "自驾", nameEn: "Self Drive", group: "config", icon: "car", items: [
+      { id: "occ_drive_001", name: "驾驶证", nameEn: "Driver's License", category: "documents", gender: "nil" },
+      { id: "occ_drive_002", name: "车载充电线", nameEn: "Car Charging Cable", category: "electronics", gender: "nil" },
+      { id: "occ_drive_003", name: "手机支架", nameEn: "Phone Mount", category: "electronics", gender: "nil" },
+      { id: "occ_drive_004", name: "应急补胎液", nameEn: "Tire Sealant", category: "other", gender: "nil" },
+      { id: "occ_drive_005", name: "墨镜", nameEn: "Sunglasses", category: "other", gender: "nil" },
+    ]},
+    { id: "long_flight", name: "长途飞行", nameEn: "Long-haul Flight", group: "config", icon: "airplane", items: [
+      { id: "cfg_flight_001", name: "颈枕", nameEn: "Neck Pillow", category: "other", gender: "nil" },
+      { id: "cfg_flight_002", name: "眼罩", nameEn: "Eye Mask", category: "other", gender: "nil" },
+      { id: "cfg_flight_003", name: "耳塞", nameEn: "Earplugs", category: "other", gender: "nil" },
+      { id: "cfg_flight_004", name: "书/娱乐", nameEn: "Book/Entertainment", category: "other", gender: "nil" },
+    ]},
+  ];
+}
+
+// ============ RENDERING ============
+function switchTab(tab) {
+  state.activeTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  render();
+}
+
+function updateStats() {
+  const totalBase = state.baseCommon.length + state.baseMale.length + state.baseFemale.length;
+  let totalTag = 0;
+  state.tags.forEach(t => totalTag += t.items.length);
+  const actCount = state.tags.filter(t => t.group === 'activity').length;
+  const occCount = state.tags.filter(t => t.group === 'occasion').length;
+  const cfgCount = state.tags.filter(t => t.group === 'config').length;
+
+  document.getElementById('statsBar').innerHTML = `
+    <span>Total Items: <span class="stat-value">${totalBase + totalTag}</span></span>
+    <span>Base: <span class="stat-value">${totalBase}</span></span>
+    <span>Tags: <span class="stat-value">${state.tags.length}</span></span>
+    <span>Activities: <span class="stat-value">${actCount}</span></span>
+    <span>Occasions: <span class="stat-value">${occCount}</span></span>
+    <span>Configs: <span class="stat-value">${cfgCount}</span></span>
+  `;
+  document.getElementById('badge-base').textContent = totalBase;
+  document.getElementById('badge-activity').textContent = actCount;
+  document.getElementById('badge-occasion').textContent = occCount;
+  document.getElementById('badge-config').textContent = cfgCount;
+}
+
+function catOptions(selected) {
+  return CATEGORIES.map(c => `<option value="${c.value}" ${c.value === selected ? 'selected' : ''}>${c.label}</option>`).join('');
+}
+function genderOptions(selected) {
+  return GENDERS.map(g => `<option value="${g.value}" ${g.value === selected ? 'selected' : ''}>${g.label}</option>`).join('');
+}
+function groupOptions(selected) {
+  return GROUPS.map(g => `<option value="${g.value}" ${g.value === selected ? 'selected' : ''}>${g.label}</option>`).join('');
+}
+
+function renderItemTable(items, sectionKey, tagIdx) {
+  const prefix = tagIdx !== undefined ? `tag_${tagIdx}` : sectionKey;
+  let html = `<table class="item-table"><thead><tr>
+    <th style="width:130px">ID</th>
+    <th style="width:22%">Chinese Name</th>
+    <th style="width:22%">English Name</th>
+    <th style="width:18%">Category</th>
+    <th style="width:12%">Gender</th>
+    <th style="width:36px"></th>
+  </tr></thead><tbody>`;
+
+  items.forEach((item, i) => {
+    html += `<tr class="item-row" draggable="true" data-prefix="${prefix}" data-idx="${i}"
+      ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event, '${prefix}', ${i})" ondragend="dragEnd(event)">
+      <td class="id-cell"><input value="${esc(item.id)}" onchange="updateItem('${prefix}', ${i}, 'id', this.value)" /></td>
+      <td><input value="${esc(item.name)}" onchange="updateItem('${prefix}', ${i}, 'name', this.value)" /></td>
+      <td><input value="${esc(item.nameEn)}" onchange="updateItem('${prefix}', ${i}, 'nameEn', this.value)" /></td>
+      <td><select onchange="updateItem('${prefix}', ${i}, 'category', this.value)">${catOptions(item.category)}</select></td>
+      <td><select onchange="updateItem('${prefix}', ${i}, 'gender', this.value)">${genderOptions(item.gender)}</select></td>
+      <td><button class="delete-btn" onclick="deleteItem('${prefix}', ${i})">x</button></td>
+    </tr>`;
+  });
+  html += `</tbody></table>
+    <div class="add-item-row"><button onclick="addItem('${prefix}')">+ Add Item</button></div>`;
+  return html;
+}
+
+function renderBaseTab() {
+  let html = '';
+  const sections = [
+    { key: 'baseCommon', label: 'Common Base Items (共有基础项)', items: state.baseCommon },
+    { key: 'baseMale', label: 'Male-Specific (男性特有项)', items: state.baseMale },
+    { key: 'baseFemale', label: 'Female-Specific (女性特有项)', items: state.baseFemale },
+  ];
+  sections.forEach(s => {
+    html += `<div class="base-section">
+      <h3>${s.label} <span style="color:var(--accent);font-size:11px;margin-left:8px">${s.items.length} items</span></h3>
+      <div class="base-table-wrap">${renderItemTable(s.items, s.key)}</div>
+    </div>`;
+  });
+  return html;
+}
+
+function renderTagsTab(group) {
+  const tags = state.tags.filter(t => t.group === group);
+  let html = `<div class="section-header">
+    <h2>${group === 'activity' ? 'Travel Activities / 旅行活动' : group === 'occasion' ? 'Occasions / 特定场合' : 'Travel Config / 出行配置'}</h2>
+    <button class="btn btn-secondary btn-small" onclick="addTag('${group}')">+ Add Tag</button>
+  </div>`;
+
+  tags.forEach(tag => {
+    const tagIdx = state.tags.indexOf(tag);
+    const isOpen = tag._open;
+    html += `<div class="tag-card">
+      <div class="tag-header" onclick="toggleTag(${tagIdx})">
+        <div class="tag-header-left">
+          <span class="chevron ${isOpen ? 'open' : ''}">&#9654;</span>
+          <span class="tag-name">${esc(tag.name)}</span>
+          <span class="tag-name-en">${esc(tag.nameEn)}</span>
+        </div>
+        <div class="tag-header-right">
+          <span class="item-count">${tag.items.length} items</span>
+          <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); deleteTag(${tagIdx})">Delete</button>
+        </div>
+      </div>
+      <div class="tag-body ${isOpen ? 'open' : ''}">
+        <div class="tag-meta">
+          <div><label>Tag ID</label><input value="${esc(tag.id)}" onchange="updateTag(${tagIdx}, 'id', this.value)" /></div>
+          <div><label>Chinese Name</label><input value="${esc(tag.name)}" onchange="updateTag(${tagIdx}, 'name', this.value)" /></div>
+          <div><label>English Name</label><input value="${esc(tag.nameEn)}" onchange="updateTag(${tagIdx}, 'nameEn', this.value)" /></div>
+          <div><label>SF Symbol Icon</label><input value="${esc(tag.icon)}" onchange="updateTag(${tagIdx}, 'icon', this.value)" /></div>
+        </div>
+        ${renderItemTable(tag.items, null, tagIdx)}
+      </div>
+    </div>`;
+  });
+  return html;
+}
+
+function render() {
+  const content = document.getElementById('content');
+  switch (state.activeTab) {
+    case 'base': content.innerHTML = renderBaseTab(); break;
+    case 'activity': content.innerHTML = renderTagsTab('activity'); break;
+    case 'occasion': content.innerHTML = renderTagsTab('occasion'); break;
+    case 'config': content.innerHTML = renderTagsTab('config'); break;
+  }
+  updateStats();
+}
+
+// ============ ACTIONS ============
+function getItemList(prefix) {
+  if (prefix === 'baseCommon') return state.baseCommon;
+  if (prefix === 'baseMale') return state.baseMale;
+  if (prefix === 'baseFemale') return state.baseFemale;
+  const m = prefix.match(/^tag_(\d+)$/);
+  if (m) return state.tags[parseInt(m[1])].items;
+  return null;
+}
+
+function updateItem(prefix, idx, field, value) {
+  const list = getItemList(prefix);
+  if (list) { list[idx][field] = value; updateStats(); }
+}
+
+function deleteItem(prefix, idx) {
+  const list = getItemList(prefix);
+  if (list) { list.splice(idx, 1); render(); }
+}
+
+function addItem(prefix) {
+  const list = getItemList(prefix);
+  if (!list) return;
+  let idPrefix = 'new';
+  if (prefix === 'baseCommon') idPrefix = 'base_new';
+  else if (prefix === 'baseMale') idPrefix = 'male_new';
+  else if (prefix === 'baseFemale') idPrefix = 'female_new';
+  else {
+    const m = prefix.match(/^tag_(\d+)$/);
+    if (m) {
+      const tag = state.tags[parseInt(m[1])];
+      if (tag.items.length > 0) {
+        const lastId = tag.items[tag.items.length - 1].id;
+        const parts = lastId.match(/^(.+?)(\d+)$/);
+        if (parts) {
+          idPrefix = parts[1] + String(parseInt(parts[2]) + 1).padStart(3, '0');
+        } else {
+          idPrefix = tag.id + '_new_001';
+        }
+      } else {
+        idPrefix = 'act_' + tag.id.substring(0, 4) + '_001';
+      }
+    }
+  }
+  const gender = prefix === 'baseMale' ? 'male' : prefix === 'baseFemale' ? 'female' : 'nil';
+  list.push({ id: idPrefix, name: '', nameEn: '', category: 'other', gender });
+  render();
+  // Focus the new row's name input
+  setTimeout(() => {
+    const rows = document.querySelectorAll(`[data-prefix="${prefix}"]`);
+    const lastRow = rows[rows.length - 1];
+    if (lastRow) { const inputs = lastRow.querySelectorAll('input'); if (inputs[1]) inputs[1].focus(); }
+  }, 50);
+}
+
+function toggleTag(idx) { state.tags[idx]._open = !state.tags[idx]._open; render(); }
+
+function updateTag(idx, field, value) { state.tags[idx][field] = value; render(); }
+
+function deleteTag(idx) {
+  if (confirm(`Delete tag "${state.tags[idx].name} / ${state.tags[idx].nameEn}" and all its items?`)) {
+    state.tags.splice(idx, 1);
+    render();
+  }
+}
+
+function addTag(group) {
+  const prefixes = { activity: 'act', occasion: 'occ', config: 'cfg' };
+  state.tags.push({
+    id: 'new_tag',
+    name: '',
+    nameEn: '',
+    group,
+    icon: 'star',
+    items: [],
+    _open: true,
+  });
+  render();
+  // Scroll to bottom
+  setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
+}
+
+// ============ DRAG & DROP ============
+let dragSrc = null;
+function dragStart(e) {
+  dragSrc = { prefix: e.currentTarget.dataset.prefix, idx: parseInt(e.currentTarget.dataset.idx) };
+  e.currentTarget.style.opacity = '0.4';
+  e.dataTransfer.effectAllowed = 'move';
+}
+function dragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+}
+function dragEnd(e) {
+  e.currentTarget.style.opacity = '1';
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+}
+function drop(e, prefix, targetIdx) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (!dragSrc || dragSrc.prefix !== prefix) return;
+  const list = getItemList(prefix);
+  if (!list) return;
+  const [item] = list.splice(dragSrc.idx, 1);
+  list.splice(targetIdx, 0, item);
+  dragSrc = null;
+  render();
+}
+
+// ============ CODE GENERATION ============
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function swiftStr(s) { return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"'); }
+
+function itemToSwift(item) {
+  const g = item.gender === 'nil' ? 'nil' : `.${item.gender}`;
+  return `        Item(id: "${swiftStr(item.id)}", name: "${swiftStr(item.name)}", nameEn: "${swiftStr(item.nameEn)}", category: .${item.category}, genderSpecific: ${g}),`;
+}
+
+function generateCode() {
+  let code = '';
+
+  // Items
+  code += '    private let itemList: [Item] = [\n';
+  code += '        // ========== SPEC 3.1: 共有基础项 ==========\n';
+  state.baseCommon.forEach(item => { code += itemToSwift(item) + '\n'; });
+  code += '        \n';
+  code += '        // ========== SPEC 3.1: 男性特有项 ==========\n';
+  state.baseMale.forEach(item => { code += itemToSwift(item) + '\n'; });
+  code += '        \n';
+  code += '        // ========== SPEC 3.1: 女性特有项 ==========\n';
+  state.baseFemale.forEach(item => { code += itemToSwift(item) + '\n'; });
+
+  // Group tags by group for section comments
+  const groupMap = { activity: '旅行活动', occasion: '特定场合', config: '出行配置' };
+  const specMap = { activity: '4.2', occasion: '4.3', config: '4.4' };
+
+  state.tags.forEach(tag => {
+    code += '        \n';
+    code += `        // ========== SPEC ${specMap[tag.group]}: ${groupMap[tag.group]} - ${tag.name} ==========\n`;
+    tag.items.forEach(item => { code += itemToSwift(item) + '\n'; });
+  });
+  code += '    ]\n';
+
+  // Base ID arrays
+  code += '    \n';
+  code += '    /// 共有基础项 ID（不限性别）\n';
+  code += '    let commonBaseItemIds: [String] = [\n';
+  const commonIds = state.baseCommon.map(i => `"${swiftStr(i.id)}"`);
+  for (let i = 0; i < commonIds.length; i += 4) {
+    code += '        ' + commonIds.slice(i, i + 4).join(', ') + (i + 4 < commonIds.length ? ',' : '') + '\n';
+  }
+  code += '    ]\n';
+
+  code += '    \n';
+  code += '    /// 男性特有项 ID\n';
+  code += '    let maleSpecificItemIds: [String] = [\n';
+  code += '        ' + state.baseMale.map(i => `"${swiftStr(i.id)}"`).join(', ') + '\n';
+  code += '    ]\n';
+
+  code += '    \n';
+  code += '    /// 女性特有项 ID\n';
+  code += '    let femaleSpecificItemIds: [String] = [\n';
+  code += '        ' + state.baseFemale.map(i => `"${swiftStr(i.id)}"`).join(', ') + '\n';
+  code += '    ]\n';
+
+  // Tags
+  code += '    \n';
+  code += '    private let tagList: [Tag] = [\n';
+  let lastGroup = '';
+  state.tags.forEach(tag => {
+    if (tag.group !== lastGroup) {
+      code += `        // ========== SPEC ${specMap[tag.group]}: ${groupMap[tag.group]} ==========\n`;
+      lastGroup = tag.group;
+    }
+    const ids = tag.items.map(i => `"${swiftStr(i.id)}"`).join(', ');
+    code += `        Tag(\n`;
+    code += `            id: "${swiftStr(tag.id)}",\n`;
+    code += `            name: "${swiftStr(tag.name)}",\n`;
+    code += `            nameEn: "${swiftStr(tag.nameEn)}",\n`;
+    code += `            group: .${tag.group},\n`;
+    code += `            icon: "${swiftStr(tag.icon)}",\n`;
+    code += `            itemIds: [${ids}]\n`;
+    code += `        ),\n`;
+  });
+  code += '    ]\n';
+
+  document.getElementById('codeOutput').textContent = code;
+  document.getElementById('codeModal').classList.add('open');
+}
+
+function copyCode() {
+  const code = document.getElementById('codeOutput').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const fb = document.getElementById('copyFeedback');
+    fb.style.display = 'block';
+    setTimeout(() => fb.style.display = 'none', 1500);
+  });
+}
+
+function closeCode() { document.getElementById('codeModal').classList.remove('open'); }
+
+// Import (click to paste Swift, basic parser)
+function importFromSwift() {
+  const input = prompt('Paste the itemList section of PresetData.swift here (or cancel to keep current data):');
+  if (!input) return;
+  alert('Import is for advanced use. For now, edit directly in the UI and generate code when done.');
+}
+
+// Close modal on Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCode(); });
+
+// ============ INIT ============
+loadInitialData();
+render();
+</script>
+</body>
+</html>
