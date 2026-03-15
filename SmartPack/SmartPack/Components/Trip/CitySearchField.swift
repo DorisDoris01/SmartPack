@@ -18,6 +18,7 @@ struct CitySearchField: View {
     @StateObject private var searchService = LocationSearchService()
     @FocusState private var isFocused: Bool
     @State private var showSuggestions = false
+    @State private var hasSelection = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -27,6 +28,9 @@ struct CitySearchField: View {
             )
             .focused($isFocused)
             .onChange(of: destination) { _, newValue in
+                if hasSelection {
+                    return
+                }
                 searchService.updateQuery(newValue)
                 showSuggestions = true
                 latitude = nil
@@ -86,12 +90,13 @@ struct CitySearchField: View {
 
     /// If user typed text without selecting a suggestion, clear it back to empty
     private func clearIfNoSelection() {
-        if !destination.isEmpty && latitude == nil {
+        if !destination.isEmpty && latitude == nil && !hasSelection {
             destination = ""
         }
     }
 
     private func selectSuggestion(_ item: CityCompletion) {
+        hasSelection = true
         destination = item.completion.title
         showSuggestions = false
         isFocused = false
@@ -103,6 +108,11 @@ struct CitySearchField: View {
                 await MainActor.run {
                     latitude = coords.latitude
                     longitude = coords.longitude
+                    hasSelection = false
+                }
+            } else {
+                await MainActor.run {
+                    hasSelection = false
                 }
             }
         }
