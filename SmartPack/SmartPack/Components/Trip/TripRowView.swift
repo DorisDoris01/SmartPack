@@ -58,7 +58,7 @@ struct TripRowView: View {
                         .font(.system(size: 10, weight: .bold, design: .rounded))
                         .foregroundColor(AppColors.success)
                 } else {
-                    Text("\(Int(trip.progress * 100))")
+                    Text("\(Int(trip.progress * 100))%")
                         .font(.system(size: 10, weight: .bold, design: .rounded))
                         .foregroundColor(AppColors.textSecondary)
                 }
